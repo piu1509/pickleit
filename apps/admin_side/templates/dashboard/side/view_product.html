@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Product
+{% endblock %}
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Product details</h4>
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid row justify-content-center align-items-center">
+    <div class="card col-9 p-5">
+        <div class="card-body">
+            <div class="row justify-content-center border border-danger p-4">
+                <div class="col-md-4 border text-center m-3 p-4">                 
+                    
+                    {% if product.image %}
+                    <img src="{{product.image.url}}" class="img-fluid mb-3" alt="Product Image" width="250">
+                    {% else %}
+                    <img src="/static/images/No_Image.jpg" class="img-fluid mb-3" alt="Product Image" width="250">
+                    {% endif %}
+                    <h2> {{product.name}}</h2>
+                    <h5>Earlier: <span style="text-decoration: line-through;">&#36;{{product.old_price}}</span></h5>
+                    <h4> Price: &#36;{{product.price}} <span style="color:green;">({{product.percent_off}}% OFF)</span></h4>
+                    
+                </div>
+                <div class="col-md-6 p-5">                   
+                    <h4 class="mb-3">Information:</h4>
+                    <h5>Size:</h5>
+                    <div class="row">
+                    {% for size in product.size %}                  
+                    
+                        <div class="box border font-weight-bold">{{size}}</div>                    
+                      
+                      {% endfor %}
+                    </div>
+                    <h5 class="mt-3">Description:</h5>
+                    <p>{{product.description}}</p>
+                    <h5 class="mt-3">Specification:</h5>
+                    <p>{{product.specifications}}</p>
+                </div>                
+            </div>
+        </div>
+        <div>
+            <a href="{% url "dashboard:product_list" %}" class="btn btn-secondary">Back</a>
+        </div>        
+    </div>
+</div>
+    
+{% endblock %}

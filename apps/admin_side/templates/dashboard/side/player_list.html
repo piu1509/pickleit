@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Player
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">Player Details</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        <div class="d-flex flex-row-reverse m-4">
+                            <a href="/admin/create_player_/" class="btn btn-primary font-weight-bold">Add Player</a>
+                        </div> 
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid">
+        <div class="card">            
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="zero_config" class="table table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="h5 font-weight-bold text-center">Name</th>
+                            <th class="h5 font-weight-bold text-center">Email</th>
+                            <th class="h5 font-weight-bold text-center">Contact No</th>
+                            <th class="h5 font-weight-bold text-center">Date of Join</th>
+                            <th class="h5 font-weight-bold text-center">Gender</th>
+                            <th class="h5 font-weight-bold text-center">Rank</th>
+                            <th class="h5 font-weight-bold text-center">Created</th>
+                            <th class="h5 font-weight-bold text-center">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for player in player_list %}
+                            <tr>
+                                <td>{{player.player_full_name}}</td>
+                                <td>{{player.player_email}}</td>
+                                <td>{{player.player_phone_number}}</td>
+                                <td>{{player.created_at}}</td>
+                                <td>{{player.player__gender}}</td>
+                                <td>{{player.player_ranking}}</td>
+                                <td>{{player.created_by__username}}</td>
+                                <td>
+                                    <div class="btn-group " role="group" aria-label="Player Actions" style="margin-bottom: 0;">
+                                    <a href="/admin/player_view_/{{player.id}}/" class="btn btn-success"><i class="fas fa-eye"></i></a>
+                                    <a href="/admin/edit_player_/{{player.id}}/" class="btn btn-primary"><i class="fas fa-edit"></i></a>
+                                    <a href="/admin/delete_player_/{{player.id}}/" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

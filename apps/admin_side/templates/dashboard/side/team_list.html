@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Team
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">Teams Details</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        <div class="d-flex flex-row-reverse m-4">
+                            <a href="/admin/create_team_/" class="btn btn-primary font-weight-bold">Add Team</a>
+                            </div> 
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="container-fluid">
+        <div class="card">
+            
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="zero_config" class="table table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="h5 font-weight-bold text-center">Name</th>
+                            <th class="h5 font-weight-bold text-center">Created</th>
+                            <th class="h5 font-weight-bold text-center">Type</th>
+                            <th class="h5 font-weight-bold text-center">Person</th>
+                            <th class="h5 font-weight-bold text-center">Rank</th>
+                            <th class="h5 font-weight-bold text-center">Player</th>
+                            <th class="h5 font-weight-bold text-center">Action</th>
+                            
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for team in table_data %}
+                            <tr>
+                                <td>{{team.name}}</td>
+                                <td>{{team.created_by__first_name}} {{team.created_by__last_name}}</td>
+                                <td>{{team.team_type}}</td>
+                                <td>{{team.team_person}}</td>
+                                <td>{{team.team_rank}}</td>
+                                <td>
+                                    {% for player in team.players %}
+                                    <p>{{player.player_full_name}} - {{player.player__rank}} ({{player.player__gender}})</p>
+                                    {% endfor %}
+
+                                </td>
+                                <td>
+                                    <div style="display:inline;">
+                                        <a href="/admin/view_team_/{{team.id}}" class="btn btn-secondary"><i class="fas fa-eye"></i></a>
+                                        <a href="/admin/edit_team_/{{team.id}}" class="btn btn-primary"><i class="fas fa-edit"></i></a>
+                                        <a href="/admin/delete_team_/{{team.id}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                    </div>
+                                </td>
+                                
+                            </tr>
+                            {% endfor %}
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

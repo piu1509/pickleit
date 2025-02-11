@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Advertisement
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">View Advertisement</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center align-items-center m-5">
+        <div class="col-md-8">
+        <div class="card p-5">
+            <h3 class="card-title">Advertisement View</h3>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><strong>Name:</strong></label>
+                            <p>{{ad.name}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>URL:</strong></label>
+                            <p><a href="{{ad.url}}" target="_blank">{{ad.url}}</a></p>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Script Text:</strong></label>
+                            <p>{{ad.script_text}}</p>
+                        </div>
+                        {% if ad.image %}
+                        <div class="form-group">
+                            <label><strong>Image:</strong></label>
+                            <p><img src="{{ad.image.url}}" class="img-fluid" alt="Advertisement Image" width="200"></p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label><strong>Description:</strong></label>
+                            <p>{{ad.description}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Start Date:</strong></label>
+                            <p>{{ad.start_date}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>End Date:</strong></label>
+                            <p>{{ad.end_date}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Created by:</strong></label>
+                            <p>{{ad.created_by.username}}</p>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Created at:</strong></label>
+                            <p>{{ad.created_at}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+{% endblock %}

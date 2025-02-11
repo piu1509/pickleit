@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    User
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">User Management</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        <div class="row">
+                            <form class="form-horizontal" id="filterFormId" method="GET">
+                                <label for="filter_by"></label>
+                                <select id="filter_by_id" name="filter_by" class="form-control">
+                                    <option value="all" hidden>Select user type</option>
+                                    <option value="all"  {% if filter_by == "all" %}selected{% endif %}>All</option>
+                                    <option value="player" {% if filter_by == "player" %}selected{% endif %}>Player</option>
+                                    <option value="organizer" {% if filter_by == "organizer" %}selected{% endif %}>Organizer</option>
+                                    <option value="sponsor" {% if filter_by == "sponsor" %}selected{% endif %}>Sponsor</option>
+                                    <option value="ambassador" {% if filter_by == "ambassador" %}selected{% endif %}>Ambassador</option>
+                                </select>
+                                <input type="submit" style="display: none;">
+                            </form>
+                            <div class="d-flex flex-row-reverse m-4">
+                                <a href="{% url "dashboard:create_user" %}" class="btn btn-primary font-weight-bold">Add User</a>
+                            </div>
+                        </div>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="container-fluid">
+        <div class="card">
+            {% if message %}
+        <div class="alert alert-danger" role="alert">
+            {{message}}
+            </div>
+            {% endif %}
+            
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="zero_config" class="table table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="h5 font-weight-bold text-center">Full Name</th>
+                            <th class="h5 font-weight-bold text-center">Responsibility</th>
+                            <th class="h5 font-weight-bold text-center">Email</th>
+                            <th class="h5 font-weight-bold text-center">Phone</th>
+                            <th class="h5 font-weight-bold text-center">Gender</th>
+                            <th class="h5 font-weight-bold text-center">Rank</th>
+                            {% comment %} <th class="h5 font-weight-bold text-center">Last Login</th>                            {% endcomment %}
+                            <th class="h5 font-weight-bold text-center">De-activated</th>                        
+                            <th class="h5 font-weight-bold text-center">Action</th>
+                            
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in user_list %}
+                            <tr>
+                                <td>{{user.first_name}} {{user.last_name}}</td>
+                                <td>{{responsibilities}}
+                                    <ul>
+                                        {% if user.is_player %}
+                                            <li>Player</li>
+                                        {% endif %}
+                                        {% if user.is_organizer %}
+                                            <li>Organizer</li>
+                                        {% endif %}
+                                        {% if user.is_sponsor %}
+                                            <li>Sponsor</li>
+                                        {% endif %}
+                                        {% if user.is_ambassador %}
+                                            <li>Ambassador</li>
+                                        {% endif %}
+                                    </ul>
+                                </td>
+                                <td>{{user.email}}</td>
+                                <td>{{user.phone}}</td>
+                                <td>{{user.gender}}</td>
+                                <td>{{user.rank}}</td>
+                                {% comment %} <td>{{user.last_login}}</td> {% endcomment %}
+                                
+                            <td>{% if user.is_verified %}False{% else %}True{% endif %}</td> 
+                                <td>
+                                    <div class="btn-group" role="group" aria-label="User Actions" style="margin-bottom: 0;">
+                                    <a href="/admin/view_user_/{{user.id}}/" class="btn btn-secondary"><i class="fas fa-eye"></i></a>
+                                    <a href="/admin/edit_user_/{{user.id}}/" class="btn btn-primary"><i class="fas fa-edit"></i></a>
+                                    <a href="/admin/delete_user_/{{user.id}}/" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('filter_by_id').addEventListener('change', function() {
+            document.getElementById('filterFormId').submit();
+        });
+    </script>
+{% endblock %}

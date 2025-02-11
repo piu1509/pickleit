@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+        <div class="page-breadcrumb">
+            <div class="row p-2">
+                <div class="col-10">
+                    <h3 class="page-title font-weight-bold">Hi, {{request.user.username}}</h3>
+                    <h6 > Welcome to your dashboard</h6>
+                 
+                    <div class="ml-auto text-right">
+                        <nav aria-label="breadcrumb">
+                            {% comment %} <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Library</li>
+                            </ol> {% endcomment %}
+                        </nav>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <a href="{% url 'dashboard:download_logs' %}" class="btn btn-primary">Log Csv</a>
+                </div>
+            </div>
+        </div>
+       
+        <div class="row p-4">
+            <div class="col-md-6 col-lg-4 col-xlg-3">
+                <div class="card card-hover">
+                    <div class="box text-center" style="background: radial-gradient( circle farthest-corner at 92.3% 71.5%,  rgba(83,138,214,1) 0%, rgba(134,231,214,1) 90% );">
+                        <div class="row justify-content-end p-3">
+                            <h4 class="text-white"><a href="{% url 'dashboard:player_list_' %}" class="text-decoration-none text-dark">Total Players</a></h4>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-6 " >
+                                <h1 class="font-light text-white"><i class="mdi mdi-tennis" style="font-size:55px;"></i></h1>
+                            </div>
+                            <div class="col-6 " >
+                                <h5 class="m-b-0 m-t-5 text-white"style="font-size:65px;">{{total_player_count}}</h5>                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xlg-3">
+                <div class="card card-hover">
+                    <div class="box text-center" style="background: linear-gradient(to right, rgb(136, 181, 221), rgb(145, 234, 228));">
+                        <div class="row justify-content-end p-3">
+                            <h4 class="text-white"><a href="{% url 'dashboard:team_list_for_admin' %}" class="text-decoration-none text-dark">Total Teams</a></h4>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <h1 class="font-light text-white"><i class="mdi mdi-account-multiple" style="font-size:55px;"></i></h1>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="m-b-0 m-t-5 text-white"style="font-size:65px;">{{total_team_count}}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 col-xlg-3">
+                <div class="card card-hover">
+                    <div class="box text-center" style="background: radial-gradient( circle farthest-corner at 10% 20%,  rgba(97,186,255,1) 0%, rgba(166,239,253,1) 90.1% );">
+                        <div class="row justify-content-end p-3">
+                            <h4 class="text-white"><a href="{% url 'dashboard:tournamnet_list' filter_by="all" %}" class="text-decoration-none text-dark">Total Tournamnets</a></h4>
+                            
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <h1 class="font-light text-white"><i class="mdi mdi-trophy-variant" style="font-size:55px;"></i></h1>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="m-b-0 m-t-5 text-white"style="font-size:65px;">{{total_tournament_count}}</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+       
+        <h4 style="margin-left:35px;">Log details</h4>
+        <div class="container-fluid p-4">
+            <div class="card">           
+                <div class="card-body">                    
+                    <table id="log-details" class="table table-striped table-bordered">
+                        <thead>
+                        <tr>
+                            <th class="h5 font-weight-bold">LOG TYPE</th>
+                            <th class="h5 font-weight-bold">ACTION</th>
+                            <th class="h5 font-weight-bold">INSTANCE ID</th>
+                            <th class="h5 font-weight-bold">ACTION BY</th>
+                            <th class="h5 font-weight-bold">ACTION DATE AND TIME</th>                                
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% if entries %}
+                            {% for entry in entries %}
+                            <tr>
+                                <td>{{entry.model_name}}</td>
+                                <td>{{entry.action}}</td>
+                                <td>{{entry.instance_id}}</td>
+                                <td>{{entry.user}}</td>
+                                <td>{{entry.timestamp}}</td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" style="text-align:center;">No Data Available.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>                   
+                </div>
+            </div>
+        </div> 
+{% endblock content %} 
+       

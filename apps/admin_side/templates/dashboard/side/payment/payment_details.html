@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+{% block page_title %}
+    Payments
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">Payment Details</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="card">           
+            <div class="card-body">
+                <div class="container mt-3">
+                    <ul class="nav nav-tabs justify-content-end" id="myTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="team-registration-payment-tab" data-bs-toggle="tab" data-bs-target="#team-registration-payment" type="button" role="tab" aria-controls="team-registration-payment" aria-selected="true">Team Registration Payment</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="merchandise-store-payment-tab" data-bs-toggle="tab" data-bs-target="#merchandise-store-payment" type="button" role="tab" aria-controls="merchandise-store-payment" aria-selected="false">Merchandise Store Product Payment</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="advertisement-payment-tab" data-bs-toggle="tab" data-bs-target="#advertisement-payment" type="button" role="tab" aria-controls="advertisement-payment" aria-selected="false">Advertisement Publish Payment</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="container mt-3">
+                    <div class="tab-content mt-3" id="myTabContent">
+                        <div class="tab-pane fade show active" id="team-registration-payment" role="tabpanel" aria-labelledby="team-registration-payment-tab">
+                            <!-- Table for Team Registration Payment -->
+                            <table id="team-registration-table" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="h5 font-weight-bold text-center">League</th>
+                                        <th class="h5 font-weight-bold text-center">Payment By</th>
+                                        <th class="h5 font-weight-bold text-center">Payment For</th>
+                                        <th class="h5 font-weight-bold text-center">Teams</th>
+                                        <th class="h5 font-weight-bold text-center">Charge Amount</th>
+                                        <th class="h5 font-weight-bold text-center">Payment Status</th>
+                                    </tr>
+                                </thead>                    
+                                <tbody class="bg-white">
+                                    {% if payment_for_team|length == 0 %}
+                                        <tr><td class="text-center" colspan="6">No data in table.</td></tr> <!-- Display message if no data -->
+                                    {% else %}                        
+                                    {% for payment in payment_for_team %}
+                                    <tr>
+                                        <td>{{payment.tournament}}</td>
+                                        <td>{{payment.payment_by.username}}</td>
+                                        <td>{{payment.payment_for}}</td>
+                                        <td>{{payment.teams_ids}}</td>
+                                        <td>{{payment.charge_amount}}</td>
+                                        <td>{{payment.payment_status}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="merchandise-store-payment" role="tabpanel" aria-labelledby="merchandise-store-payment-tab">
+                            <!-- Table for Merchandise Store Product Payment -->
+                            <table id="merchandise-store-table" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="h5 font-weight-bold text-center">Product</th>
+                                        <th class="h5 font-weight-bold text-center">Payment By</th>                            
+                                        <th class="h5 font-weight-bold text-center">Payment Amount</th>
+                                        <th class="h5 font-weight-bold text-center">Paid By</th>
+                                        <th class="h5 font-weight-bold text-center">Payment Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white">
+                                    {% if payment_for_product|length == 0 %}
+                                        <tr><td class="text-center" colspan="6">No data in table.</td></tr> <!-- Display message if no data -->
+                                    {% else %} 
+                                    {% for payment in payment_for_product %}
+                                    <tr>
+                                        <td>{% for product in payment.payment_for_product.all %}<img src="{{product.product.image.url}}" width="50" class="rounded-circle">Name: {{product.product.name}}, Category: {{product.product.category}}, Price: &#36;{{product.product.price}}{% endfor %}</td>
+                                        <td>{{payment.created_by.username}}</td>   
+                                        <td>{{payment.payment_amount}}</td>                         
+                                        <td>{{payment.payment_by}}</td>
+                                        <td>{{payment.payment_status}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="advertisement-payment" role="tabpanel" aria-labelledby="advertisement-payment-tab">
+                            <!-- Table for Merchandise Store Product Payment -->
+                            <table id="advertisement-table" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="h5 font-weight-bold text-center">Advertisement</th>
+                                        <th class="h5 font-weight-bold text-center">Payment By</th>                            
+                                        <th class="h5 font-weight-bold text-center">Payment Amount</th>
+                                        <th class="h5 font-weight-bold text-center">Paid By</th>
+                                        <th class="h5 font-weight-bold text-center">Expires At</th>
+                                        <th class="h5 font-weight-bold text-center">Payment Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white">
+                                    {% if payment_for_ad|length == 0 %}
+                                        <tr><td class="text-center" colspan="6">No data in table.</td></tr> <!-- Display message if no data -->
+                                    {% else %} 
+                                    {% for payment in payment_for_ad %}
+                                    <tr>
+                                        <td>{{payment.payment_for_ad.name}}</td>
+                                        <td>{{payment.created_by.username}}</td>                           
+                                        <td>{{payment.payment_amount}}</td>
+                                        <td>{{payment.payment_by}}</td>
+                                        <td>{{payment.expires_at}}</td>
+                                        <td>{{payment.payment_status}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% endblock %}

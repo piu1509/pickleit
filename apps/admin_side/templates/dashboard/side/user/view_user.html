@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    User
+{% endblock %}
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">User profile</h4>
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card p-5">
+        <div class="card-body">
+            <div class="row justify-content-center border border-danger p-4">
+                <div class="col-md-4 border text-center bg-info p-2 text-white">                 
+                    
+                    {% if user.image %}
+                    <img src="{{user.image.url}}" class="img-fluid mb-3 rounded-circle" alt="User Image" width="250">
+                    {% else %}
+                    <img src="/static/images/No_Image.jpg" class="img-fluid mb-3 rounded-circle" alt="User Image" width="250">
+                    {% endif %}
+                    <h2> {{user.first_name}} {{user.last_name}}</h2>
+                    <h4> {{user.email}}</h4>
+                    <h4> {{user.phone}}</h4>
+                </div>
+                <div class="col-md-6 p-5">                   
+                    <h4 class="mb-3">Information:</h4>
+                    {% if user.user_birthday %}
+                    <h5><strong>Birthday:</strong> {{user.user_birthday}}</h5>
+                    {% endif %}
+                    {% if user.gender %}
+                    <h5><strong>Gender:</strong> {{user.gender}}</h5>
+                    {% endif %}
+                    {% if user.rank %}
+                    <h5><strong>Rank:</strong> {{user.rank}}</h5>
+                    {% endif %}
+                    <h5><strong>Date of Joining:</strong> {{user.created_at}}</h5>
+                    {% if user.street and user.city and user.state and user.country and user.postal_code %} 
+                    <h5><strong>Address:</strong> {{user.street}}, {{user.city}}, {{user.state}}, {{user.country}}-{{user.postal_code}}</h5>
+                    {% elif user.city and user.state and user.country and user.postal_code %}
+                    <h5><strong>Address:</strong>{{user.city}}, {{user.state}}, {{user.country}}-{{user.postal_code}}</h5>
+                    {% elif user.state and user.country and user.postal_code %}
+                    <h5><strong>Address:</strong>{{user.state}}, {{user.country}}-{{user.postal_code}}</h5>
+                    {% elif user.country %}
+                    <h5><strong>Address:</strong>{{user.country}}</h5>
+                    {% else %}
+                    {% endif %}
+                    {% if user.fb_link%}
+                    <h5><strong>Facebook:</strong> <a href="{{user.fb_link}}" target="_blank">{{user.fb_link}}</a></h5>
+                    {% endif %}
+                    {% if user.twitter_link %}
+                    <h5><strong>Twitter:</strong> <a href="{{user.twitter_link}}" target="_blank">{{user.twitter_link}}</a></h5>
+                    {% endif %}
+                    {% if user.youtube_link %}
+                    <h5><strong>Youtube:</strong> <a href="{{user.youtube_link}}" target="_blank">{{user.youtube_link}}</a></h5>
+                    {% endif %}
+                    {% if user.tictok_link %}
+                    <h5><strong>TikTok:</strong> <a href="{{user.tictok_link}}" target="_blank">{{user.tictok_link}}</a></h5>
+                    {% endif %}
+                    {% if user.instagram_link%}
+                    <h5><strong>Instagram:</strong> <a href="{{user.instagram_link}}" target="_blank">{{user.instagram_link}}</a></h5>
+                    {% endif %}
+                    {% if posts %}
+                    <h5><strong>Posts:</strong></h5>
+                    <div class="row">
+                    {% for post in posts %}
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">                                
+                                <video controls width="100%" height="100">
+                                    <source src="{{ post.file }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>                                
+                                <!-- Other post details -->
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                    {% endif %}
+                    
+                </div>
+                
+            </div>
+        </div>
+        <div>
+            <a href="{% url "dashboard:user_list" filter_by='all' %}" class="btn btn-secondary">Back</a>
+        </div>
+        
+    </div>
+</div>
+    
+{% endblock %}

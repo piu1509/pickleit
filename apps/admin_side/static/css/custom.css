@@ -1,0 +1,18 @@
+aside.left-sidebar {
+    position: fixed;
+    overflow-y: auto;
+}
+aside.left-sidebar {
+    transition: all 0.4s;
+}
+.footer{
+    /* position: sticky; */
+  bottom: 0;
+  text-align: center;
+  z-index: 10;
+  /* width: calc(100% - 20px); */
+  padding: 15px 0;
+  background-color: #d5d5d591;
+  backdrop-filter: blur(6px);
+
+}

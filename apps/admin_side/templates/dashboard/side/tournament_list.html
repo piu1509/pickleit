@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pagination-btn {
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .pagination-btn:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .pagination-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .pagination-ellipsis {
+            font-size: 18px;
+            color: #6c757d;
+            margin: 0 10px;
+        }
+
+    </style>
+{% endblock %}
+
+{% block page_title %}
+    Tournament
+{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">Tournament Details</h4>
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    <div class="row">
+                        <form id="filterForm" method="GET">
+                            <label for="filter_by"></label>
+                            <select id="filter_by" name="filter_by" class="form-control">
+                                <option value="" hidden>Select tournament type</option>
+                                <option value="all" {% if filter_by == "all" %}selected{% endif %}>All</option>
+                                <option value="open" {% if filter_by == "open" %}selected{% endif %}>Open</option>
+                                <option value="upcoming" {% if filter_by == "upcoming" %}selected{% endif %}>Upcoming</option>
+                                <option value="past" {% if filter_by == "past" %}selected{% endif %}>Past</option>
+                            </select>
+                            <input type="submit" style="display: none;">
+                        </form>
+                        <div class="d-flex flex-row-reverse m-4">
+                            <a href="/admin/create_tournamnet/" class="btn btn-primary font-weight-bold">Add Tournament</a>
+                        </div>
+                    <div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                {% for tournament in tournament_data %}
+                <div class="col-md-3 mb-4">
+                    <div class="card border">
+                        <div class="card-header">
+                            <b>{{ tournament.name }}</b>
+                        </div>
+                        <div class="card-body">
+                            <!-- Image -->
+                            {% if tournament.image %}
+                                
+                                {% if tournament.image.url %}
+                                    <img src="/media/{{ tournament.image.url}}" class="card-img-top" alt="{{ tournament.name }}" style="height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <div class="text-center p-4 bg-light mb-2">
+                                        <p class="text-muted">No Image Available</p>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="text-center p-4 bg-light mb-2">
+                                    <p class="text-muted">No Image Available</p>
+                                </div>
+                            {% endif %}
+                            <!-- Tournament Name -->
+                            <p><strong>Start Date:</strong> {{ tournament.leagues_start_date }}</p>
+                            <p><strong>End Date:</strong> {{ tournament.leagues_end_date }}</p>
+                            <p><strong>Location:</strong> {{ tournament.location }}</p>
+                            <p class="card-text">{{ tournament.description }}</p>
+                            <p> <strong>Play Type:-</strong> {% for type_ in tournament.type %} <a href="/admin/view_tournament/{{type_.id}}/"><span>{{type_.type}} </span> </a>{% endfor %} </p>
+                            <!-- Footer with buttons -->
+                            <div class="d-flex justify-content-end mt-3">
+                                <a href="#" class="btn btn-primary btn-sm mr-2" data-toggle="modal" data-target="#exampleModal{{ tournament.id }}">View</a>
+                                <a href="/admin/edit_tournament/{{ tournament.id }}" class="btn btn-warning btn-sm mr-2">Edit</a>
+                                <a href="/admin/delete_tournament/{{ tournament.id }}" class="btn btn-danger btn-sm">Delete</a>
+                            </div>
+
+                            
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal{{ tournament.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel{{ tournament.id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel">{{ tournament.name }}</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            
+                                            {% for type in tournament.type %}
+                                            <a href="/admin/view_tournament/{{type.id}}/" class="btn btn-secondary btn-sm mr-2">{{ type.type }}</a>
+                                            {% endfor %}
+                                                
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination Controls -->
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-center">
+                    <!-- First Page and Previous -->
+                    {% if tournament_data.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&filter_by={{ filter_by }}"><< First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ tournament_data.previous_page_number }}&filter_by={{ filter_by }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- Page Numbers with Ellipses -->
+                    {% for page_num in tournament_data.paginator.page_range %}
+                        {% if page_num > tournament_data.number|add:"-5" and page_num < tournament_data.number|add:"5" %}
+                            <li class="page-item {% if page_num == tournament_data.number %}active{% endif %}">
+                                <a class="page-link" href="?page={{ page_num }}&filter_by={{ filter_by }}">{{ page_num }}</a>
+                            </li>
+                        {% elif page_num == 1 or page_num == tournament_data.paginator.num_pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_num }}&filter_by={{ filter_by }}">{{ page_num }}</a>
+                            </li>
+                        {% elif page_num == tournament_data.number|add:"-6" or page_num == tournament_data.number|add:"5" %}
+                            <li class="page-item">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Next Page and Last -->
+                    {% if tournament_data.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ tournament_data.next_page_number }}&filter_by={{ filter_by }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ tournament_data.paginator.num_pages }}&filter_by={{ filter_by }}">Last >></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('filter_by').addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+</script>
+
+{% endblock %}

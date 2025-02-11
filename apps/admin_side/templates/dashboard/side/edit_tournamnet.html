@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_style %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css">
+{% endblock extra_style %}
+
+{% block page_title %}
+    Tournament
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <!-- League Details Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Edit {{ league_details.name }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Tournament Name -->
+                <div class="mb-3">
+                    <label for="tournamentName" class="form-label">Tournament Name</label>
+                    <input type="text" id="tournamentName" name="tournament_name" class="form-control" value="{{ league_details.name }}" required>
+                </div>
+
+                <!-- League Start and End Dates -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="leagueStartDate" class="form-label">League Start Date</label>
+                        <input type="date" id="leagueStartDate" name="league_start_date" class="form-control" value="{{ league_details.leagues_start_date|date:"Y-m-d" }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="leagueEndDate" class="form-label">League End Date</label>
+                        <input type="date" id="leagueEndDate" name="league_end_date" class="form-control" value="{{ league_details.leagues_end_date|date:"Y-m-d" }}" required>
+                    </div>
+                </div>
+
+                <!-- Registration Start and End Dates -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="registrationStartDate" class="form-label">Registration Start Date</label>
+                        <input type="date" id="registrationStartDate" name="registration_start_date" class="form-control" value="{{ league_details.registration_start_date|date:"Y-m-d" }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="registrationEndDate" class="form-label">Registration End Date</label>
+                        <input type="date" id="registrationEndDate" name="registration_end_date" class="form-control" value="{{ league_details.registration_end_date|date:"Y-m-d" }}" required>
+                    </div>
+                </div>
+
+                <!-- Maximum Join Team -->
+                <div class="mb-3">
+                    <label for="maxJoinTeam" class="form-label">Maximum Join Team</label>
+                    <input type="number" id="maxJoinTeam" name="max_join_team" class="form-control" value="{{ league_details.max_number_team }}" required>
+                </div>
+
+                <!-- Join Team -->
+                <div class="mb-3">
+                    <label for="joinTeam" class="form-label">Join Team</label>
+                    <select id="joinTeam" name="join_team" class="form-control select2" multiple required>
+                        {% for team in teams %}
+                            <option value="{{ team.id }}" {% if team in league_details.registered_team.all %}selected{% endif %}>{{ team.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Registration Fee -->
+                <div class="mb-3">
+                    <label for="registrationFee" class="form-label">Registration Fee</label>
+                    <input type="number" id="registrationFee" name="registration_fee" class="form-control" value="{{ league_details.registration_fee }}" required>
+                </div>
+
+                <!-- Other Fees -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Other Fees</label>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="add-fee">+</button>
+                    </div>
+                    <div id="otherFeesContainer">
+                        {% for topic, fee in league_details.others_fees.items %}
+                            <div class="input-group mb-2">
+                                <input type="text" name="other_fees_topic[]" class="form-control mr-2" placeholder="Enter fee description" value="{{ topic }}">
+                                <input type="number" name="other_fees[]" class="form-control mr-2" placeholder="Enter fees" value="{{ fee }}">
+                                <button type="button" class="btn btn-outline-danger remove-fee">-</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter league description" required>{{ league_details.description }}</textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const addFeeButton = document.getElementById("add-fee");
+        const otherFeesContainer = document.getElementById("otherFeesContainer");
+
+        // Add new fee input row
+        addFeeButton.addEventListener("click", function () {
+            const newFeeRow = document.createElement("div");
+            newFeeRow.classList.add("input-group", "mb-2");
+
+            newFeeRow.innerHTML = `
+                <input type="text" name="other_fees_topic[]" class="form-control mr-2" placeholder="Enter fee description">
+                <input type="number" name="other_fees[]" class="form-control mr-2" placeholder="Enter fees">
+                <button type="button" class="btn btn-outline-danger remove-fee">-</button>
+            `;
+
+            otherFeesContainer.appendChild(newFeeRow);
+        });
+
+        // Remove fee input row
+        otherFeesContainer.addEventListener("click", function (e) {
+            if (e.target.classList.contains("remove-fee")) {
+                const feeRow = e.target.closest(".input-group");
+                feeRow.remove();
+            }
+        });
+
+        // Initialize Select2
+        if (typeof jQuery !== "undefined") {
+            $(".select2").select2({
+                placeholder: "Select teams",
+                allowClear: true,
+            });
+        }
+    });
+</script>
+{% endblock %}

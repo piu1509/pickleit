@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Team
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">Delete Team</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        {% if message %}
+                        <div id="alertMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <strong>{{message}}</strong>  
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>                         
+                          </div> 
+                          <script>                            
+                            setTimeout(function() {
+                                document.getElementById('alertMessage').style.display = 'none';
+                            }, 5000);
+                        </script>                          
+                          {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid row justify-content-center align-items-center">
+        <div class="card col-6 p-5 text-center">
+            <h4>Do you want to delete team "{{ team_del.name }}"?</h4>
+            <form class="form-horizontal mt-4" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Yes</button>
+                <button type="button" class="btn btn-secondary">
+                    <a href="{% url 'dashboard:team_list_for_admin' %}" style="text-decoration: none; color: inherit;">No</a></button>
+                </button>
+            </form>
+            
+        </div>
+    </div>
+    
+{% endblock %}

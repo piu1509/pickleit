@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    User
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">Add User Form</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                       {% if message %}
+                        <div id="alertMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <strong>{{message}}</strong>  
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>                         
+                          </div> 
+                          <script>                            
+                            setTimeout(function() {
+                                document.getElementById('alertMessage').style.display = 'none';
+                            }, 5000);
+                        </script>                          
+                          {% endif %} 
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid row justify-content-center align-items-center">
+        <div class="card col-8 p-5">           
+
+            <form class="form-horizontal" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card-body">
+
+                    <div class="form-group row">
+                        <label for="fname" class="col-sm-3 text-right control-label col-form-label">First Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="fname" name="first_name" placeholder="First Name Here">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="lname" class="col-sm-3 text-right control-label col-form-label">Last Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="lname" name="last_name" placeholder="Last Name Here">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="cono1" class="col-sm-3 text-right control-label col-form-label">Contact No</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="cono1" name="phone" placeholder="Contact Number Here">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="cono2" class="col-sm-3 text-right control-label col-form-label">Email</label>
+                        <div class="col-sm-9">
+                            <input type="email" class="form-control" id="cono2" name="email" placeholder="Email Here">
+                        </div>
+                    </div>                    
+                    <div class="form-group row">
+                        <label for="gender" class="col-sm-3 text-right control-label col-form-label">Gender</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="gender" name="gender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="rank" class="col-sm-3 text-right control-label col-form-label">Rank</label>
+                        <div class="col-sm-9">
+                            <select class="form-control select2" id="rank" name="rank" size="5">
+                                {% for value in rank_values %}
+                                    <option value="{{ value }}">{{ value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="image" class="col-sm-3 text-right control-label col-form-label">Image</label>
+                        <div class="col-sm-9">
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        </div>
+                    </div>                    
+                    <div class="form-group row">
+                        <label class="col-sm-3 text-right control-label col-form-label">Responsibilities:</label>
+                        <div class="col-sm-9">
+                            <div class="form-check">
+                                <input type="checkbox" id="is_admin" name="responsibilities" value="is_admin" class="form-check-input">
+                                <label for="is_admin" class="form-check-label">Is Admin</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="is_organizer" name="responsibilities" value="is_organizer" class="form-check-input">
+                                <label for="is_organizer" class="form-check-label">Is Organizer</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="is_sponsor" name="responsibilities" value="is_sponsor" class="form-check-input">
+                                <label for="is_sponsor" class="form-check-label">Is Sponsor</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="is_ambassador" name="responsibilities" value="is_ambassador" class="form-check-input">
+                                <label for="is_ambassador" class="form-check-label">Is Ambassador</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="border-top">
+                    <div class="card-body text-center mt-5">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+    
+{% endblock %}

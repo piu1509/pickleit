@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    User
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">Edit User Form</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        {% if message %}
+                        <div id="alertMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <strong>{{message}}</strong>  
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>                         
+                          </div> 
+                          <script>                            
+                            setTimeout(function() {
+                                document.getElementById('alertMessage').style.display = 'none';
+                            }, 5000);
+                        </script>                          
+                          {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid row justify-content-center align-items-center">
+        <div class="card col-8 p-5">
+            <form class="form-horizontal" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="form-group row">
+                        <label for="fname" class="col-sm-3 text-right control-label col-form-label">First Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="fname" name="first_name" value="{{user.first_name}}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="lname" class="col-sm-3 text-right control-label col-form-label">Last Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="lname" name="last_name" value="{{user.last_name}}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="cono1" class="col-sm-3 text-right control-label col-form-label">Contact No</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="cono1" name="phone" value="{{user.phone}}">
+                        </div>
+                    </div>                
+                    <div class="form-group row">
+                        <label for="gender" class="col-sm-3 text-right control-label col-form-label">Gender</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="gender" name="gender">
+                                <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="rank" class="col-sm-3 text-right control-label col-form-label">Rank</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control" id="rank" name="rank" value="{{user.rank}}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="birthday" class="col-sm-3 text-right control-label col-form-label">Birthday</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="birthday" name="user_birthday" value="{% if user.birthday %}{{user.user_birthday}}{% endif %}" placeholder="MM/DD/YYYY">
+                        </div>
+                    </div>                    
+                    <div class="form-group row">
+                        <label for="image" class="col-sm-3 text-right control-label col-form-label">Image</label>
+                        <div class="col-sm-9">
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*" >
+                           
+                            {% if user.image %}
+                                <img src="{{ user.image.url }}" alt="User Image" width="200">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 text-right control-label col-form-label">Responsibilities:</label>
+                        <div class="col-sm-9">
+                            <div class="form-check">
+                                <input type="checkbox" id="is_admin" name="responsibilities" value="is_admin" class="form-check-input"{% if user.is_admin == True %} checked {% endif %}>
+                                <label for="is_admin" class="form-check-label">Is Admin</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="is_organizer" name="responsibilities" value="is_organizer" class="form-check-input"{% if user.is_organizer == True %} checked {% endif %}>
+                                <label for="is_organizer" class="form-check-label">Is Organizer</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="is_sponsor" name="responsibilities" value="is_sponsor" class="form-check-input"{% if user.is_sponsor == True %} checked {% endif %}>
+                                <label for="is_sponsor" class="form-check-label">Is Sponsor</label>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" id="is_ambassador" name="responsibilities" value="is_ambassador" class="form-check-input"{% if user.is_ambassador == True %} checked {% endif %}>
+                                <label for="is_ambassador" class="form-check-label">Is Ambassador</label>
+                            </div>
+                        </div>
+                    </div>  
+                    <div class="form-group row">
+                        <label class="col-sm-3 text-right control-label col-form-label">Verified:</label>
+                        <div class="col-sm-9">
+                            <div class="form-check mt-2">
+                                <input type="checkbox" id="is_verified" name="is_verified" value="is_verified" class="form-check-input"{% if user.is_verified == True %} checked {% endif %}>
+                                <label for="is_verified" class="form-check-label">Is Verified</label>
+                            </div>
+                        </div>
+                    </div>                   
+                </div>
+                <div class="border-top">
+                    <div class="card-body text-center mt-5">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <a href="{% url "dashboard:user_list" filter_by='all' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </div>
+            </form>            
+        </div>
+    </div>
+{% endblock %}

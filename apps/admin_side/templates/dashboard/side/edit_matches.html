@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_style %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/css/select2.min.css">
+<style>
+    .draggable-container {
+        display: flex;
+    }
+    .match-list, .sequence-editor {
+        width: 50%;
+        padding: 20px;
+        border: 1px solid #ddd;
+        overflow-y: auto;
+        max-height: 500px;
+    }
+    .match-item {
+        padding: 10px;
+        margin: 5px 0;
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        cursor: grab;
+    }
+    .match-item.dragging {
+        opacity: 0.5;
+    }
+</style>
+{% endblock extra_style %}
+
+{% block page_title %}
+    Edit Matches
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Edit {{ league_name }} Matches</h3>
+        </div>
+        <div class="card-body">
+            <div class="draggable-container">
+                <!-- Match List -->
+                <div class="match-list">
+                    <h5>All Matches</h5>
+                    {% for match in matches %}
+                        <div class="match-item" draggable="true" data-id="{{ match.id }}">
+                            Match {{ match.match_number }}: {{ match.team1.name }} vs {{ match.team2.name }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Sequence Editor -->
+                <div class="sequence-editor">
+                    <h5>Reorder Matches</h5>
+                </div>
+            </div>
+            <button class="btn btn-primary mt-3" id="save-order">Save Order</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const matchItems = document.querySelectorAll('.match-item');
+    const sequenceEditor = document.querySelector('.sequence-editor');
+    const saveOrderButton = document.getElementById('save-order');
+    let draggedItem = null;
+
+    // Drag and Drop functionality
+    matchItems.forEach(item => {
+        item.addEventListener('dragstart', () => {
+            draggedItem = item;
+            item.classList.add('dragging');
+        });
+        item.addEventListener('dragend', () => {
+            draggedItem = null;
+            item.classList.remove('dragging');
+        });
+    });
+
+    sequenceEditor.addEventListener('dragover', e => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(sequenceEditor, e.clientY);
+        if (afterElement == null) {
+            sequenceEditor.appendChild(draggedItem);
+        } else {
+            sequenceEditor.insertBefore(draggedItem, afterElement);
+        }
+    });
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.match-item:not(.dragging)')];
+
+        return draggableElements.reduce(
+            (closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            },
+            { offset: Number.NEGATIVE_INFINITY }
+        ).element;
+    }
+
+    // Save Order Functionality
+    saveOrderButton.addEventListener('click', () => {
+        const matchOrder = [...sequenceEditor.querySelectorAll('.match-item')].map(item => item.dataset.id);
+
+        fetch("{% url 'dashboard:update_match_order' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ matchOrder }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Match order updated successfully!');
+                } else {
+                    alert('Error updating match order.');
+                }
+            });
+    });
+</script>
+{% endblock %}

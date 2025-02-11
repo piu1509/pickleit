@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Pickle</title>
+
+	<link rel="stylesheet" type="text/css" href="{% static 'assets/css/bootstrap.min.css'%}">
+	<link rel="stylesheet" type="text/css" href="{% static 'assets/css/global-style.css'%}">
+	<link rel="stylesheet" type="text/css" href="{% static 'assets/css/style.css'%}">
+	
+</head>
+<body>
+	<!--<header class="py-5 position-relative z-1 text-center text-white">
+		<div class="container">
+			<div class="mb-3 reveal_fade reveal_fade-auto">
+				<a href="/"><img src="{% static 'assets/images/logo.png'%}" alt=""></a>
+			</div>
+			<h1 class="slogan-text reveal_fade reveal_fade-auto">Just Pickle It!</h1>
+		</div>		
+	</header>-->
+
+	<header class="py-5 position-relative z-1 text-center text-white">
+        <div class="container">
+            <div class="mb-3 reveal_fade reveal_fade-auto">
+                <a href="/"><img src="{% static 'assets/images/logo.png'%}" alt=""></a>
+            </div>
+            <h1 class="slogan-text reveal_fade reveal_fade-auto">Just Pickle It!</h1>
+        </div>
+    </header>
+    <section class="text-white position-relative z-1 app-screen">
+        <div class="container position-relative z-10">
+            <div class="container-custom mx-auto">
+                <div class="row justify-content-center gy-lg-5 gy-4 mb-5">
+                    <!-- <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_right-auto reveal_right">
+                            <img src="assets/images/turnament-icon.png" alt="">
+                            <h4 class="mb-0 font-thin"><strong>Find, Join & Create</strong> Tournaments</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_left-auto reveal_left">
+                            <img src="assets/images/pickel-ball-store-icon.png" alt="">
+                            <h4 class="mb-0 font-thin">Build your <strong>Pickleball Merch Store</strong></h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_right-auto reveal_right">
+                            <img src="assets/images/connect-icon.png" alt="">
+                            <h4 class="mb-0 font-thin">Connect with <strong>Players & Organizers</strong></h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_left-auto reveal_left">
+                            <img src="assets/images/ambassador-icon.png" alt="">
+                            <h4 class="mb-0 font-thin">Become an <strong>Ambassador</strong> & More!</h4>
+                        </div>
+                    </div> -->
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_right-auto reveal_right">
+                            <img src="{% static 'assets/images/tournaments-icon.png'%}" alt="">
+                            <h4 class="mb-0 font-thin"><strong class="d-inline d-md-block">Create and Join</strong> Tournaments!</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_left-auto reveal_left">
+                            <img src="{% static 'assets/images/teams-icon.png' %}" alt="">
+                            <h4 class="mb-0 font-thin"><strong class="d-inline d-md-block">Find & Join</strong> Teams</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_right-auto reveal_right">
+                            <img src="{% static 'assets/images/digitally-icon.png'%}" alt="">
+                            <h4 class="mb-0 font-thin"><strong class="d-inline d-md-block">Run Tournaments</strong> Digitally</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_left-auto reveal_left">
+                            <img src="{% static 'assets/images/stats-icon.png'%}" alt="">
+                            <h4 class="mb-0 font-thin">Play anytime with <strong>Open Play and increase your stats!</strong></h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_right-auto reveal_right">
+                            <img src="{% static 'assets/images/courts-icon.png'%}" alt="">
+                            <h4 class="mb-0 font-thin">Find <strong>Players & Courts</strong></h4>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div class="d-flex align-items-center column-gap-2 reveal_left-auto reveal_left">
+                            <img src="{% static 'assets/images/track-icon.png'%}" alt="">
+                            <h4 class="mb-0 font-thin"><strong>Track and manage</strong> your Pickleball stats, <strong>wins and losses</strong></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center py-4">
+                <div class="d-flex justify-content-center">
+                    <div class="reveal_right-auto reveal_right">
+                        <img src="{% static 'assets/images/screen-1.png'%}" alt="">
+                    </div>
+                    <div class="reveal_up-auto reveal_up">
+                        <img src="{% static 'assets/images/screen-2.png'%}" alt="">
+                    </div>
+                    <div class="reveal_left-auto reveal_left">
+                        <img src="{% static 'assets/images/screen-3.png'%}" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+	
+
+	<footer class="py-4 bg-white position-relative z-1">
+        <div class="container position-relative">
+            <div class="container-custom mx-auto text-center">
+                <div class="footer-top pb-3">
+                    <h2 class="mb-4 text-primary-900 font-bold text-uppercase reveal_up-auto reveal_up">Click here to download app</h2>
+                    <div class="app-box d-flex justify-content-center column-gap-3">
+                        <a href="https://apps.apple.com/in/app/pickleit/id6470372050" target="_blank"><img src="{% static 'assets/images/apple-store.png'%}" alt="" class="reveal_right-auto reveal_right"></a>
+                        <a href="https://play.google.com/store/apps/details?id=com.pickleitnew" target="_blank" ><img src="{% static 'assets/images/play-store.png'%}" alt="" class="reveal_left-auto reveal_left"></a>
+					
+					</div>
+                </div>
+                <div class="footer-bottom mt-4">
+                    <hr>
+                    <div class="footer-middle">
+                        <p class="text-md">For any queries or support pls email us at <a href="mailto:joinpickleit@gmail.com" class="font-semibold text-nowrap">joinpickleit@gmail.com</a> or contact us at <a href="tel:+18337425536" class="font-semibold text-nowrap">+1-833-742-5536</a></p>
+                    </div>
+                    <p>&copy; 2024 Pickleit. All Rights Reserved. <a href="/privacy_policy/" class="font-semibold">Privacy Policy</a> | <a href="/terms_conditions/" class="font-semibold">Terms & Conditions</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+
+
+	<script src="{% static 'assets/js/jquery-3.7.0.min.js'%}"></script>
+	<script src="{% static 'assets/js/scroll-custom.js'%}"></script>
+	<script src="{% static 'assets/js/bootstrap.bundle.min.js'%}"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- Your custom script 
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// Check if the URL contains the specific fragment identifier
+			if (window.location.hash === '#playstore-modal') {
+				// If it does, trigger the modal
+				var myModal = new bootstrap.Modal(document.getElementById('playstore-modal'));
+				myModal.show();
+			}
+		});
+	</script>-->
+
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Player
+{% endblock %}
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">View Player</h4>
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    <!-- Add breadcrumb navigation if needed -->
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid row justify-content-center align-items-center">
+    <div class="card p-5 col-10">
+        <div class="card-body row">            
+            <div class="col-md-4 text-center">                
+                {% if player.player_image %}
+                <img src="{{player.player_image.url}}" class="img-fluid mb-3 rounded-circle" alt="Player Image" width="250">
+                {% else %}
+                <img src="/static/images/No_Image.jpg" class="img-fluid mb-3 rounded-circle" alt="Player Image" width="250">
+                {% endif %}
+                <h3> {{player.player_full_name}}</h3>                    
+                <h4> {{player.player_email}}</h4>                
+                <h4> {{player.player_phone_number}}</h4>
+            </div>
+            <div class="col-md-6 border p-4">
+                <h5><strong>Gender:</strong> {{player.player.gender}}</h5>
+                <hr>
+                <h5><strong>Rank:</strong> {{player.player_ranking}}</h5>
+                <hr>
+                <h5><strong>Date of Joining:</strong> {{player.created_at}}</h5>
+                <hr>
+                <h5><strong>Created by:</strong> {{player.created_by.username}}</h5>
+                {% if posts %}
+                <h5><strong>Posts:</strong></h5>
+                <div class="row">
+                    {% for post in posts %}
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body">                                
+                                <video controls width="100%" height="100">
+                                    <source src="{{ post.file }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>                                
+                                <!-- Other post details -->
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <a href="{% url "dashboard:player_list_" %}" class="btn btn-secondary">Back</a>
+        </div>
+    </div>    
+</div>
+
+    
+{% endblock %}
