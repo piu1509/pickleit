@@ -1,0 +1,23 @@
+<div class="row team-list">
+    {% for team in teams %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <a href="{% url 'user_side:team_view_user' team.id %}">
+                <div class="card nw-card p-3 m-0">
+                    <div class="d-flex align-items-center">
+                        {% if team.team_image and team.team_image != "null" %}
+                            <img src="{{ team.team_image.url }}" class="rounded-circle me-3" width="60" height="60" alt="{{ team.name }}">
+                        {% else %}
+                            <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" class="rounded-circle me-3" width="60" height="60" alt="{{ team.name }}">
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-1 text-white">{{ team.name }}</h5>
+                            <p class="text-white small mb-0">Players: {{ team.players }} | Team Type: {{ team.team_type }}</p>
+                        </div>
+                    </div>
+                </div>
+        </a>
+    </div>
+    {% empty %}
+        {% include 'base/not_found.html' %}
+    {% endfor %}
+</div>

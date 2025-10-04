@@ -1,0 +1,318 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="h3 mb-3">Open Play Form</h1>
+    
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+    
+    {% if errors %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for field, error in errors.items %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form id="openPlayForm" method="POST" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="openPlayType" class="form-label">Open Play Type</label>
+            <select class="form-select" id="openPlayType" name="open_play_type" required>
+                <option value="" disabled {% if not form_data.open_play_type %}selected{% endif %}>Select open play type</option>
+                <option value="Round Robin Compete to Final" {% if form_data.open_play_type == 'Round Robin Compete to Final' %}selected{% endif %}>Round Robin Compete to Final</option>
+                <option value="Robin Randomizer" {% if form_data.open_play_type == 'Robin Randomizer' %}selected{% endif %}>Robin Randomizer</option>
+            </select>
+            <div class="invalid-feedback">
+                Please select an open play type.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="playType" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3" required>{{ form_data.description|default:'' }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="playType" class="form-label">Play Type</label>
+            <select class="form-select" id="playType" name="play_type" required>
+                <option value="" disabled {% if not form_data.play_type %}selected{% endif %}>Select play type</option>
+                <option value="One Person Team" {% if form_data.play_type == 'One Person Team' %}selected{% endif %}>Singles</option>
+                <option value="Two Person Team" {% if form_data.play_type == 'Two Person Team' %}selected{% endif %}>Doubles</option>
+            </select>
+            <div class="invalid-feedback">
+                Please select a play type.
+            </div>
+        </div>
+
+
+        <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="location" name="location" value="{{ form_data.location|default:'' }}" required>
+            <input type="hidden" id="latitude" name="latitude" value="{{ form_data.latitude|default:'' }}">
+            <input type="hidden" id="longitude" name="longitude" value="{{ form_data.longitude|default:'' }}">
+            <div class="invalid-feedback">
+                Please enter a location.
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ form_data.date|default:'' }}" required>
+                <div class="invalid-feedback">
+                    Please select a date.
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="time" class="form-label">Time</label>
+                <input type="time" class="form-control" id="time" name="time" value="{{ form_data.time|default:'' }}" required>
+                <div class="invalid-feedback">
+                    Please select a time.
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="courts" class="form-label">Number of Courts</label>
+                <input type="number" class="form-control" id="courts" name="courts" min="1" value="{{ form_data.courts|default:'1' }}" required>
+                <div class="invalid-feedback">
+                    Please enter number of courts.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="sets" class="form-label">Number of Sets</label>
+                <input type="number" class="form-control" id="sets" name="sets" min="1" value="{{ form_data.sets|default:'1' }}" required>
+                <div class="invalid-feedback">
+                    Please enter number of sets.
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label for="points" class="form-label">Number of Points</label>
+                <input type="number" class="form-control" id="points" name="points" min="1" value="{{ form_data.points|default:'1' }}" required>
+                <div class="invalid-feedback">
+                    Please enter number of points.
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Select Players to Invite</label>
+            <div class="card">
+                <div class="card-body">
+                    <!-- Search Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="categoryFilter" name="category">
+                                <option value="">All Categories</option>
+                                <option value="Male">Men</option>
+                                <option value="Female">Women</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="searchLocation" placeholder="Search by location">
+                            <input type="hidden" id="searchLatitude">
+                            <input type="hidden" id="searchLongitude">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" id="radiusFilter" placeholder="Radius (km)" min="1" value="100">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="keywordFilter" placeholder="Keyword (name, username)">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-primary w-100" id="searchPlayersBtn">Search</button>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <input type="number" class="form-control" id="minRankFilter" placeholder="Min Rank">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="number" class="form-control" id="maxRankFilter" placeholder="Max Rank">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 player-list-container" id="playerList">
+                        <!-- Checkboxes will be populated dynamically -->
+                    </div>
+                    <div class="invalid-feedback" id="playerListFeedback" style="display: none;">
+                        Please select at least one player.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Create Event</button>
+    </form>
+</div>
+
+<style>
+.player-checkbox {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.player-checkbox img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+.player-checkbox label {
+    margin-bottom: 0;
+}
+.player-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+.alert ul {
+    margin-bottom: 0;
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{MAP_API_KEY}}&libraries=places"></script>
+<script>
+(function () {
+    'use strict'
+
+    // Form validation
+    const form = document.getElementById('openPlayForm');
+    form.addEventListener('submit', function (event) {
+        const playerCheckboxes = document.querySelectorAll('#playerList input[name="players"]:checked');
+        const playerFeedback = document.getElementById('playerListFeedback');
+        
+        if (playerCheckboxes.length === 0) {
+            playerFeedback.style.display = 'block';
+            event.preventDefault();
+            event.stopPropagation();
+        } else {
+            playerFeedback.style.display = 'none';
+        }
+
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+
+    // Google Places Autocomplete for main location
+    function initLocationAutocomplete() {
+        const input = document.getElementById('location');
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                document.getElementById('latitude').value = place.geometry.location.lat();
+                document.getElementById('longitude').value = place.geometry.location.lng();
+            } else {
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+            }
+        });
+    }
+
+    // Google Places Autocomplete for search location
+    function initSearchAutocomplete() {
+        const input = document.getElementById('searchLocation');
+        const autocomplete = new google.maps.places.Autocomplete(input);
+        
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                document.getElementById('searchLatitude').value = place.geometry.location.lat();
+                document.getElementById('searchLongitude').value = place.geometry.location.lng();
+            } else {
+                document.getElementById('searchLatitude').value = '';
+                document.getElementById('searchLongitude').value = '';
+            }
+        });
+    }
+
+    // Initialize autocompletes
+    google.maps.event.addDomListener(window, 'load', function() {
+        initLocationAutocomplete();
+        initSearchAutocomplete();
+    });
+
+    // Player search functionality
+    function loadPlayers() {
+        const latitude = document.getElementById('searchLatitude').value || '';
+        const longitude = document.getElementById('searchLongitude').value || '';
+        const radius = document.getElementById('radiusFilter').value || '10';
+        const keyword = document.getElementById('keywordFilter').value || '';
+        const minRank = document.getElementById('minRankFilter').value || '';
+        const maxRank = document.getElementById('maxRankFilter').value || '';
+        const category = document.getElementById('categoryFilter').value || '';
+
+        const params = new URLSearchParams({
+            latitude,
+            longitude,
+            radius,
+            keyword,
+            min_rank: minRank,
+            max_rank: maxRank,
+            category
+        });
+
+        const playerList = document.getElementById('playerList');
+        playerList.innerHTML = '<p class="text-muted">Loading players...</p>';
+
+        fetch('{% url "user_side:search-users" %}?' + params, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            playerList.innerHTML = '';
+            
+            if (data.players.length === 0) {
+                playerList.innerHTML = '<p class="text-muted">No players found.</p>';
+                return;
+            }
+
+            data.players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-checkbox';
+                div.innerHTML = `
+                    <input type="checkbox" class="form-check-input" name="players" value="${player.uuid}" id="player-${player.uuid}">
+                    <img src="${player.image}" alt="${player.get_full_name}" onerror="this.src='https://static.thenounproject.com/png/3918329-200.png'">
+                    <label class="form-check-label" for="player-${player.uuid}">
+                        ${player.get_full_name} ${player.rank ? `(Rank: ${player.rank})` : '(No rank)'}
+                    </label>
+                `;
+                playerList.appendChild(div);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading players:', error);
+            playerList.innerHTML = '<p class="text-danger">Error loading players. Please try again.</p>';
+        });
+    }
+
+    // Add event listener for search button
+    document.getElementById('searchPlayersBtn').addEventListener('click', loadPlayers);
+
+})();
+</script>
+{% endblock %}

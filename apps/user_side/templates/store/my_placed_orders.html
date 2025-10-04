@@ -1,0 +1,405 @@
+{% extends 'base/base_user_store.html' %}
+{% load i18n %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+<style>
+  .order-image {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+  }
+  
+.star {
+    font-size: 2rem;
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.star.selected {
+    color: #f5a623;
+}
+/* Image preview style */
+  .preview-img-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      margin: 5px;
+  }
+  .preview-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 5px;
+  }
+  .remove-preview {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 12px;
+      padding: 2px 5px;
+      border-radius: 50%;
+      cursor: pointer;
+  }
+  /* Timeline container */
+.timeline {
+  position: relative;
+  padding-left: 40px;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 18px;
+  width: 4px;
+  height: 100%;
+  background: #ddd; /* default grey */
+  z-index: 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -30px;
+  width: 20px;
+  height: 20px;
+  background: #ddd;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.timeline-content {
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  background: #e9ecef;
+  flex: 1;
+}
+
+/* Dynamic progress color */
+.timeline[data-status="1"] .timeline-item:nth-child(1) .timeline-marker,
+.timeline[data-status="1"] .timeline-item:nth-child(1) .timeline-content {
+  background: #28a745;
+  color: white;
+}
+
+.timeline[data-status="2"] .timeline-item:nth-child(-n+2) .timeline-marker,
+.timeline[data-status="2"] .timeline-item:nth-child(-n+2) .timeline-content {
+  background: #28a745;
+  color: white;
+}
+
+.timeline[data-status="3"] .timeline-item .timeline-marker,
+.timeline[data-status="3"] .timeline-item .timeline-content {
+  background: #28a745;
+  color: white;
+}
+
+/* Green part of the vertical line */
+.timeline[data-status="1"]::before {
+  background: linear-gradient(#28a745 0%, #28a745 50px, #ddd 50px, #ddd 100%);
+}
+
+.timeline[data-status="2"]::before {
+  background: linear-gradient(#28a745 0%, #28a745 120px, #ddd 120px, #ddd 100%);
+}
+
+.timeline[data-status="3"]::before {
+  background: #28a745;
+}
+
+</style>
+
+<div class="page-breadcrumb p-4">
+    <form method="GET" action="">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            
+            <!-- 🔹 Left Side: Title + Page Length -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h4 class="page-title mb-0">My Placed Order List</h4>
+            </div>
+
+            <!-- 🔹 Right Side: Filters + Search -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                <!-- Delivery Status Filter -->
+                <select name="status" class="form-control" style="width: 150px;" onchange="this.form.submit()">
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="delivered" {% if request.GET.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                    <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+
+                <!-- Date Filter -->
+                <select name="filter_type" class="form-control" style="width: 180px;" onchange="this.form.submit()">
+                    <option value="">All Time</option>
+                    <option value="today" {% if request.GET.filter_type == 'today' %}selected{% endif %}>Today</option>
+                    <option value="last_3_days" {% if request.GET.filter_type == 'last_3_days' %}selected{% endif %}>Last 3 Days</option>
+                    <option value="last_7_days" {% if request.GET.filter_type == 'last_7_days' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="last_15_days" {% if request.GET.filter_type == 'last_15_days' %}selected{% endif %}>Last 15 Days</option>
+                    <option value="last_1_month" {% if request.GET.filter_type == 'last_1_month' %}selected{% endif %}>Last 1 Month</option>
+                    <option value="last_6_months" {% if request.GET.filter_type == 'last_6_months' %}selected{% endif %}>Last 6 Months</option>
+                    <option value="last_1_year" {% if request.GET.filter_type == 'last_1_year' %}selected{% endif %}>Last 1 Year</option>
+                </select>
+
+                <!-- Search -->
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                    <input type="text" name="search_text" class="form-control" placeholder="Search Order..." 
+                        value="{{ search_text|default_if_none:'' }}" style="width: 200px;">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+{% if messages %}
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1055;">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2 px-3 small" 
+             role="alert" style="min-width: 200px; max-width: 300px;">
+            {{ message }}
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Auto close alerts after 3 seconds
+    setTimeout(function () {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 3000);
+</script>
+{% endif %}
+<div class="order-list mt-3">
+    {% for item in orders %}
+    <div class="card position-relative border shadow">
+        <div class="ord-block mb-4 d-flex rounded p-3">
+            
+            {% if item.image %}
+                <img src="{{ item.image.image.url }}" alt="Product Image" class="order-image">
+            {% else %}
+                <div class="order-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                    <span>No Image</span>
+                </div>
+            {% endif %}
+            
+            <div class="order-content flex-grow-1 ml-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 font-weight-bold">{{ item.product.name }}</h4>
+                    {% if item.status == "DELIVERED" and not item.rating_status %}
+                    <button class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#reviewModal"
+                            data-product-id="{{ item.product.id }}">
+                        Give Review
+                    </button>
+                    {% endif %}
+                    {% if item.status == "ORDER PLACED" or item.status == "SHIPPED" %}
+                    <button class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#statusTrackModal"
+                            data-status="{{ item.status }}"
+                            data-product-id="{{ item.id }}">
+                        Track Status
+                    </button>
+                    {% endif %}
+                </div>
+                <p style="line-height:6px;">Size: {{ item.size }} | Color: {{item.color}}</p>
+                <p style="line-height:6px;">Quantity: {{ item.quantity }} | Total Price: ${{ item.total_price }} | Status: {{ item.status }}</p>
+                <p style="line-height:6px;">Ordered to: {{ item.product.created_by.first_name }} {{item.product.created_by.last_name }}</p>
+                <p style="line-height:6px;">Delivery Address: {{ item.delivery_address|default:'N/A' }}</p>
+            
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'base/not_found.html' %}
+</div>
+    {% endfor %}
+</div>
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="reviewForm" method="POST" action="{% url 'user_side:add_review_user_side' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reviewModalLabel">Give Your Review</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="product_id" id="reviewProductId">
+          <div class="mb-3 text-center">
+            <span class="star" data-value="1">&#9733;</span>
+            <span class="star" data-value="2">&#9733;</span>
+            <span class="star" data-value="3">&#9733;</span>
+            <span class="star" data-value="4">&#9733;</span>
+            <span class="star" data-value="5">&#9733;</span>
+          </div>
+          <input type="hidden" name="rating" id="ratingValue">
+          <div class="mb-3">
+            <label for="reviewText" class="form-label">Your Review</label>
+            <textarea class="form-control" name="review" id="reviewText" rows="3" ></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="reviewImages" class="form-label">Upload Images</label>
+            <input class="form-control" type="file" name="images" id="reviewImages" multiple>
+            <div id="imagePreview" class="mt-2"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Submit Review</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="modal fade" id="statusTrackModal" tabindex="-1" aria-labelledby="statusTrackModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="statusTrackModalLabel">Order Tracking</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="timeline" data-status="1"> <!-- 1 = Order Placed, 2 = Shipped, 3 = Delivered -->
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">Order Placed</div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">Shipped</div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">Delivered</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let selectedFiles = [];
+
+    const reviewModal = document.getElementById("reviewModal");
+    const fileInput = document.getElementById("reviewImages");
+    const previewContainer = document.getElementById("imagePreview");
+
+    // Reset modal when opened
+    reviewModal.addEventListener("show.bs.modal", function(event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute("data-product-id");
+        document.getElementById("reviewProductId").value = productId;
+
+        document.getElementById("ratingValue").value = "";
+        document.querySelectorAll(".star").forEach(star => star.classList.remove("selected"));
+        document.getElementById("reviewText").value = "";
+        fileInput.value = "";
+        selectedFiles = [];
+        updateImagePreviews();
+    });
+
+    // Star rating selection
+    document.querySelectorAll(".star").forEach(star => {
+        star.addEventListener("click", function() {
+            const rating = parseInt(this.getAttribute("data-value"));
+            document.getElementById("ratingValue").value = rating;
+            document.querySelectorAll(".star").forEach(s => {
+                s.classList.toggle("selected", parseInt(s.getAttribute("data-value")) <= rating);
+            });
+        });
+    });
+
+    // File selection
+    fileInput.addEventListener("change", function(event) {
+        selectedFiles = [...selectedFiles, ...Array.from(event.target.files)];
+        updateFileInput();
+        updateImagePreviews();
+    });
+
+    // Update preview container
+    function updateImagePreviews() {
+        previewContainer.innerHTML = "";
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrapper = document.createElement("div");
+                wrapper.classList.add("preview-img-wrapper");
+
+                const img = document.createElement("img");
+                img.src = e.target.result;
+
+                const removeBtn = document.createElement("span");
+                removeBtn.classList.add("remove-preview");
+                removeBtn.textContent = "×";
+                removeBtn.onclick = function() {
+                    selectedFiles.splice(index, 1);
+                    updateFileInput();
+                    updateImagePreviews();
+                };
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(removeBtn);
+                previewContainer.appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Sync file input with selectedFiles
+    function updateFileInput() {
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        fileInput.files = dataTransfer.files;
+    }
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const messagesContainer = document.getElementById("django-messages");
+    if (messagesContainer) {
+        try {
+            const messages = JSON.parse(messagesContainer.getAttribute("data-messages"));
+            const hasSuccess = messages.some(msg => msg.level.includes("success"));
+            if (hasSuccess) {
+                // Hide the modal if open
+                const modalEl = document.getElementById("reviewModal");
+                const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modalInstance.hide();
+            }
+        } catch (err) {
+            console.error("Error parsing Django messages:", err);
+        }
+    }
+});
+</script>
+
+{% endblock %}

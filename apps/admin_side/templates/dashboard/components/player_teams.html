@@ -1,0 +1,21 @@
+<div class="row mt-2">
+    <div class="col-xl-12">
+        <div class="card mt-3">
+            <div class="card-body">
+            <h5 class="card-title">Teams</h5>
+                <div style="height: 200px; overflow-y: auto">
+                    <ul class="list-group">
+                    {% for team in all_team_data %}
+                        <li class="list-group-item d-flex align-items-center">
+                            <img src="/media/{{team.image}}" class="rounded-circle mr-2" alt="User" height="20px" width="20px"/>
+                            <span>{{team.name}}</span>
+                        </li>
+                    {% empty %}
+                    {% include 'dashboard/not_found.html' %}
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+{% load static %}
+<nav id="sidebar" class="sidebar js-sidebar">
+    <div class="sidebar-content js-simplebar">
+        <a class="sidebar-brand" href="{% url 'user_side:user_index' %}">
+            <span class="align-middle">PickleIT</span>
+        </a>
+
+        <ul class="sidebar-nav">
+            <li class="sidebar-header">Pages</li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'user_index' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:user_index' %}">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span class="align-middle">Back to Dashboard</span>
+                </a>
+            </li>
+
+            
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'product_list_user_side' or request.resolver_match.url_name == 'my_store_user_side' or request.resolver_match.url_name == 'product_view' or request.resolver_match.url_name == 'edit_store_product' or request.resolver_match.url_name == 'my_order_user_side' or request.resolver_match.url_name == 'add_store_product_user_side' or request.resolver_match.url_name == 'select_address_buy_now_user_side' or request.resolver_match.url_name == 'buy_now_payment_gateway_user_side' or request.resolver_match.url_name == 'cart_payment_gateway_user_side' or request.resolver_match.url_name == 'select_address_user_side' or request.resolver_match.url_name == 'cart_user_side' or request.resolver_match.url_name == 'wishlist_user_side' or request.resolver_match.url_name == 'checkout_summary_user_side' or request.resolver_match.url_name == 'my_placed_orders_user_side' %}active{% endif %}">
+                <a class="sidebar-link {% if request.resolver_match.url_name == 'product_list_user_side' or request.resolver_match.url_name == 'my_store_user_side' or request.resolver_match.url_name == 'product_view' or request.resolver_match.url_name == 'edit_store_product' or request.resolver_match.url_name == 'my_order_user_side' or request.resolver_match.url_name == 'add_store_product_user_side' or request.resolver_match.url_name == 'select_address_buy_now_user_side' or request.resolver_match.url_name == 'buy_now_payment_gateway_user_side' or request.resolver_match.url_name == 'cart_payment_gateway_user_side' or request.resolver_match.url_name == 'select_address_user_side' or request.resolver_match.url_name == 'cart_user_side' or request.resolver_match.url_name == 'wishlist_user_side' or request.resolver_match.url_name == 'checkout_summary_user_side' or request.resolver_match.url_name == 'my_placed_orders_user_side' %}{% else %}collapsed{% endif %}" 
+                data-bs-toggle="collapse" 
+                href="#storeDropdown" 
+                role="button" 
+                aria-expanded="{% if request.resolver_match.url_name == 'product_list_user_side' or request.resolver_match.url_name == 'my_store_user_side' or request.resolver_match.url_name == 'product_view' or request.resolver_match.url_name == 'edit_store_product' or request.resolver_match.url_name == 'my_order_user_side' or request.resolver_match.url_name == 'add_store_product_user_side' or request.resolver_match.url_name == 'select_address_buy_now_user_side' or request.resolver_match.url_name == 'buy_now_payment_gateway_user_side' or request.resolver_match.url_name == 'cart_payment_gateway_user_side' or request.resolver_match.url_name == 'select_address_user_side' or request.resolver_match.url_name == 'cart_user_side' or request.resolver_match.url_name == 'wishlist_user_side' or request.resolver_match.url_name == 'checkout_summary_user_side' or request.resolver_match.url_name == 'my_placed_orders_user_side' %}true{% else %}false{% endif %}" 
+                aria-controls="storeDropdown">
+                    <i class="fa-solid fa-store"></i>
+                    <span class="align-middle">Store</span>
+                </a>
+                <ul id="storeDropdown" class="sidebar-dropdown list-unstyled collapse {% if request.resolver_match.url_name == 'product_list_user_side' or request.resolver_match.url_name == 'my_store_user_side' or request.resolver_match.url_name == 'product_view' or request.resolver_match.url_name == 'edit_store_product' or request.resolver_match.url_name == 'my_order_user_side' or request.resolver_match.url_name == 'add_store_product_user_side' or request.resolver_match.url_name == 'select_address_buy_now_user_side' or request.resolver_match.url_name == 'buy_now_payment_gateway_user_side' or request.resolver_match.url_name == 'cart_payment_gateway_user_side' or request.resolver_match.url_name == 'select_address_user_side' or request.resolver_match.url_name == 'cart_user_side' or request.resolver_match.url_name == 'wishlist_user_side' or request.resolver_match.url_name == 'checkout_summary_user_side' or request.resolver_match.url_name == 'my_placed_orders_user_side' %}show{% endif %}">
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name == 'product_list_user_side' or request.resolver_match.url_name == 'product_view' or request.resolver_match.url_name == 'my_order_user_side' or request.resolver_match.url_name == 'select_address_buy_now_user_side' or request.resolver_match.url_name == 'buy_now_payment_gateway_user_side' or request.resolver_match.url_name == 'cart_payment_gateway_user_side' or request.resolver_match.url_name == 'select_address_user_side' or request.resolver_match.url_name == 'cart_user_side' or request.resolver_match.url_name == 'wishlist_user_side' or request.resolver_match.url_name == 'checkout_summary_user_side' or request.resolver_match.url_name == 'my_placed_orders_user_side'  %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:product_list_user_side' %}">Product List</a>
+                    </li>
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name == 'my_store_user_side' or request.resolver_match.url_name == 'add_store_product_user_side' or request.resolver_match.url_name == 'edit_store_product' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:my_store_user_side' %}">My Products</a>
+                    </li>
+                </ul>
+            </li>
+            
+        </ul>
+    </div>
+</nav>

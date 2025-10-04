@@ -1,0 +1,39 @@
+{% extends 'base/base_user_store.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4 shadow">
+        <h3 class="mb-4">Stripe Payment Gateway</h3>
+        <p><strong>Total Amount:</strong> ${{ total_amount }}</p>
+        <button id="checkout-button" class="btn btn-success">Proceed to Payment</button>
+    </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    document.getElementById("checkout-button").addEventListener("click", function () {
+        fetch("{% url 'user_side:create_cart_checkout_session_user_side' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ total_amount: "{{ total_amount }}" })  // Optional payload
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                var stripe = Stripe("{{ STRIPE_PUBLISHABLE_KEY }}");
+                stripe.redirectToCheckout({ sessionId: data.id });
+            } else {
+                alert(data.error || "Payment session creation failed.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("An unexpected error occurred.");
+        });
+    });
+</script>
+{% endblock %}

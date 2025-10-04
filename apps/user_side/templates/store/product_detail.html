@@ -1,0 +1,459 @@
+{% extends 'base/base_user_store.html' %}
+{% load static %}
+
+{% block content %}
+<title>{{ product.name }}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+/* ✅ Make carousel images scale */
+#productCarousel img {
+    object-fit: contain;
+    max-height: 400px;
+}
+
+/* ✅ Space out buttons better on small screens */
+.action-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* ✅ Make quantity input not shrink weirdly */
+.quantity-group {
+    width: 120px;
+}
+
+/* ✅ On mobile: stack actions vertically */
+@media (max-width: 576px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .quantity-group {
+        width: 100%;
+    }
+}
+
+/* ✅ Ratings images responsive */
+#latest-ratings img,
+#all-ratings img {
+    max-width: 100%;
+    height: auto;
+}
+</style>
+<div id="alert-container" style="position: fixed; top: 30px; right: 20px; z-index: 1055; width: auto;"></div>
+<div class="container my-4">
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a href="{% url 'user_side:product_list_user_side' %}" class="btn btn-secondary">
+            <i class="fa fa-arrow-left"></i>
+        </a>
+        {% if is_button %}
+        <a href="{% url 'user_side:edit_store_product' product.id %}" class="btn btn-primary">
+            <i class="fa fa-edit"></i>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="row gy-4">
+        <!-- Carousel -->
+        <div class="col-lg-6">
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100" alt="Product Image">
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <h2>{{ product.name }}</h2>
+            <div style="position: relative; display: inline-block; width: 80px; line-height: 1; font-size: 16px;">
+                <!-- Gray base stars -->
+                <div style="color: #ccc;">
+                    ★★★★★
+                </div>
+                <!-- Gold overlay stars -->
+                <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: {{ product.star_percentage }}%;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    color: #f5a623;
+                ">
+                    ★★★★★
+                </div>
+            </div>
+
+            <!-- Reviews count -->
+            <span style="margin-left: 3px; color: #555;">
+                ({{ product.rating_count|default:0 }} reviews)
+            </span>
+
+            <p>{{ product.description }}</p>
+
+            <!-- Prices -->
+            <div>
+                <strong>Price:</strong>
+                <span id="old_price" style="text-decoration:line-through;"></span>
+                <span id="current_price" class="ms-2 fw-bold text-success"></span>
+                <span id="discount" class="ms-2 text-danger"></span>
+            </div>
+
+            <!-- Sizes -->
+            {% if sizes %}
+            <label class="fw-bold mt-2">Size:</label>
+            <div id="sizeOptions" class="btn-group mb-3 flex-wrap" role="group">
+                {% for size in sizes %}
+                <input type="radio" class="btn-check size-input" name="size" id="size-{{ size }}" value="{{ size }}">
+                <label class="btn btn-outline-secondary me-1" for="size-{{ size }}">{{ size }}</label>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Colors -->
+            {% if colors %}
+            <label class="fw-bold">Color:</label>
+            <div id="colorOptions" class="btn-group mb-3 flex-wrap" role="group">
+                {% for color in colors %}
+                <input type="radio" class="btn-check color-input" name="color" id="color-{{ color }}" value="{{ color }}">
+                <label class="btn btn-outline-secondary me-1 color-label" for="color-{{ color }}">{{ color }}</label>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div id="availability" class="mt-2 text-primary fw-semibold"></div>
+            <div id="stockMessage" class="text-danger fw-bold mt-2"></div>
+
+            {% if not is_button %}
+            <hr class="my-3">
+
+            <!-- ✅ Action buttons with responsive wrap -->
+            <div class="d-flex align-items-center action-buttons">
+                <!-- Wishlist -->
+                {% if not wishlist_status %}
+                <button id="wishlistBtn" class="btn btn-outline-danger" onclick="addToWishlist({{ product.id }})">
+                    <i class="fa fa-heart"></i>
+                </button>
+                {% else %}
+                <button id="wishlistBtn" class="btn btn-danger text-white" onclick="addToWishlist({{ product.id }})">
+                    <i class="fa fa-heart"></i>
+                </button>
+                {% endif %}
+
+                <!-- Quantity Selector -->
+                <div class="input-group quantity-group">
+                    <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(-1)">-</button>
+                    <input type="number" id="quantityInput" class="form-control text-center" value="1" min="1">
+                    <button class="btn btn-outline-secondary" type="button" onclick="changeQuantity(1)">+</button>
+                </div>
+
+                <!-- Add to Cart -->
+                <button class="btn btn-success text-white" onclick="addToCart({{ product.id }})">
+                    <i class="fa fa-shopping-cart"></i> Add to Cart
+                </button>
+
+                <!-- Buy Now -->
+                <button class="btn btn-warning text-dark fw-bold" onclick="buyNow({{ product.id }})">
+                    <i class="fa fa-bolt"></i> Buy Now
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Highlights -->
+            <div id="highlights" class="mt-3" {% if not default_highlights %}style="display: none;"{% endif %}>
+                <h5>Highlights</h5>
+                <ul id="highlight_list">
+                    {% for h in default_highlights %}
+                    <li><strong>{{ h.highlight_key }}</strong>: {{ h.highlight_des }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Ratings -->
+    <h4>Ratings ({{ product.rating }}/5)</h4>
+    <div id="latest-ratings">
+        {% for rate in ratings %}
+        <div class="border p-2 mb-3">
+            <strong>{{ forloop.counter }}. {{ rate.user.first_name }}</strong> rated <strong>{{ rate.rating }}</strong>/5<br>
+            <small>{{ rate.created_at }}</small>
+            <p>{{ rate.comment }}</p>
+            <div class="d-flex flex-wrap">
+                {% for img in rate.ratingImages.all %}
+                <img src="{{ img.image.url }}" class="me-2 mb-2" style="width:100px; height:auto;">
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p>No ratings yet.</p>
+        {% endfor %}
+    </div>
+
+    <div id="all-ratings" style="display: none; max-height: 400px; overflow-y: auto;">
+        {% for rate in all_ratings %}
+        <div class="border p-2 mb-3">
+            <strong>{{ forloop.counter }}. {{ rate.user.first_name }}</strong> rated <strong>{{ rate.rating }}</strong>/5<br>
+            <small>{{ rate.created_at }}</small>
+            <p>{{ rate.comment }}</p>
+            <div class="d-flex flex-wrap">
+                {% for img in rate.ratingImages.all %}
+                <img src="{{ img.image.url }}" class="me-2 mb-2" style="width:100px; height:auto;">
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if all_ratings|length > 5 %}
+    <button class="btn btn-outline-primary" id="toggle-ratings-btn" onclick="toggleRatings()">See More</button>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="sizeColorMapJson" type="application/json">{{ size_color_map|safe }}</script>
+<script>
+    const sizeColorMap = JSON.parse(document.getElementById('sizeColorMapJson').textContent);
+    const sizeInputs = document.querySelectorAll('.size-input');
+    const colorInputs = document.querySelectorAll('.color-input');
+    const stockMessage = document.getElementById('stockMessage');
+    const addToCartBtn = document.querySelector('.btn-success');
+    const buyNowBtn = document.querySelector('.btn-warning');
+
+    function getAvailableColors(size) {
+        return sizeColorMap.filter(e => e.size === size).map(e => e.color);
+    }
+
+    function getAvailableSizes(color) {
+        return sizeColorMap.filter(e => e.color === color).map(e => e.size);
+    }
+
+    function updateColorAvailability(selectedSize) {
+        if (colorInputs.length === 0) return; // No colors exist
+        const availableColors = getAvailableColors(selectedSize);
+        colorInputs.forEach(input => {
+            const label = document.querySelector(`label[for="${input.id}"]`);
+            label.classList.toggle('text-decoration-line-through', !availableColors.includes(input.value));
+        });
+    }
+
+    function updateSizeAvailability(selectedColor) {
+        if (sizeInputs.length === 0) return; // No sizes exist
+        const availableSizes = getAvailableSizes(selectedColor);
+        sizeInputs.forEach(input => {
+            const label = document.querySelector(`label[for="${input.id}"]`);
+            label.classList.toggle('text-decoration-line-through', !availableSizes.includes(input.value));
+        });
+    }
+
+    function checkStockAndShowMessage() {
+        const selectedSize = document.querySelector('input[name="size"]:checked')?.value;
+        const selectedColor = document.querySelector('input[name="color"]:checked')?.value;
+        let match;
+
+        if (selectedSize && selectedColor) {
+            match = sizeColorMap.find(e => e.size === selectedSize && e.color === selectedColor);
+        } else if (selectedSize) {
+            match = sizeColorMap.find(e => e.size === selectedSize);
+        } else if (selectedColor) {
+            match = sizeColorMap.find(e => e.color === selectedColor);
+        }
+
+        if (match) {
+            stockMessage.innerText = "";
+            fetchSpecification(); // also updates availability from server
+        } else {
+            stockMessage.innerText = "Out of stock for selected combination.";
+            $('#availability').text('');
+            $('#old_price, #current_price, #discount').text('');
+            disablePurchaseButtons(true);
+        }
+    }
+
+    function disablePurchaseButtons(disable) {
+        addToCartBtn.disabled = disable;
+        buyNowBtn.disabled = disable;
+    }
+
+    function fetchSpecification() {
+        let size = $('input[name="size"]:checked').val();
+        let color = $('input[name="color"]:checked').val();
+        let product_id = '{{ product.id }}';
+
+        $.ajax({
+            url: "{% url 'dashboard:get_specification_data' %}",
+            data: { product_id, size, color },
+            success: function(response) {
+                if (response.success) {
+                    $('#old_price').text('₹' + response.old_price);
+                    $('#current_price').text('₹' + response.current_price);
+                    $('#discount').text(response.discount + '% off');
+                    $('#availability').text('Available: ' + response.available_product);
+                    disablePurchaseButtons(response.available_product <= 0);
+                    $('#stockMessage').text(response.available_product > 0 ? '' : 'Out of stock');
+                    
+                    let highlights = '';
+                    response.highlights.forEach(function(item) {
+                        highlights += `<li><strong>${item.highlight_key}</strong>: ${item.highlight_des}</li>`;
+                    });
+                    $('#highlight_list').html(highlights);
+                } else {
+                    $('#old_price, #current_price, #discount, #availability').text('');
+                    $('#highlight_list').empty();
+                    $('#stockMessage').text("Out of stock");
+                    disablePurchaseButtons(true);
+                }
+            }
+        });
+    }
+
+    function autoSelectFirstAvailable() {
+        if (sizeInputs.length > 0) {
+            sizeInputs[0].checked = true;
+            updateColorAvailability(sizeInputs[0].value);
+        }
+        if (colorInputs.length > 0) {
+            colorInputs[0].checked = true;
+            updateSizeAvailability(colorInputs[0].value);
+        }
+        checkStockAndShowMessage();
+    }
+
+    sizeInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            updateColorAvailability(input.value);
+            checkStockAndShowMessage();
+        });
+    });
+
+    colorInputs.forEach(input => {
+        input.addEventListener('change', () => {
+            updateSizeAvailability(input.value);
+            checkStockAndShowMessage();
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', autoSelectFirstAvailable);
+</script>
+
+<script>
+    function toggleRatings() {
+        const allRatings = document.getElementById("all-ratings");
+        const latestRatings = document.getElementById("latest-ratings");
+        const btn = document.getElementById("toggle-ratings-btn");
+
+        if (allRatings.style.display === "none") {
+            allRatings.style.display = "block";
+            latestRatings.style.display = "none";
+            btn.innerText = "Show Less";
+        } else {
+            allRatings.style.display = "none";
+            latestRatings.style.display = "block";
+            btn.innerText = "See More";
+        }
+    }
+</script>
+<script>
+    function changeQuantity(delta) {
+        let input = document.getElementById('quantityInput');
+        let current = parseInt(input.value) || 1;
+        current = Math.max(1, current + delta);
+        input.value = current;
+    }
+
+    function showAlert(message, type = "success") {
+        let alertId = "alert-" + Date.now(); // unique ID
+        let alertHTML = `
+            <div id="${alertId}" class="alert alert-${type} alert-dismissible fade show shadow" role="alert" style="min-width: 250px;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        $("#alert-container").append(alertHTML);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            $("#" + alertId).alert('close');
+        }, 3000);
+    }
+
+
+    function addToWishlist(productId) {
+        $.ajax({
+            url: "{% url 'user_side:add_to_wishlist_user_side' %}",  // adjust this name
+            method: "POST",
+            data: {
+                'product_id': productId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert(response.message, "success");
+                    setTimeout(() => location.reload(), 1000); // small delay before refresh
+                } else {
+                    showAlert(response.message || "Something went wrong.", "danger");
+                }
+            },
+            error: function() {
+                showAlert("An error occurred.", "danger");
+            }
+        });
+    }
+
+    function addToCart(productId) {
+        const qty = document.getElementById('quantityInput').value;
+        const size = $('input[name="size"]:checked').val();
+        const color = $('input[name="color"]:checked').val();
+
+        $.ajax({
+            url: "{% url 'user_side:add_to_cart_user_side' %}",  // adjust this name
+            method: "POST",
+            data: {
+                'product_id': productId,
+                'quantity': qty,
+                'size': size,
+                'color': color,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showAlert("Product added to cart!", "success");
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(response.message || "Error adding to cart.", "danger");
+                }
+            },
+            error: function() {
+                showAlert("An error occurred while adding to cart.", "danger");
+            }
+        });
+    }
+
+    function buyNow(productId) {
+        const qty = document.getElementById('quantityInput').value;
+        const size = $('input[name="size"]:checked').val();
+        const color = $('input[name="color"]:checked').val();
+
+        // Redirect with query parameters
+        const url = `{% url 'user_side:buy_now_user_side' %}?product_id=${productId}&quantity=${qty}&size=${size}&color=${color}`;
+        window.location.href = url;
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

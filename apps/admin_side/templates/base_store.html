@@ -1,0 +1,132 @@
+{% load static %}
+
+{% block html %}
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+{% block head %}
+   <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Pickleit Admin</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/animation.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/asColorPicker.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/fullcalendar.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/calendar.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/dataTables.bootstrap4.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/responsive.bootstrap4.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/fontawesome-all.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/jquery.gritter.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/jquery.minicolors.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/jquery.steps.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/magnific-popup.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/materialdesignicons.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/multicheck.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/perfect-scrollbar.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/quill.core.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/quill.snow.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/select2.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/steps.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/themify-icons.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/toastr.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/weather-icons.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/weather-icons.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/float-chart.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/style.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/style/my_custom_style.css' %}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    {% block extra_css %}
+    
+    {% endblock extra_css %}
+</head>
+{% endblock head %}
+   {% block body %}
+    <body>
+    <div class="preloader">
+        <div class="lds-ripple">
+            <div class="lds-pos"></div>
+            <div class="lds-pos"></div>
+        </div>
+    </div>
+    <div id="main-wrapper">
+        {% include 'dashboard/includes/header_store.html' %}
+        {% include 'dashboard/includes/sidebar_store.html' %}
+        <div class="page-wrapper">
+            <div class="container-fluid">
+                {% block content %}{% endblock content %}
+            </div>
+            {% include 'dashboard/includes/footer.html' %}
+        </div>
+    </div>
+    {% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+        <script src="{% static 'js/jquery.min.js' %}"></script>
+        <script src="{% static 'js/popper.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/perfect-scrollbar.jquery.min.js' %}"></script>
+        <script src="{% static 'js/sparkline.js' %}"></script>
+        <script src="{% static 'js/waves.js' %}"></script>
+        <script src="{% static 'js/sidebarmenu.js' %}"></script>
+        <script src="{% static 'js/custom.min.js' %}"></script>
+        <script src="{% static 'js/excanvas.js' %}"></script>
+        <script src="{% static 'js/jquery.flot.js' %}"></script>
+        <script src="{% static 'js/jquery.flot.pie.js' %}"></script>
+        <script src="{% static 'js/jquery.flot.time.js' %}"></script>
+        <script src="{% static 'js/jquery.flot.time.js' %}"></script>
+        <script src="{% static 'js/jquery.flot.stack.js' %}"></script>
+        <script src="{% static 'js/jquery.flot.crosshair.js' %}"></script>
+        <script src="{% static 'js/jquery.flot.tooltip.min.js' %}"></script>
+        <script src="{% static 'js/moment.min.js' %}"></script>
+        <script src="{% static 'js/chart-page-init.js' %}"></script>
+        <script src="{% static 'js/app-style-switcher.js' %}"></script>
+        <script src="{% static 'js/bootstrap-datepicker.min.js' %}"></script>
+        <script src="{% static 'js/datatable-checkbox-init.js' %}"></script>
+        <script src="{% static 'js/datatables.min.js' %}"></script>
+        <script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+        <script src="{% static 'js/dataTables.bootstrap4.min.js' %}"></script>
+        <script src="{% static 'js/dataTables.responsive.min.js' %}"></script>
+        <script src="{% static 'js/responsive.bootstrap4.min.js' %}"></script>
+        <script src="{% static 'js/jquery.charts-sparkline.js' %}"></script>
+        <script src="{% static 'js/jquery.magnific-popup.min.js' %}"></script>
+        <script src="{% static 'js/jquery-asColor.min.js' %}"></script>
+        <script src="{% static 'js/jquery-asGradient.js' %}"></script>
+        <script src="{% static 'js/jquery-asColorPicker.min.js' %}"></script>
+        <script src="{% static 'js/jquery.minicolors.min.js' %}"></script>
+        <script src="{% static 'js/jquery.multicheck.js' %}"></script>
+        <script src="{% static 'js/jquery.validate.min.js' %}"></script>
+        <script src="{% static 'js/toastr.min.js' %}"></script>
+        <script src="{% static 'js/select2.full.min.js' %}"></script>
+        <script src="{% static 'js/select2.min.js' %}"></script>
+        <script src="{% static 'js/jquery.inputmask.bundle.min.js' %}"></script>
+        <script src="{% static 'js/quill.min.js' %}"></script>
+        <script src="{% static 'js/mask.init.js' %}"></script>
+        <script src="{% static 'js/meg.init.js' %}"></script>
+        <script src="{% static 'js/cal-init.js' %}"></script>
+        <script src="{% static 'constant/strings.js' %}"></script>
+        <script src="{% static 'constant/validator.js' %}"></script>
+
+        <script>
+            $(document).ready(function () {
+                $('#example').DataTable();
+            });
+        </script>
+        <script>
+            $(document).ready(function () {
+                $('#zero_config').DataTable();
+            });
+        </script>
+
+    {% block extra_script %}{% endblock extra_script %}
+
+    
+    {% endblock script %}
+
+    </body>
+   {% endblock body %}
+
+
+{% endblock html %}

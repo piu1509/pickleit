@@ -1,0 +1,63 @@
+{% if not r_group %}
+    <div class="card text-center">
+        <div class="card-header text-center d-flex justify-content-between align-items-center gap-2 flex-wrap">
+            <h2 class="h5">All Joined Teams</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for team in event.registered_team.all %}
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                        <div class="card join-team-block team-card h-100 border-0 shadow-sm text-center p-2 m-0">
+                            {% if team.team_image %}
+                                <img src="{{ team.team_image.url }}" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                            {% else %}
+                                <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                            {% endif %}
+                            <h6 class="card-title mb-0">{{ team.name }}</h6>
+                        </div>
+                    </div>
+                {% empty %}
+                    {% include 'base/not_found.html' %}
+                {% endfor %}
+            </div>
+        </div>
+        
+    </div>
+{% else %}
+    <div class="card text-center mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+        <h2 class="h5 mb-0">Group Of Teams</h2>
+    </div>
+    <div class="card-body">
+
+        {% for court in r_group %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Court {{ forloop.counter }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if court.all_teams.all %}
+                        <div class="row g-3 justify-content-center">
+                            {% for team in court.all_teams.all %}
+                                <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                                    <div class="card team-card h-100 border-0 shadow-sm text-center p-2">
+                                        {% if team.team_image %}
+                                            <img src="{{ team.team_image.url }}" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                                        {% else %}
+                                            <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                                        {% endif %}
+                                        <h6 class="card-title mb-0">{{ team.name }}</h6>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {% include 'base/not_found.html' %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endif %}

@@ -1,0 +1,59 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% block style %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="player-profile">
+    <div class="d-flex justify-content-end mb-2">
+        <a href="{% url 'user_side:user_list' %}" class="btn btn-success text-white">
+             Back To List
+        </a>
+    </div>
+    <div class="pp-top" style="background: url('https://png.pngtree.com/background/20250514/original/pngtree-abstract-blue-network-picture-image_15918155.jpg') center center no-repeat;">
+        <div class="pp-btns d-flex align-items-center gap-3">
+           
+           <form action="{% url 'user_side:follow_player' user.id %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-user-plus"></i> 
+                    {% if is_follow %} Unfollow {% else %} Follow {% endif %}
+                </button>
+            </form>
+            <a href="#" class="btn btn-info text-white" title='Under development'><i class="fa-solid fa-comment"></i> Message</a>
+        </div>
+        <div class="pp-content">
+
+            <div class="pp-img">
+                <img src="{% if user.image %}{{ user.image.url }}{% else %}https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQADjfoADAlJPrsl_hiiOMeE-FBor-i6hEAVg&s{% endif %}" alt="Profile Image">
+            </div>
+            <h4>{{user.first_name}} {{user.last_name}}</h4>
+            <p>Address: {% if user.permanent_address %} {{user.permanent_address }} {% else %}Not defined {% endif %}</p>
+            <p>Rank: {{user.rank}}</p>
+            <p>Bio: {% if user.bio %}{{user.bio}} {% else %} Not defined {% endif %}</p>
+        </div>
+    </div>
+    <div class="pop-btm">
+        <div class="">
+            <h4>{{total_posts}}</h4>
+            <p>Posts</p>
+        </div>
+        <div class="">
+            <h4>{{followers}}</h4>
+            <p>Followers</p>
+        </div>
+        <div class="">
+            <h4>{{followings}}</h4>
+            <p>Following</p>
+        </div>
+    </div>
+    {% comment %} <div class="pp-feed">
+        <h3>My Feed</h3>
+        <p>No Feed Here</p>
+    </div> {% endcomment %}
+</div>
+{% include 'component/player_match_history.html' %}
+{% include 'component/player_feed_list.html' %}
+{% endblock %}

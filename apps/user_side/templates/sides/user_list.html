@@ -1,0 +1,225 @@
+{% extends 'base/base_user.html' %}
+{% load urls_tags %}
+
+{% block style %}
+<style>
+    /* Search Container */
+    .search-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; animation: fadeIn 0.6s ease-out; }
+    .search-container .form-control, .search-container .form-select { border: 1px solid #d1d9e6; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; transition: all 0.3s ease; flex: 1; min-width: 120px; }
+    .search-container .form-control:focus, .search-container .form-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); outline: none; }
+    .search-container .btn-primary { background-color: #023047; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-weight: 600; font-size: 0.9rem; transition: transform 0.2s ease, background-color 0.3s ease; }
+    .search-container .btn-primary:hover { background-color: #219ebc; transform: translateY(-2px); }
+
+    /* User Card */
+    .user-card { background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease, box-shadow 0.3s ease; width: 100%; height: auto; animation: cardFadeIn 0.5s ease-out forwards; animation-delay: calc(var(--order) * 0.1s); opacity: 0; }
+    .user-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12); }
+    .user-img { width: 60px; height: 60px; object-fit: cover; border-radius: 50%; border: 2px solid #e5e7eb; transition: transform 0.3s ease; font-size: 11px; text-align: center; display: flex; align-items: center; justify-content: center; line-height: 14px; }
+    .user-card:hover .user-img { transform: scale(1.1); }
+    .card-text small { font-size: 0.85rem; color: #6b7280; }
+
+    .badge.bg-primary { background-color: #023047 !important; font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 6px; }
+
+    /* Pagination */
+    .pagination-container { margin-top: 2rem; text-align: center; }
+    .pagination .page-link { border: none; color: #023047; background: transparent; font-size: 0.9rem; padding: 0.5rem 1rem; margin: 0 0.25rem; border-radius: 6px; transition: background-color 0.3s ease, color 0.3s ease; }
+    .pagination .page-link:hover { background-color: #f0f4f8; color: #219ebc; }
+    .pagination .page-item.active .page-link { background-color: #219ebc; color: #ffffff; }
+    .pagination .page-item.disabled .page-link { color: #d1d9e6; }
+
+    /* Animations */
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes cardFadeIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 576px) {
+        .search-container { flex-direction: column; align-items: stretch; width: 100%; }
+        .search-container .form-control, .search-container .form-select, .search-container .btn { width: 100%; margin-bottom: 0.5rem; }
+        .user-card { max-width: 100%; }
+        .card-body { padding: 0.75rem; }
+        .user-img { width: 50px; height: 50px; }
+        .card-title { font-size: 1rem; }
+        .card-text small { font-size: 0.8rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h1 class="h3 mb-3">User List</h1>
+
+        <!-- Search and Filter Section -->
+        <form action="{% url 'user_side:user_list' %}" method="GET" class="search-container mb-4">
+            <input type="text" id="keywordSearch" name="keyword" class="form-control" placeholder="Search by name or rank..." value="{{ keyword }}">
+            <input type="text" id="locationSearch" name="location" class="form-control" placeholder="Search by location..." value="{{ location }}">
+            <input type="hidden" id="latitude" name="latitude" value="{{ latitude }}">
+            <input type="hidden" id="longitude" name="longitude" value="{{ longitude }}">
+            <select id="radiusFilter" name="radius" class="form-select">
+                <option value="" {% if not radius %}selected{% endif %}>Select Radius</option>
+                <option value="10" {% if radius == '10' %}selected{% endif %}>10 km</option>
+                <option value="50" {% if radius == '50' %}selected{% endif %}>50 km</option>
+                <option value="100" {% if radius == '100' %}selected{% endif %}>100 km</option>
+            </select>
+            <select id="genderFilter" name="gender" class="form-select">
+                <option value="" {% if not gender %}selected{% endif %}>All Genders</option>
+                <option value="Men" {% if gender == 'Men' %}selected{% endif %}>Men</option>
+                <option value="Women" {% if gender == 'Women' %}selected{% endif %}>Women</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+
+    <!-- User List -->
+    <div class="row" id="userList">
+        {% for item in user_data %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4" style="--order: {{ forloop.counter0 }};" style="cursor: pointer;" onclick="window.location='{% url 'user_side:player_profile' item.user.id %}'">
+            <div class="card user-card m-0">
+                <div class="card-body d-flex align-items-center gap-3">
+                    {% if item.user.image %}
+                        {% if item.user.image == "null" %}
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQADjfoADAlJPrsl_hiiOMeE-FBor-i6hEAVg&s" alt="{{ item.user.get_full_name }}" class="user-img">
+                        {% else %}
+                            <img src="{{ item.user.image.url }}" alt="{{ item.user.get_full_name }}" class="user-img">
+                        {% endif %}
+                        
+                    {% else %}
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQADjfoADAlJPrsl_hiiOMeE-FBor-i6hEAVg&s" alt="{{ item.user.get_full_name }}" class="user-img">
+                    {% endif %}
+                    <div>
+                        <h5 class="card-title m-0">{{ item.user.get_full_name }}</h5>
+                        <p class="card-text">
+                            <small>
+                                {% if item.user.city and item.user.country %}
+                                    {{ item.user.city }}, {{ item.user.country }}
+                                {% elif item.user.city %}
+                                    {{ item.user.city }}
+                                {% elif item.user.country %}
+                                    {{ item.user.country }}
+                                {% else %}
+                                    Unknown Location
+                                {% endif %}
+                                {% if item.distance is not None %}
+                                    ({{ item.distance }} km)
+                                {% endif %}
+                            </small>
+                        </p>
+                        <p class="card-text"><small class="badge bg-primary text-white">{{ item.user.rank }}</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center text-muted">No users found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if user_data.has_other_pages %}
+    <nav aria-label="User list pagination" class="pagination-container">
+        <ul class="pagination justify-content-center">
+            {% if user_data.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% url_replace page=user_data.previous_page_number %}" aria-label="Previous">
+                        <span aria-hidden="true">«</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">«</span>
+                </li>
+            {% endif %}
+
+            {% for num in user_data.paginator.page_range %}
+                {% if user_data.number == num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > user_data.number|add:-3 and num < user_data.number|add:3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% url_replace page=num %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if user_data.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% url_replace page=user_data.next_page_number %}" aria-label="Next">
+                        <span aria-hidden="true">»</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">»</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{API_KEY}}&libraries=places"></script>
+<script>
+    function initAutocomplete() {
+        const locationInput = document.getElementById('locationSearch');
+        const latitudeInput = document.getElementById('latitude');
+        const longitudeInput = document.getElementById('longitude');
+        
+        const autocomplete = new google.maps.places.Autocomplete(locationInput, {
+            types: ['(cities)'],
+            fields: ['formatted_address', 'geometry']
+        });
+
+        autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                latitudeInput.value = place.geometry.location.lat();
+                longitudeInput.value = place.geometry.location.lng();
+            } else {
+                latitudeInput.value = '';
+                longitudeInput.value = '';
+            }
+        });
+
+        locationInput.addEventListener('input', () => {
+            if (!locationInput.value) {
+                latitudeInput.value = '';
+                longitudeInput.value = '';
+            }
+        });
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        initAutocomplete();
+
+        // Add touch animation for mobile
+        const cards = document.querySelectorAll('.user-card');
+        cards.forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.transition = 'transform 0.1s ease';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+                card.style.transition = 'transform 0.3s ease';
+            });
+        });
+    });
+</script>
+{% endblock %}

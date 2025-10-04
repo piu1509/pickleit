@@ -1,0 +1,402 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% block style %}
+<style>
+    body {
+        background-color: #f5f5f5;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .post-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .post-header img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .post-actions {
+        display: flex;
+        gap: 20px;
+        margin-top: 15px;
+    }
+    .post-actions .btn {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    .post-content img {
+        max-height: 400px;
+        object-fit: cover;
+        width: 100%;
+        border-radius: 8px;
+    }
+    .comment-section {
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .comment-section h5 {
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    .comment {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: background 0.2s, transform 0.2s;
+    }
+    .comment:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+    .comment img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    .comment-content {
+        flex: 1;
+    }
+    .comment-content .comment-author {
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    .comment-content .comment-text {
+        margin-bottom: 5px;
+        color: #333;
+    }
+    .comment-content .comment-time {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .comment-form {
+        margin-top: 20px;
+    }
+    .comment-form textarea {
+        resize: vertical;
+    }
+    .no-comments {
+        color: #6c757d;
+        font-style: italic;
+    }
+    /* Ensure the Copied! badge aligns nicely and is visible on all screen sizes */
+    #copy-message {
+        z-index: 1050; /* Ensure it appears above modal */
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        border-radius: 0.25rem;
+        line-height: 1;
+    }
+    /* Responsive adjustments for mobile screens */
+    @media (max-width: 576px) {
+        #copy-message {
+            font-size: 0.75rem; /* Smaller font for mobile */
+            padding: 0.4rem 0.6rem;
+            position: static; /* Prevent clipping on small screens */
+            margin-left: 0.5rem;
+        }
+        .modal-body .d-flex.flex-column {
+            gap: 1rem; /* Reduce gap for compact layout */
+        }
+        .modal-dialog {
+            margin: 0.5rem; /* Ensure modal fits comfortably */
+        }
+        .container {
+            padding: 0 10px;
+        }
+        .post-card, .comment-section {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .post-header img {
+            width: 40px;
+            height: 40px;
+        }
+        .post-header h5 {
+            font-size: 1.1rem;
+        }
+        .post-content img {
+            max-height: 300px;
+        }
+        .post-actions .btn {
+            font-size: 0.8rem;
+        }
+        .comment-section h5 {
+            font-size: 1.2rem;
+        }
+        .comment {
+            padding: 10px;
+            gap: 8px;
+        }
+        .comment img {
+            width: 32px;
+            height: 32px;
+        }
+        .comment-content .comment-author {
+            font-size: 0.9rem;
+        }
+        .comment-content .comment-text {
+            font-size: 0.85rem;
+        }
+        .comment-content .comment-time {
+            font-size: 0.75rem;
+        }
+        .comment-form textarea {
+            font-size: 0.85rem;
+            rows: 2;
+        }
+        .comment-form button {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="">
+    <div class="row">
+        <!-- Post Column -->
+        <div class="col-md-6">
+            <div class="post-card post-details-card" id="post-{{ post.id }}">
+                <div class="post-header">
+                    <img src="{% if post.user.profile.image %}{{ post.user.profile.image.url }}{% else %}https://randomuser.me/api/portraits/men/1.jpg{% endif %}" alt="User Avatar">
+                    <div>
+                        <h5 class="mb-0">{{ post.user.username }}</h5>
+                        <small class="text-muted">{{ post.created_at|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+                <div class="post-content mt-3" id="post-content-{{ post.id }}">
+                    <p>{{ post.text }}</p>
+                    {% for file in post.post_file.all %}
+                        {% if file.file %}
+                            <img src="{{ file.file.url }}" alt="Post Image" class="d-block w-100 rounded club-image">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="post-actions">
+                    <button class="btn btn-link like-btn" data-post-id="{{ post.id }}" type="button">
+                        {% if user in post.post_like.all %}
+                            <i class="fa-solid fa-heart text-danger"></i>
+                        {% else %}
+                            <i class="bi bi-heart"></i>
+                        {% endif %}
+                        <span class="like-count">({{ post.number_like }})</span>
+                    </button>
+                    <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}" aria-expanded="false" aria-controls="comments-{{ post.id }}">
+                        <i class="bi bi-chat"></i> ({{ post.number_comment }})
+                    </button>
+                    <button class="btn btn-link share-btn" data-post-url="{% url 'user_side:view_post' post.id %}" data-post-id="{{ post.id }}">
+                        <i class="bi bi-share"></i>
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+        <!-- Comment Column -->
+        <div class="col-md-6">
+            <div class="comment-section post-details-comment">
+                <h5>Comments</h5>
+                {% for comment in comments %}
+                <div class="comment">
+                    <img src="{% if comment.user.image %}{{ comment.user.image.url }}{% else %}https://randomuser.me/api/portraits/men/{{ forloop.counter }}.jpg{% endif %}" alt="Commenter Avatar">
+                    <div class="comment-content">
+                        <div class="comment-author">{{ comment.user.first_name }} {{ comment.user.last_name }}</div>
+                        <div class="comment-text">{{ comment.comment_text }}</div>
+                        <div class="comment-time">{{ comment.created_at|date:"F d, Y H:i" }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="no-comments">No comments yet.</p>
+                {% endfor %}
+                <form class="comment-form" action="{% url 'user_side:add_comment' post.id %}" method="POST">
+                    {% csrf_token %}
+                    <textarea class="form-control mb-2" rows="3" name="comment_text" placeholder="Add a comment..." required></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalLabel">Share Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex flex-column gap-3">
+                    <a id="whatsapp-share" href="#" class="btn btn-outline-success d-flex align-items-center gap-2" target="_blank">
+                        <i class="fab fa-whatsapp fa-lg"></i> Share on WhatsApp
+                    </a>
+                    <a id="facebook-share" href="#" class="btn btn-outline-primary d-flex align-items-center gap-2" target="_blank">
+                        <i class="fab fa-facebook fa-lg"></i> Share on Facebook
+                    </a>
+                    <a id="twitter-share" href="#" class="btn btn-outline-info d-flex align-items-center gap-2" target="_blank">
+                        <i class="fab fa-x-twitter fa-lg"></i> Share on X
+                    </a>
+                    <div class="position-relative d-flex align-items-center">
+                        <button id="copy-link" class="btn btn-outline-secondary d-flex align-items-center gap-2 w-100">
+                            <i class="bi bi-clipboard fa-lg"></i> Copy Link
+                        </button>
+                        <span id="copy-message" class="badge bg-success ms-2" style="display: none; white-space: nowrap;">
+                            Copied!
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Like functionality
+        const likeButtons = document.querySelectorAll('.like-btn');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.getAttribute('data-post-id');
+                const heartIcon = this.querySelector('i');
+                const likeCountSpan = this.querySelector('.like-count');
+
+                fetch(`/user_side/like_post/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.log('Error: ' + data.error);
+                        return;
+                    }
+
+                    // Toggle heart icon
+                    if (data.is_liked) {
+                        heartIcon.classList.remove('bi', 'bi-heart');
+                        heartIcon.classList.add('fa-solid', 'fa-heart', 'text-danger');
+                    } else {
+                        heartIcon.classList.remove('fa-solid', 'fa-heart', 'text-danger');
+                        heartIcon.classList.add('bi', 'bi-heart');
+                    }
+
+                    // Update like count
+                    likeCountSpan.textContent = `(${data.like_count})`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    console.log('An error occurred while processing your request.');
+                });
+            });
+        });
+
+
+        // Share functionality
+        const shareButtons = document.querySelectorAll('.share-btn');
+        shareButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const postUrl = window.location.origin + this.getAttribute('data-post-url');
+                const postId = this.getAttribute('data-post-id');
+                const postText = document.querySelector(`#post-content-${postId} p`).textContent;
+                const postImage = document.querySelector(`#feedCarousel${postId} .carousel-item.active img`);
+                const imageUrl = postImage ? window.location.origin + postImage.getAttribute('src') : '';
+                // Try Web Share API
+                if (navigator.share) {
+                    const shareData = {
+                        title: 'Check out this post!',
+                        text: postText,
+                        url: postUrl
+                    };
+                    navigator.share(shareData)
+                        .then(() => console.log('Share successful'))
+                        .catch(err => {
+                            console.error('Share failed:', err);
+                            showShareModal(postUrl, postText, imageUrl);
+                        });
+                } else {
+                    // Fallback to modal
+                    showShareModal(postUrl, postText, imageUrl);
+                }
+            });
+        });
+
+        function showShareModal(url, text, imageUrl) {
+            const encodedUrl = encodeURIComponent(url);
+            const encodedText = encodeURIComponent(text);
+            const encodedImageUrl = imageUrl ? encodeURIComponent(imageUrl) : '';
+
+            // Update Open Graph meta tags dynamically for Facebook and other platforms
+            const head = document.head;
+            const existingOgTags = document.querySelectorAll('meta[property^="og:"]');
+            existingOgTags.forEach(tag => tag.remove());
+
+            const ogTags = [
+                { property: 'og:title', content: 'Check out this post!' },
+                { property: 'og:description', content: text },
+                { property: 'og:url', content: url },
+                { property: 'og:type', content: 'article' }
+            ];
+            if (imageUrl) {
+                ogTags.push({ property: 'og:image', content: imageUrl });
+            }
+
+            ogTags.forEach(tag => {
+                const meta = document.createElement('meta');
+                meta.setAttribute('property', tag.property);
+                meta.setAttribute('content', tag.content);
+                head.appendChild(meta);
+            });
+
+            // Update modal links
+            document.getElementById('whatsapp-share').href = `https://wa.me/?text=${encodedText}%20${encodedUrl}${encodedImageUrl ? '%20' + encodedImageUrl : ''}`;
+            document.getElementById('facebook-share').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+            document.getElementById('twitter-share').href = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}${encodedImageUrl ? '&media=' + encodedImageUrl : ''}`;
+            document.getElementById('copy-link').onclick = function() {
+                const shareText = imageUrl ? `${text}\n${url}\n${imageUrl}` : `${text}\n${url}`;
+                navigator.clipboard.writeText(shareText)
+                    .then(() => {
+                        const copyMessage = document.getElementById('copy-message');
+                        copyMessage.style.display = 'block';
+                        setTimeout(() => {
+                            copyMessage.style.display = 'none';
+                            // Close the modal
+                            const shareModal = bootstrap.Modal.getInstance(document.getElementById('shareModal'));
+                            shareModal.hide();
+                        }, 1500); // Reduced to 1.5 seconds for quicker feedback
+                    })
+                    .catch(err => console.error('Failed to copy:', err));
+            };
+
+            // Show the modal
+            const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            shareModal.show();
+        }
+    });
+</script>
+{% endblock %}

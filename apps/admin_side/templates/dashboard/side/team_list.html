@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Team
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb p-4">
+        <form method="GET" action="">
+            <div class="row d-flex align-items-center justify-content-between">    
+                <div class="d-flex align-items-center m-2">          
+                    <h4 class="page-title">Team List</h4>
+                    <select class="form-control" name="page_length" style="width: 120px;" onchange="this.form.submit()">
+                        <option value="20" {% if page_length == "20" %}selected{% endif %}>20</option>
+                        <option value="60" {% if page_length == "60" %}selected{% endif %}>60</option>
+                        <option value="100" {% if page_length == "100" %}selected{% endif %}>100</option>
+                        <option value="200" {% if page_length == "200" %}selected{% endif %}>200</option>
+                    </select>
+
+                </div>  
+            <div class="form-opt d-flex align-items-center flex-wrap gap-3">
+                <select id="team_type" name="team_type" class="form-control" style="width: 180px;">
+                    <option value="" hidden>Select team type</option>
+                    <option value="all" {% if team_type == "all" %}selected{% endif %}>All</option>
+                    <option value="Men" {% if team_type == "Men" %}selected{% endif %}>Men</option>
+                    <option value="Women" {% if team_type == "Women" %}selected{% endif %}>Women</option>
+                    <option value="Co-ed" {% if team_type == "Co-ed" %}selected{% endif %}>Co-ed</option>
+                    <option value="Open-team" {% if team_type == "Open-team" %}selected{% endif %}>Open-team</option>
+                </select>
+                <select id="team_person" name="team_person" class="form-control" style="width: 180px;">
+                    <option value="" hidden>Select team person</option>
+                    <option value="all" {% if team_person == "all" %}selected{% endif %}>All</option>
+                    <option value="One Person Team" {% if team_person == "One Person Team" %}selected{% endif %}>One Person team</option>
+                    <option value="Two Person Team" {% if team_person == "Two Person Team" %}selected{% endif %}>Two Person team</option>
+                    
+                </select>
+                <input type="text" id="location_input" name="location" class="form-control" placeholder="Search By Location..." style="width: 250px;" value="{{ request.GET.location }}"> 
+                <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfBo6-cZlOpKGrD1ZYwISIGjYvhH_wPmk&libraries=places"></script>
+                <script>
+                    function initialize() {
+                        var input = document.getElementById('location_input');
+                        var autocomplete = new google.maps.places.Autocomplete(input);
+                    }
+
+                    google.maps.event.addDomListener(window, 'load', initialize);
+                </script>
+
+                <div class="search-tab d-flex align-items-center">
+                
+                    <input type="text" name="search_text" class="form-control" placeholder="Search Team..." 
+                        value="{% if search_text %}{{ search_text }}{% endif %}" style="width: 200px;">
+                    <button type="submit" class="btn btn-secondary mr-1"><i class="fas fa-search"></i></button>
+
+                </div>
+                
+                
+                <a href="/admin/create_team_/" class="btn btn-primary font-weight-bold">Add Team</a>
+
+            </div>
+                
+            </div>
+        </form>                      
+    </div>
+
+    <div class="mb-5">                       
+        <div class="row team-list">
+            {% for team in table_data %}
+            <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-4">
+                <a href="{% url 'dashboard:view_team_' team.id %}">
+                    <div class="card border shadow-sm m-0">
+                        <div class="card-image d-flex align-items-center p-3">
+                            {% if team.team_image %}
+                                {% if team.team_image == "null" %}
+                                    <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" class="rounded-circle me-3" width="50" height="50" alt="{{ team.name }}">
+                                {% else %}
+                                    <img src="{{ team.team_image }}" class="rounded-circle me-3" width="50" height="50" alt="{{ team.name }}">
+                                {% endif %}
+                            {% else %}
+                                <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" class="rounded-circle me-3" width="50" height="50" alt="{{ team.name }}">
+                            {% endif %}
+                            <div class="card-body p-0 pl-3">
+                                <h5 class="card-title mb-1">{{ team.name }}</h5>
+                                <p class="card-text font-weight-bold mb-0">Players: <span class="font-weight-normal">{{ team.team_person }} | Team Type: {{ team.team_type }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+                <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'dashboard/not_found.html' %}
+</div>
+            {% endfor %}
+        </div>
+        {% if table_data.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation" class="mb-4">
+                <ul class="pagination justify-content-center">
+                    {% if table_data.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ table_data.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for p in page_range %}
+                        {% if p == "..." %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% else %}
+                            <li class="page-item {% if table_data.number == p %}active{% endif %}">
+                                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if table_data.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ table_data.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ table_data.paginator.num_pages }}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>  
+        {% endif %}          
+    </div>
+
+{% endblock %}
+

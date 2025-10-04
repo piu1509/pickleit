@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Player
+{% endblock %}
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">View User</h4>
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    <!-- Add breadcrumb navigation if needed -->
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="player-profile mb-5">
+    
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <a href="{% url 'dashboard:player_list_' %}" class="btn btn-success text-white"><i class="fa fa-arrow-left"></i></a>
+        <a href="#" class="btn btn-info text-white" title='Under development'><i class="fa fa-comment"></i></a>
+        <a href="{% url 'dashboard:edit_player' user.id %}" class="btn btn-primary text-white"><i class="fa fa-edit"></i></a>
+        <!-- <a href="{% url 'dashboard:delete_player' user.id %}" class="btn btn-danger text-white"><i class="fa fa-trash"></i></a> -->
+        <a href="#" class="btn btn-secondary text-white" onclick="copyProfileLink()" title="Share Profile"><i class="fa fa-share-alt"></i></a>
+
+    </div>
+
+    <div class="pp-top" style="background: url('https://png.pngtree.com/background/20250514/original/pngtree-abstract-blue-network-picture-image_15918155.jpg') center center no-repeat;">
+        <div class="pp-content text-center">
+            <div class="pp-img">
+                <img src="{% if user.image %}{{ user.image.url }}{% else %}https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQADjfoADAlJPrsl_hiiOMeE-FBor-i6hEAVg&s{% endif %}" alt="Profile Image" class="rounded-circle" width="150" height="150">
+            </div>
+            <h4 class="mt-2 text-white font-weight-bold">{{ user.first_name }} {{ user.last_name }}</h4>
+            <p class="text-white font-weight-bold"><strong>Email:</strong> {{ user.email|default:"Not defined" }}</p>
+            <p class="text-white font-weight-bold"><strong>Phone:</strong> {{ user.phone|default:"Not defined" }}</p>
+            <p class="text-white font-weight-bold"><strong>Joined:</strong> {{ user.created_at|default:"Not defined" }}</p>
+            <p class="text-white font-weight-bold"><strong>Permanent Location:</strong> {{ user.permanent_location|default:"Not defined" }}</p>
+            <p class="text-white font-weight-bold"><strong>Bio:</strong> {{ user.bio|default:"Not defined" }}</p>
+        </div>
+    </div>
+
+    <div class="pop-btm text-center d-flex justify-content-around mt-3">
+        <div>
+            <h4>{{ total_posts }}</h4>
+            <p>Posts</p>
+        </div>
+        <div>
+            <h4>{{ followers }}</h4>
+            <p>Followers</p>
+        </div>
+        <div>
+            <h4>{{ followings }}</h4>
+            <p>Following</p>
+        </div>
+    </div>
+    {% include 'dashboard/components/player_wallet.html' %}
+    {% include 'dashboard/components/player_subscription.html' %}
+    {% include 'dashboard/components/player_teams.html' %}
+    {% include 'dashboard/components/player_match_history.html' %}
+    {% include 'dashboard/components/player_feed_list.html' %}
+</div> 
+<script>
+    function copyProfileLink() {
+        const dummy = document.createElement('input');
+        const url = window.location.href;  // Current full URL
+        document.body.appendChild(dummy);
+        dummy.value = url;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        alert("Profile URL copied to clipboard!");
+    }
+</script>  
+{% endblock %}

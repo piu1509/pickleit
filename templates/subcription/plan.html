@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subscription Plans</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="container mx-auto p-6 text-center">
+        <h1 class="text-3xl font-bold mb-8">Choose Your Plan</h1>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for plan in plans %}
+                <div class="bg-white p-6 rounded-2xl shadow-lg" style="text-align: left">
+                    <h2 class="text-xl font-semibold">{{ plan.name }}</h2>
+                    <p class="text-2xl font-bold my-4">{{ plan.price }}</p>
+                    <p class="text-gray-600 mb-4">
+                        {% for feature in plan.features.all %}
+                            {{ feature.name }} <br />
+                        {% endfor %}  
+                    </p>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg" data-bs-toggle="modal" name="Subscription" value="{{plan.id}}">
+                            Subscribe
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

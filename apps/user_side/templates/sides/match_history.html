@@ -1,0 +1,116 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="h3 mb-3">Match History</h1>
+
+<!-- Stats Section -->
+<div class="row mb-3">
+    <div class="col-lg-4 col-md-4 col-sm-12">
+        <div class="card nw-card w-100">
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title text-white">Played Matches</h5>
+                    </div>
+
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="fa-solid fa-gamepad"></i>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="h1 mt-1 mb-3 text-white">{{ total_matches }}</h4> 
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-12">
+        <div class="card nw-card w-100">
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title text-white">Wins</h5>
+                    </div>
+
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="fa-solid fa-ranking-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="h1 mt-1 mb-3 text-white">{{ wins }}</h4> 
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-4 col-sm-12">
+        <div class="card nw-card w-100">
+            <div class="card-body p-0">
+                <div class="row">
+                    <div class="col mt-0">
+                        <h5 class="card-title text-white">Losses</h5>
+                    </div>
+
+                    <div class="col-auto">
+                        <div class="stat text-primary">
+                            <i class="fa-solid fa-heart-crack"></i>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="h1 mt-1 mb-3 text-white">{{ losses }}</h4> 
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<form method="GET" class="d-flex justify-content-end mb-3">
+    <input type="text" class="form-control" placeholder="Search match history..." name="q" value="{{ request.GET.q }}" style="max-width: 300px;">
+    <button type="submit" class="btn btn-primary ms-2">Search</button>
+</form>
+
+<!-- Match List -->
+{% include 'component/match_htstory.html' %}
+
+{% if match_history %}
+    <nav aria-label="Match History Pagination">
+        <ul class="pagination justify-content-center">
+            {% if match_history.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1">&laquo; First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ match_history.previous_page_number }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for num in match_history.paginator.page_range %}
+                {% if match_history.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num == 1 or num == match_history.paginator.num_pages or num|add:"-2" == match_history.number or num|add:"2" == match_history.number %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% elif num == match_history.number|add:"-3" or num == match_history.number|add:"3" %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if match_history.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ match_history.next_page_number }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ match_history.paginator.num_pages }}">Last &raquo;</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+
+
+
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base/base_user_store.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Product
+{% endblock %}
+{% block content %}
+<style>
+ 
+    .checkout-image-wrap {
+        max-width: 150px;
+        margin: 0 auto;
+    }
+    .checkout-image-wrap img {
+        width: 100%;       /* will not exceed wrapper */
+        height: auto;
+        display: block;
+        object-fit: contain;
+    }
+
+    /* smaller on very small screens */
+    @media (max-width: 420px) {
+        .checkout-image-wrap { max-width: 120px; }
+    }
+
+    /* Buttons in the same row and centered */
+    .checkout-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px; /* space between buttons */
+        margin-top: 20px;
+    }
+</style>
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <h3>Checkout Summary</h3>
+
+    <div class="card p-3 mb-3">
+        <div class="row align-items-center">
+            <div class="col-md-4 text-center">
+                <div class="checkout-image-wrap">
+                <img src="{{ image.image.url }}" alt="{{ product.name }}" class="img-fluid">
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h5>{{ product.name }}</h5>
+                <p><strong>Size:</strong> {{ order.size }}</p>
+                <p><strong>Color:</strong> {{ order.color }}</p>
+                <p><strong>Quantity:</strong> {{ order.quantity }}</p>
+                <p><strong>Price per item:</strong> ${{ order.price_per_product }}</p>
+                <p><strong>Total Price:</strong> ${{ order.total_price }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buttons centered -->
+    <div class="checkout-buttons">
+        <form method="POST" action="{% url 'user_side:select_address_buy_now_user_side' %}">
+            {% csrf_token %}
+            <input type="hidden" name="order_id" value="{{ order.id }}">
+            <button type="submit" class="btn btn-primary">Continue</button>
+        </form>
+        <a href="{% url 'user_side:product_view' product.id %}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+{% endblock %}

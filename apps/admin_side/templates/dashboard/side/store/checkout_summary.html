@@ -1,0 +1,51 @@
+{% extends "base_store.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Product
+{% endblock %}
+{% block content %}
+
+<div class="page-breadcrumb">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <h3>Checkout Summary</h3>
+
+    <div class="card p-3 mb-3">
+        <div class="row">
+            <div class="col-md-4">
+                <img src="{{ image.image.url }}" alt="{{ product.name }}" class="img-fluid">
+            </div>
+            <div class="col-md-8">
+                <h5>{{ product.name }}</h5>
+                <p><strong>Size:</strong> {{ order.size }}</p>
+                <p><strong>Color:</strong> {{ order.color }}</p>
+                <p><strong>Quantity:</strong> {{ order.quantity }}</p>
+                <p><strong>Price per item:</strong> ${{ order.price_per_product }}</p>
+                <p><strong>Total Price:</strong> ${{ order.total_price }}</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" action="{% url 'dashboard:select_address_buy_now' %}">
+    {% csrf_token %}
+    <input type="hidden" name="order_id" value="{{ order.id }}">
+    
+    <button type="submit" class="btn btn-primary">Continue</button>
+</form>
+    <a href="{% url 'dashboard:view_product' product.id %}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}

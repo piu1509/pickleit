@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="h3 mb-3">Register teams</h1>
+<div class="card mb-3" style="max-width: auto;">
+    <div class="card-header text-center d-flex justify-content-between align-items-center gap-2 flex-wrap event-view-top">
+        <div class="h5 mb-0">
+            {{ event.name }} || {{ event.team_type }} || {{ event.team_person }}
+        </div>
+        <div>
+            {% if not is_open_team %}
+            <a href="{% url 'dashboard:view_tournament' event.id %}" class="btn btn-primary btn-sm">Back to View</a>
+            {% else %}
+            <a href="{% url 'dashboard:view_open_play' event.id %}" class="btn btn-primary btn-sm">Back to View</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3 p-4 position-relative event-view-block">
+        <div class="event-img-block">
+            <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" class="img-fluid rounded-start" alt="Event Image">
+        </div>
+        <div class="event-content-block">
+            <div class="card-body">
+                <p><strong>Max Join Team:</strong> {{ event.max_number_team }} || 
+                   <strong>Joined Team:</strong> {{ event.registered_team.count }}</p>
+                <p><strong>Event Registration Duration:</strong> 
+                   {{ event.registration_start_date }} - {{ event.registration_end_date }}</p>
+                <p><strong>Event Start Duration:</strong> 
+                   {{ event.leagues_start_date }} - {{ event.leagues_end_date }}</p>
+                <p><strong>Event Organizers:</strong> 
+                   {{ event.created_by.first_name }} {{ event.created_by.last_name }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card text-center">
+        <div class="card-header text-center d-flex justify-content-between align-items-center gap-2 flex-wrap">
+            <h2 class="h5">Your Joined Teams</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for team in user_registered_teams %}
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                        <div class="card join-team-block team-card h-100 border-0 shadow-sm text-center p-2 m-0">
+                            {% if team.team_image %}
+                                <img src="{{ team.team_image.url }}" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                            {% else %}
+                                <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                            {% endif %}
+                            <h6 class="card-title mb-0">{{ team.name }}</h6>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No team registered yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+    </div>
+ 
+<div class="card p-4">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+        <input type="text" id="teamSearch" class="form-control w-75" placeholder="Search teams...">
+        <a href="{% url 'dashboard:create_team_' %}" class="btn btn-success ms-3">Add Team</a>
+    </div>
+    <h6 class="mt-4 mb-3"><strong>Select Teams:</strong></h6>
+    <div class="team-container-wrapper">
+        <div class="team-container" id="teamContainer">
+            {% for team in my_team %}
+    {% if team.id in event.registered_team.all %}
+    <p>{{event.registered_team.all}}</p>
+        <div class="alert alert-warning">
+            {{ team.name }} is already registered in the event.
+        </div>
+    {% else %}
+        <label class="team-card w-100">
+            <div class="d-flex">
+                <!-- Checkbox Section -->
+                <div class="d-flex flex-column justify-content-center align-items-center px-3">
+                    <input type="checkbox" class="team-checkbox" value="{{ team.id }}">
+                </div>
+
+                <!-- Content Section -->
+                <div class="team-content flex-grow-1">
+                    <!-- Team Info Row -->
+                    <div class="team-info d-flex align-items-center gap-3 mb-2">
+                        <!-- Team Image -->
+                        <img src="https://img.freepik.com/premium-vector/avatar-profile-icon-flat-style-male-user-profile-vector-illustration-isolated-background-man-profile-sign-business-concept_157943-38764.jpg?semt=ais_hybrid"
+                            alt="Development Team"
+                            class="team-image"
+                            height="50"
+                            width="50">
+
+                        <!-- Team Name and Info -->
+                        <div>
+                            <h6 class="mb-0">{{ team.name }} || {{ team.team_person }} || {{ team.team_type }}</h6>
+                        </div>
+                    </div>
+
+                    <!-- Player List with Indentation -->
+                    <div class="player-list d-flex flex-wrap gap-3 ps-5">
+                        {% for player in team.players %}
+                            <div class="player-item text-center">
+                                <img src="https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmllfGVufDB8fDB8fHww"
+                                    alt="Player 1"
+                                    height="50"
+                                    width="50"
+                                    class="rounded-circle mb-1">
+                                <span>{{ player.player.first_name }} {{ player.player.last_name }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </label>
+
+    {% endif %}
+{% endfor %}
+
+        </div>
+    </div>
+</div>
+<div class="container d-flex justify-content-end mb-5">
+    <button type="button" class="btn btn-primary" id="openJoinModal" data-bs-toggle="modal" data-bs-target="#joinModal">Join</button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="joinModal" tabindex="-1" aria-labelledby="joinModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="joinModalLabel">Confirm Join</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Selected Team IDs:</strong> <span id="selectedTeamIds"></span></p>
+        <p><strong>Total Fees:</strong> $<span id="totalFees"></span></p>
+        <p><strong>Wallet Balance:</strong> $<span id="walletBalance">{{ balance }}</span></p>
+        <p><strong>Remaining Balance:</strong> $<span id="remainingBalance"></span></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="confirmJoinBtn">Confirm</button>
+        <button type="button" class="btn btn-warning" id="addMoney" style="display: none;">Add Money</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.getElementById("teamSearch").addEventListener("input", function () {
+        let searchValue = this.value.toLowerCase();
+        let teams = document.querySelectorAll(".team-card");
+
+        teams.forEach(function (team) {
+            let teamName = team.querySelector("h6").innerText.toLowerCase();
+            team.style.display = teamName.includes(searchValue) ? "flex" : "none";
+        });
+    });
+
+    document.getElementById("openJoinModal").addEventListener("click", function (event) {
+        let selectedTeams = document.querySelectorAll(".team-checkbox:checked");
+        let alreadyRegisteredTeams = [];
+        
+        selectedTeams.forEach(team => {
+            if (team.dataset.registered === "True") {
+                alreadyRegisteredTeams.push(team.value);
+            }
+        });
+    
+        if (alreadyRegisteredTeams.length > 0) {
+            alert("The following teams are already registered: " + alreadyRegisteredTeams.join(", "));
+            return; // Stop the modal from opening
+        }
+    
+        // Proceed with modal logic if no teams are already registered
+        let teamIdsSpan = document.getElementById("selectedTeamIds");
+        let totalFeesSpan = document.getElementById("totalFees");
+        let walletBalanceSpan = document.getElementById("walletBalance");
+        let remainingBalanceSpan = document.getElementById("remainingBalance");
+        let addMoney = document.getElementById("addMoney");
+        let confirmJoinBtn = document.getElementById("confirmJoinBtn");
+        let teamIds = [];
+        selectedTeams.forEach(team => teamIds.push(team.value));
+    
+        let totalFees = {{ total_fees }} * teamIds.length;
+        let walletBalance = parseFloat(walletBalanceSpan.textContent);
+        let remainingBalance = walletBalance - totalFees;
+    
+        teamIdsSpan.textContent = teamIds.length > 0 ? teamIds.join(", ") : "No team selected";
+        totalFeesSpan.textContent = totalFees.toFixed(2);
+        remainingBalanceSpan.textContent = remainingBalance.toFixed(2);
+    
+        if (remainingBalance < 0) {
+            addMoney.style.display = "inline-block";
+            confirmJoinBtn.style.display = "none";
+        } else {
+            confirmJoinBtn.style.display = "inline-block";
+            addMoney.style.display = "none";
+        }
+    });
+    
+</script>
+<script>
+    document.getElementById("confirmJoinBtn").addEventListener("click", function () {
+        let selectedTeams = document.querySelectorAll(".team-checkbox:checked");
+        let teamIds = [];
+        selectedTeams.forEach(team => teamIds.push(team.value));
+    
+        let totalFees = {{ total_fees }} * teamIds.length;
+        let eventId = {{ event.id }};
+    
+        fetch("{% url 'dashboard:confirm_payment' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+                event_id: eventId,
+                team_id_list: teamIds,
+                total_amount: totalFees
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Teams successfully joined!");
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        });
+    });
+    
+    document.getElementById("addMoney").addEventListener("click", function () {
+        let selectedTeams = document.querySelectorAll(".team-checkbox:checked");
+        let teamIds = [];
+        selectedTeams.forEach(team => teamIds.push(team.value));
+    
+        let totalFees = {{ total_fees }} * teamIds.length;
+        let eventId = {{ event.id }};
+        let walletBalance = parseFloat(document.getElementById("walletBalance").textContent);
+        let remainingAmount = totalFees - walletBalance;
+    
+        // Calculate Stripe Fees
+        let stripeFee = ((remainingAmount + 0.30) / 0.971) - remainingAmount;
+        let totalWithStripeFee = remainingAmount + stripeFee;
+    
+        console.log("Remaining Amount:", remainingAmount);
+        console.log("Stripe Fee:", stripeFee.toFixed(2));
+        console.log("Total to Add:", totalWithStripeFee.toFixed(2));
+    
+        fetch("{% url 'dashboard:initiate_stripe_payment' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({
+                event_id: eventId,
+                team_id_list: teamIds,
+                total_amount: totalWithStripeFee.toFixed(2)  // Send total including Stripe fee
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.payment_url;
+            } else {
+                alert("Error: " + data.message);
+            }
+        });
+    });
+    
+    
+    
+</script>
+{% endblock %}

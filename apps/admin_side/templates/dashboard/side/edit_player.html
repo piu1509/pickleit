@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Edit User
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">Edit User Form</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        {% if message %}
+                        <div id="alertMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <strong>{{message}}</strong>  
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>                         
+                          </div> 
+                          <script>                            
+                            setTimeout(function() {
+                                document.getElementById('alertMessage').style.display = 'none';
+                            }, 5000);
+                        </script>                          
+                          {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid mt-4">
+        <div class="card shadow p-5">
+            <form class="form-horizontal" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="form-group row">
+                        <label for="fname" class="col-sm-3 text-right control-label col-form-label">First Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="fname" name="player_first_name" placeholder="First Name Here" value="{{player.first_name}}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="lname" class="col-sm-3 text-right control-label col-form-label">Last Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="lname" name="player_last_name" placeholder="Last Name Here" value="{{player.last_name}}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="cono1" class="col-sm-3 text-right control-label col-form-label">Contact No</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="cono1" name="player_phone_number" placeholder="Contact Number Here" value="{{player.phone}}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="gender" class="col-sm-3 text-right control-label col-form-label">Gender</label>
+                        <div class="col-sm-9">
+                            <select class="form-control" id="gender" name="player_gender">
+                                <option value="Male" {% if player.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if player.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if player.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="rank" class="col-sm-3 text-right control-label col-form-label">Rank</label>
+                        <div class="col-sm-9">
+                            <input type="number" class="form-control" id="rank" name="player_ranking" value="{{player.rank}}">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="image" class="col-sm-3 text-right control-label col-form-label">Player Image</label>
+                        <div class="col-sm-9" style="position: relative;">
+                            {% if player.image %}
+                                <div id="player-image-preview" style="display: inline-block; position: relative;">
+                                    <img src="{{ player.image.url }}" width="200" alt="Player image" style="border-radius: 5px; object-fit: cover;">
+                                    <button type="button"
+                                            onclick="removePlayerImage()"
+                                            style="
+                                                position: absolute;
+                                                top: 0;
+                                                right: 0;
+                                                background-color: red;
+                                                color: white;
+                                                border: none;
+                                                border-radius: 50%;
+                                                width: 20px;
+                                                height: 20px;
+                                                text-align: center;
+                                                line-height: 18px;
+                                                font-size: 14px;
+                                                cursor: pointer;
+                                            ">
+                                        &times;
+                                    </button>
+                                </div>
+                            {% endif %}
+                            
+                            <input type="file" class="form-control mt-2" id="image" name="player_image" accept="image/*">
+
+                            <!-- Hidden input to track image removal -->
+                            <input type="hidden" name="remove_player_image" id="remove_player_image" value="false">
+                        </div>
+                    </div>
+
+                    <script>
+                        function removePlayerImage() {
+                            const preview = document.getElementById('player-image-preview');
+                            if (preview) preview.style.display = 'none';
+
+                            const hiddenInput = document.getElementById('remove_player_image');
+                            if (hiddenInput) hiddenInput.value = 'true';
+                        }
+                    </script>
+
+                </div>
+                <div class="border-top">
+                    <div class="card-body text-center">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <a href="{% url 'dashboard:player_view' player.id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </div>
+            </form>            
+        </div>
+    </div>
+    
+{% endblock %}

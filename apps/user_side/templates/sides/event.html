@@ -1,0 +1,120 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="h3 mb-3">Events</h1>
+
+<div class="d-flex align-items-center flex-wrap gap-2 justify-content-between mb-3 event-view-top">
+    <input type="text" id="searchBar" class="form-control" placeholder="🔍 Search Event..." value="{{ text }}" style="max-width: 350px; border-radius: 20px;" onkeyup="filterTeams()">
+        <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
+            <div class="conatiner">
+                <select class="form-select" name="my_event_type" aria-label="Default select example" onchange="filterByEventType(this)">
+                    <option value="all" {% if my_event_type_filter == 'all' %}selected{% endif %}>All Event</option>
+                    <option value="org_event" {% if my_event_type_filter == 'org_event' %}selected{% endif %}>Organized Event</option>
+                    <option value="join_event" {% if my_event_type_filter == 'join_event' %}selected{% endif %}>Join Event</option>
+                </select>
+    
+        </div>
+        <div class="">
+            <a href="{% url 'user_side:add_event' %}" class="btn btn-sm btn-outline-primary filter-btn">+ Add Event</a>
+        </div>
+        <div class="btn-group" role="group">   
+            <button type="button" class="btn btn-sm btn-outline-primary filter-btn {% if team_type_filter == 'all' %} active {% endif %}" data-filter="all">All</button>
+            <button type="button" class="btn btn-sm btn-outline-primary filter-btn {% if team_type_filter == 'Open' %} active {% endif %}" data-filter="Open">Open</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary filter-btn {% if team_type_filter == 'Upcoming' %} active {% endif %}" data-filter="Upcoming">Upcoming</button>
+            <button type="button" class="btn btn-sm btn-outline-success filter-btn {% if team_type_filter == 'Ongoing' %} active {% endif %}" data-filter="Ongoing">Ongoing</button>
+            <button type="button" class="btn btn-sm btn-outline-danger filter-btn me-2 {% if team_type_filter == 'Past' %} active {% endif %}" data-filter="Past">Past</button>
+        </div>
+    </div>
+</div>
+
+{% include 'component/event_list.html' %}
+
+
+<!-- Pagination -->
+{% if teams.has_other_pages %}
+<nav aria-label="Team pagination">
+    <ul class="pagination justify-content-center mt-4">
+        {% if teams.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}">&laquo; First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ teams.previous_page_number }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in teams.paginator.page_range %}
+        {% if teams.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > teams.number|add:'-2' and num < teams.number|add:'2' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if teams.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ teams.next_page_number }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ teams.paginator.num_pages }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}">Last &raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        function filterTeams() {
+            let searchQuery = document.getElementById('searchBar').value.trim();
+            if (event.key === "Enter") {
+                window.location.href = `?q=${searchQuery}`;
+            }
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                let filterValue = this.getAttribute('data-filter');
+                window.location.href = `?team_type=${filterValue}`;
+            });
+        });
+    </script>
+
+    <script>
+        function filterTeams() {
+            let searchQuery = document.getElementById('searchBar').value.trim();
+            if (event.key === "Enter") {
+                const myEventType = document.querySelector('select[name="my_event_type"]').value;
+                const teamType = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
+                window.location.href = `?q=${searchQuery}&my_event_type=${myEventType}&team_type=${teamType}`;
+            }
+        }
+
+        function filterByEventType(select) {
+            const myEventType = select.value;
+            const searchQuery = document.getElementById('searchBar').value.trim();
+            const teamType = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
+            window.location.href = `?q=${searchQuery}&my_event_type=${myEventType}&team_type=${teamType}`;
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                let filterValue = this.getAttribute('data-filter');
+                const searchQuery = document.getElementById('searchBar').value.trim();
+                const myEventType = document.querySelector('select[name="my_event_type"]').value;
+                window.location.href = `?q=${searchQuery}&my_event_type=${myEventType}&team_type=${filterValue}`;
+            });
+        });
+    </script>
+{% endblock %}

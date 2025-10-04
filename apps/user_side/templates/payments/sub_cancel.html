@@ -1,0 +1,8 @@
+{% extends 'base/base_user.html' %}
+{% block content %}
+<section class="container my-5">
+    <h1 class="h3 mb-4">Payment Canceled</h1>
+    <p>Your payment was canceled. Please try again if you wish to subscribe.</p>
+    <a href="{% url 'user_side:subcription_plan' %}" class="btn btn-primary">Back to Membership</a>
+</section>
+{% endblock %}

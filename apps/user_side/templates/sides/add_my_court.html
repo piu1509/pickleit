@@ -1,0 +1,131 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="text-center mb-4 text-center">Add a New Court</h3>
+    <div class="nw-form">
+        <form id="addCourtForm" method="POST" enctype="multipart/form-data" action="{% url 'user_side:add_my_court' %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Court Name:</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="location" class="form-label">Location:</label>
+                <input type="text" name="location" id="location" class="form-control" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="open_time" class="form-label">Open Time:</label>
+                    <input type="time" name="open_time" id="open_time" class="form-control">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="close_time" class="form-label">Close Time:</label>
+                    <input type="time" name="close_time" id="close_time" class="form-control">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="price" class="form-label">Price:</label>
+                <input type="number" name="price" id="price" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="price_unit" class="form-label">Price Unit:</label>
+                <input type="text" name="price_unit" id="price_unit" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="offer_price" class="form-label">Offer Price (Optional):</label>
+                <input type="number" name="offer_price" id="offer_price" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label for="about" class="form-label">About the Court:</label>
+                <textarea name="about" id="about" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="owner_name" class="form-label">Owner Name (Optional):</label>
+                <input type="text" name="owner_name" id="owner_name" class="form-control">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Upload Court Images:</label>
+                <div id="image-upload-container">
+                    <div class="input-group mb-2">
+                        <input type="file" name="images" class="form-control" required>
+                        <button type="button" class="btn btn-success add-image">➕</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("image-upload-container");
+
+        container.addEventListener("click", function (event) {
+            if (event.target.classList.contains("add-image")) {
+                event.preventDefault();
+                let newField = document.createElement("div");
+                newField.classList.add("input-group", "mb-2");
+                newField.innerHTML = `
+                    <input type="file" name="images" class="form-control" required>
+                    <button type="button" class="btn btn-danger remove-image">➖</button>
+                `;
+                container.appendChild(newField);
+            } else if (event.target.classList.contains("remove-image")) {
+                event.preventDefault();
+                event.target.parentElement.remove();
+            }
+        });
+    });
+</script>
+<script>
+function initAutocomplete() {
+    var input = document.getElementById('location');
+    var options = {
+        types: ['geocode'], // Restrict to address-based suggestions
+        
+    };
+
+    // Create a new Autocomplete object and bind it to the location input
+    var autocomplete = new google.maps.places.Autocomplete(input, options);
+
+    // Add listener to update the location field when an address is selected
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        if (!place.geometry) {
+            return;
+        }
+        // Optional: You can log place details or handle them here
+        console.log(place);
+    });
+}
+
+// Load Google Maps API with Places API
+function loadGoogleMapsAPI() {
+    var script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAQ_OGAb4yuL8g55IMufP3Dwd4yjrWxrdI&libraries=places&callback=initAutocomplete';
+    script.async = true;
+    document.head.appendChild(script);
+}
+
+// Call the function to load Google Maps API
+loadGoogleMapsAPI();
+</script>
+{% endblock %}

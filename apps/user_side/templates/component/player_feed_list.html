@@ -1,0 +1,267 @@
+{% load custom_filters %}
+<div class="row mt-4">
+    <div class="col-xl-12">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h1 class="h3 m-0">Social Feed</h1>
+            
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for post in social_feed_list %}
+            <div class="col">
+                <div class="post-card" id="post-{{ post.id }}">
+                    <div class="post-header">
+                        <img src="{% if post.user.image %}{{ post.user.image.url }}{% else %}https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-0.png{% endif %}" alt="User Avatar">
+                        <div>
+                            <small class="text-muted"> <b>{{ post.user.first_name }} {{ post.user.last_name }}</b></small>
+                            <br>
+                            <small class="text-muted">{{ post.created_at|date:"j" | ordinal_day }} {{ post.created_at|date:"M, Y" }}</small>
+                        </div> 
+                        
+                        {% if request.resolver_match.url_name == 'profile' %}
+                            {% if post.user.id == request.user.id %}    
+                                <div class="dropdown three-dot-main">
+                                    <button class="three-dot dropdown-toggle" type="button" id="dropdownMenuButton{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="dropdownMenuButton{{ post.id }}">
+                                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editPostModal{{ post.id }}">Edit</a></li>
+                                        <li><a class="dropdown-item text-danger delete-post-btn" href="#" data-post-id="{{ post.id }}">Delete</a></li>
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                        
+                        {% endif %}
+                    </div>
+                    <div class="post-content mt-3" id="post-content-{{ post.id }}">
+                        <p>{{ post.text }}</p>
+                        <div id="feedCarousel{{ post.id }}" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {% for file in post.post_file.all %}
+                                    {% if file.file %}
+                                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                            <img src="{{ file.file.url }}" class="d-block w-100 rounded club-image" alt="">
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if post.post_file.all|length > 1 %}
+                                <button class="carousel-control-prev" type="button" data-bs-target="#feedCarousel{{ post.id }}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#feedCarousel{{ post.id }}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn btn-link like-btn" data-post-id="{{ post.id }}" type="button">
+                        {% if post.is_like %}
+                            <i class="fa-solid fa-heart text-danger"></i>
+                        {% else %}
+                            <i class="bi bi-heart"></i>
+                        {% endif %}
+                            <span class="like-count">({{ post.number_like }})</span>
+                        </button>
+                        <button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#comments-{{ post.id }}">
+                            <i class="bi bi-chat"></i> ({{ post.number_comment }})
+                        </button>
+                        <button class="btn btn-link" onclick="copyLink('{% url 'user_side:view_post' post.id %}')">
+                            <i class="bi bi-share"></i>
+                        </button>
+                        <a class="btn btn-link" href="{% url 'user_side:view_post' post.id %}">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                    <div class="comment-section collapse" id="comments-{{ post.id }}">
+                        {% for comment in post.post_comment.all %}
+                        <div class="comment">
+                            <strong>{{ comment.user.username }}</strong>: {{ comment.comment_text }}
+                            <small class="text-muted">{{ comment.created_at|date:"j" | ordinal_day }} {{ comment.created_at|date:"M, Y" }}</small>
+                        </div>
+                        {% endfor %}
+                        <form class="comment-form" action="{% url 'user_side:add_comment' post.id %}" method="POST">
+                            {% csrf_token %}
+                            <textarea class="form-control mb-2" rows="2" name="comment_text" placeholder="Add a comment..."></textarea>
+                            <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Post Modal -->
+            <div class="modal fade" id="editPostModal{{ post.id }}" tabindex="-1" aria-labelledby="editPostModalLabel{{ post.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editPostModalLabel{{ post.id }}">Edit Post</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="edit-post-form-{{ post.id }}">
+                                {% csrf_token %}
+                                <textarea class="form-control" rows="4" name="text">{{ post.text }}</textarea>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary edit-post-btn" data-post-id="{{ post.id }}">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            {% include 'base/not_found.html' %}
+        {% endfor %}
+        </div>
+        <div class="pagination">
+            {% if social_feed_list.has_previous %}
+                <a href="?feed_page={{ social_feed_list.previous_page_number }}">&laquo; Previous </a>
+            {% endif %}
+
+            <span>Page {{ social_feed_list.number }} of {{ social_feed_list.paginator.num_pages }}</span>
+
+            {% if social_feed_list.has_next %}
+                <a href="?feed_page={{ social_feed_list.next_page_number }}"> Next &raquo;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Like functionality (existing)
+        const likeButtons = document.querySelectorAll('.like-btn');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.getAttribute('data-post-id');
+                const heartIcon = this.querySelector('i');
+                const likeCountSpan = this.querySelector('.like-count');
+
+                fetch(`/user_side/like_post/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    // Toggle heart icon
+                    if (data.is_liked) {
+                        heartIcon.classList.remove('bi', 'bi-heart');
+                        heartIcon.classList.add('fa-solid', 'fa-heart', 'text-danger');
+                    } else {
+                        heartIcon.classList.remove('fa-solid', 'fa-heart', 'text-danger');
+                        heartIcon.classList.add('bi', 'bi-heart');
+                    }
+
+                    // Update like count
+                    likeCountSpan.textContent = `(${data.like_count})`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+            });
+        });
+
+        // Edit post functionality
+        const editButtons = document.querySelectorAll('.edit-post-btn');
+        editButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.getAttribute('data-post-id');
+                const form = document.querySelector(`#edit-post-form-${postId}`);
+                const textArea = form.querySelector('textarea[name="text"]');
+                const newText = textArea.value.trim();
+
+                if (!newText) {
+                    alert('Post content cannot be empty.');
+                    return;
+                }
+
+                fetch(`/user_side/edit_post/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: newText })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    // Update post content in the UI
+                    const postContent = document.querySelector(`#post-content-${postId} p`);
+                    postContent.textContent = data.text;
+
+                    // Close the modal
+                    const modal = document.querySelector(`#editPostModal${postId}`);
+                    const bootstrapModal = bootstrap.Modal.getInstance(modal);
+                    bootstrapModal.hide();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+            });
+        });
+
+        // Delete post functionality
+        const deleteButtons = document.querySelectorAll('.delete-post-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const postId = this.getAttribute('data-post-id');
+                
+                if (!confirm('Are you sure you want to delete this post?')) {
+                    return;
+                }
+
+                fetch(`/user_side/delete_post/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    // Remove the post from the UI
+                    const postElement = document.querySelector(`#post-${postId}`);
+                    postElement.remove();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+            });
+        });
+    });
+
+    // Copy link function (unchanged)
+    function copyLink(url) {
+        navigator.clipboard.writeText(window.location.origin + url)
+            .then(() => alert('Link copied to clipboard!'))
+            .catch(err => console.error('Failed to copy: ', err));
+    }
+</script>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Buy cool new product</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+  <body>
+    <section>
+      
+      <form action="{% url 'checkout' %}" method="POST">
+        {% csrf_token %}
+        <input type="text" name="charge_for" value="Organizer">
+        <input type="text" name="user_uuid" value="c049cee2-6ff8-4e94-9bc2-4df3682274e3">
+        <input type="text" name="user_secret_key" value="5cdbdf563ceedb100b003eedf980ac0d9e7c37c7b507e5f734af0c58fe25d22f">
+        <button type="submit" id="checkout-button">Checkout</button>
+      </form>
+    </section>
+  </body>
+</html>

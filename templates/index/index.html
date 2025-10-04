@@ -1,0 +1,149 @@
+{% extends 'index/index_base.html' %}
+{% block content %}
+{% load static %}
+<header class="header-main">
+    <div class="container">
+      <a href="" class="logo" data-aos="fade-down" data-aos-duration="400"><img src="{% static 'images/indexing/logo.png' %}" alt=""></a>
+      <h3 data-aos="fade-up" data-aos-duration="400">Just Pickle It!</h3>
+    </div>
+</header>
+
+<div class="hm-banner">
+    <div class="container">
+      <div class="banner-img" data-aos="fade-up" data-aos-duration="500">
+        <div class="bn-img bn-img-left" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+          <img src="{% static 'images/indexing/bn-img1.png' %}" alt="">
+        </div>
+        <div class="bn-img bn-img-center" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+          <img src="{% static 'images/indexing/bn-img2.png' %}" alt="">
+        </div>
+        <div class="bn-img bn-img-right" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+          <img src="{% static 'images/indexing/bn-img3.png' %}" alt="">
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="option-sec">
+    <div class="container">
+      <div class="opt-inner">
+        <div class="opt-block" data-aos="fade-up" data-aos-duration="400">
+          <img src="{% static 'images/indexing/opt1.png' %}" alt="">
+          <h4>Host the Hype</h4>
+          <p>Launch epic events and bring the action to your crew.</p>
+        </div>
+        <div class="opt-block" data-aos="fade-up" data-aos-duration="600">
+          <img src="{% static 'images/indexing/opt2.png' %}" alt="">
+          <h4>Squad Up</h4>
+          <p>Build your dream team and dominate the leaderboards.</p>
+        </div>
+        <div class="opt-block" data-aos="fade-up" data-aos-duration="400">
+          <img src="{% static 'images/indexing/opt3.png' %}" alt="">
+          <h4>Score Big Rewards! </h4>
+          <p>Play, win, and claim exclusive in-game goodies.</p>
+        </div>
+        <div class="opt-block" data-aos="fade-up" data-aos-duration="600">
+          <img src="{% static 'images/indexing/opt4.png' %}" alt="">
+          <h4>Rule the VIP Scene</h4>
+          <p>Create and run elite VIP clubs for top-tier players.</p>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="gallery-sec" data-aos="fade-up" data-aos-duration="400">
+    <div class="container">
+      <h3>Watch the Game <span>Unfold!</span></h3>
+      <div class="gallery-inner">
+        {% load static %}
+        {% for post in posts %}
+            <a href="javascript:void(0);" class="gall-block">
+                {% if post.first_file %}
+                    <img src="{{ post.first_file.0.file.url }}" alt="Post image">
+                {% else %}
+                    <img src="{% static 'images/indexing/pickleit_newlogo.jpg' %}" alt="Default image">
+                {% endif %}
+                <div class="gall-caption">
+                    <p>{{ post.text|truncatewords:20 }}</p>
+                    <h4>- by {{ post.user.first_name }} {{ post.user.last_name }}</h4>
+                </div>
+            </a>
+        {% empty %}
+            <p>No posts available</p>
+        {% endfor %}
+      </div>
+    </div>
+</div>
+
+<div class="feature-sec">
+    <div class="container">
+      <h3>Amazing <span>Features</span></h3>
+      <div class="feature-inner">
+        <div class="ft-block ft-left" data-aos="fade-left" data-aos-duration="400">
+          <div class="sgl-ft">
+            <div class="ft-img" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+              <img src="{% static 'images/indexing/book.png' %}" alt="">
+            </div>
+            <div class="ft-content">
+              <h4>Book the Zone</h4>
+              <p>Reserve clubs and arenas for your next showdown.</p>
+            </div>
+          </div>
+          <div class="sgl-ft">
+            <div class="ft-img" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+              <img src="{% static 'images/indexing/boost.png' %}" alt="">
+            </div>
+            <div class="ft-content">
+              <h4>Boost with Promos</h4>
+              <p>Unlock special offers and spotlight your events with custom ads.</p>
+            </div>
+          </div>
+          <div class="sgl-ft">
+            <div class="ft-img" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+              <img src="{% static 'images/indexing/claim.png' %}" alt="">
+            </div>
+            <div class="ft-content">
+              <h4>Claim Your Merch</h4>
+              <p>Show your loyalty by buying official game merch and wear your legend.</p>
+            </div>
+          </div>
+        </div>
+        <div class="ft-block" data-aos="fade-up" data-aos-duration="400">
+          <div class="ft-phone" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+            <img src="{% static 'images/indexing/ft-phone.png' %}" alt="">
+          </div>
+        </div>
+        <div class="ft-block ft-right" data-aos="fade-right" data-aos-duration="400">
+          <div class="sgl-ft">
+            <div class="ft-img" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+              <img src="{% static 'images/indexing/team.png' %}" alt="">
+            </div>
+            <div class="ft-content">
+              <h4>Team Up</h4>
+              <p>Partner with other players for massive joint events.</p>
+            </div>
+          </div>
+          <div class="sgl-ft">
+            <div class="ft-img" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+              <img src="{% static 'images/indexing/feed.png' %}" alt="">
+            </div>
+            <div class="ft-content">
+              <h4>Own the Feed!</h4>
+              <p>Post updates, shoutouts, and game highlights in your social stream.</p>
+            </div>
+          </div>
+          <div class="sgl-ft">
+            <div class="ft-img" data-tilt data-tilt-reverse="true" data-tilt-max="12">
+              <img src="{% static 'images/indexing/join.png' %}" alt="">
+            </div>
+            <div class="ft-content">
+              <h4>Join. Connect. Conquer.</h4>
+              <p>Join the digital club and connect with players, perks, and power!</p>
+            </div>
+          </div>          
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}

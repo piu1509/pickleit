@@ -1,0 +1,110 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="h3 mb-3">Update Match Score</h1>
+
+<!-- Search Bar -->
+<form method="GET" class="d-flex justify-content-end mb-3">
+    <input type="text" class="form-control" placeholder="Search match history..." name="q" value="{{ request.GET.q }}" style="max-width: 300px;">
+    <button type="submit" class="btn btn-primary ms-2">Search</button>
+</form>
+
+<!-- Match List -->
+<div class="row">
+    {% for event in events %}
+    <div class="col-lg-4 col-md-6 col-sm-12">
+        <div class="versus-card">
+            <h3><span><i class="" data-feather="compass"></i></span> T20 - Indian T20 League</h3>
+            <div class="v-team">
+                <div class="v-team-left">
+                    <p><img src="img/ic.png" alt=""> <span>SRH</span> Sunrisers Hyderabad</p>
+                    <p><img src="img/ic.png" alt=""> <span>RR</span> Rajasthan Royals</p>
+                </div>
+                <div class="v-team-right">
+                    <p>23 Mar<span>3:30 PM</span></p>
+                </div>
+            </div>
+            <div class="v-info">
+                <p>2 Teams - 1 Contest</p>
+                <a class="btn btn-info" data-bs-toggle="collapse" href="#showdata" role="button" aria-expanded="false" aria-controls="showdata">View <i class="align-middle" data-feather="chevron-right"></i></a>
+            </div>
+            <div class="collapse mt-2" id="showdata">
+                <div class="card card-body">
+                    <table class="table">
+                        <thead>
+                          <tr>
+                            <th>Sr. No.</th>
+                            <th>Yours Score</th>
+                            <th>Opponents Score</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>1</td>
+                            <td>15</td>
+                            <td>20</td>
+                            <td><a href="javascript:void(0);" class="btn btn-success">Win</a></td>
+                          </tr>
+                          <tr>
+                            <td>2</td>
+                            <td>15</td>
+                            <td>20</td>
+                            <td><a href="javascript:void(0);" class="btn btn-danger">Lose</a></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center">
+        <p>No ongoing Event available.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+<!-- Pagination -->
+<nav aria-label="Match History Pagination">
+    <ul class="pagination justify-content-center">
+        {% if match_history.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">&laquo; First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ match_history.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in match_history.paginator.page_range %}
+            {% if match_history.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num == 1 or num == match_history.paginator.num_pages or num|add:"-2" == match_history.number or num|add:"2" == match_history.number %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% elif num == match_history.number|add:"-3" or num == match_history.number|add:"3" %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if match_history.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ match_history.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ match_history.paginator.num_pages }}">Last &raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

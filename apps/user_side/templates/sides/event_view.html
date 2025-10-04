@@ -1,0 +1,284 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+
+<div class="card col-lg-12" style="max-width: auto;">
+    <div class="card-header text-center d-flex justify-content-between align-items-center gap-2 flex-wrap event-view-top">
+        <div class="h5 mb-0 ">
+            {{ event.name }} || {{ event.team_type }} || {{ event.team_person }}
+        </div>
+        <div class="">
+            <a href="{% url 'user_side:event_user' %}" class="btn btn-primary btn-sm">Back to list</a>
+            {% if event.created_by == request.user %}
+                <a href="{% url 'user_side:edit_event' event.id %}" class="btn btn-info btn-sm">Edit Event</a>
+                
+            {% endif %}
+
+            {% if is_del %}
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
+            {% endif %}
+
+            
+            
+            {% if is_join %}
+                <a href="{% url 'user_side:join_team_event' event.id %}" class="btn btn-success btn-sm">Join Event</a>
+            {% else %}
+                <!-- <a class="btn btn-success btn-sm" deactivate>Join Event</a> -->
+            {% endif %}
+                
+            {% if event.created_by == request.user and not matches %}
+                <a href="#" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#startTournamentModal">Start Tournament</a>
+            {% endif %}
+
+            <!-- Modal -->
+            <div class="modal fade" id="startTournamentModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel">Start Tournament</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Maximum Teams Allowed:</strong> <span id="maxTeams"></span></p>
+                            <p><strong>Teams Registered:</strong> <span id="registeredTeams"></span></p>
+                            <p id="warningMessage" class="text-danger"></p>
+                            <p>Do you really want to start the tournament?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                            <a href="#" id="confirmStartBtn" class="btn btn-danger">Yes, Start</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Delete Event Modal -->
+            <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Delete Event</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete the event "<strong>{{ event.name }}</strong>"?</p>
+                            <p class="text-danger">This action cannot be undone.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <a href="{% url 'user_side:delete_event' event.id %}" class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    // Dummy data (Replace these values dynamically in Django template context)
+                    const maxTeams = {{ event.max_number_team }};
+                    const registeredTeams = {{ event.registered_team.count }};
+
+                    document.getElementById("maxTeams").innerText = maxTeams;
+                    document.getElementById("registeredTeams").innerText = registeredTeams;
+
+                    const warningMessage = document.getElementById("warningMessage");
+                    if (registeredTeams < maxTeams) {
+                        warningMessage.innerText = "Warning: Not all slots are filled.";
+                    } else {
+                        warningMessage.innerText = "";
+                    }
+
+                    // Handle confirmation click
+                    document.getElementById("confirmStartBtn").addEventListener("click", function () {
+                        window.location.href = "{% url 'user_side:start_tournament' event.id %}";
+                    });
+                });
+            </script>
+        </div>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3 p-4 position-relative event-view-block">
+        <div class="event-img-block" >
+            {% if event.image %}
+                <img src="{{event.image.url}}" class="img-fluid rounded-start" alt="Event Image" style="margin:10px auto;">
+            {% else %}
+                <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" class="img-fluid rounded-start" alt="Event Image" style="margin:10px auto;">
+            {% endif %}
+            
+        </div>
+        <div class="event-content-block">
+            <div class="card-body">
+                <p><strong>Max Join Team:</strong> {{ event.max_number_team }} || 
+                   <strong>Joined Team:</strong> {{ event.registered_team.count }}</p>
+                <p><strong>Event Registration Duration:</strong> 
+                   {{ event.registration_start_date|date:"j" | ordinal_day }} {{ event.registration_start_date|date:"M, Y" }} - {{ event.registration_end_date|date:"j" | ordinal_day }} {{ event.registration_end_date|date:"M, Y" }}</p>
+                <p><strong>Event Duration:</strong> 
+                   {{ event.leagues_start_date|date:"j" | ordinal_day }} {{ event.leagues_start_date|date:"M, Y" }} - {{ event.leagues_end_date|date:"j" | ordinal_day }} {{ event.leagues_end_date|date:"M, Y" }}</p>
+                <p><strong>Event Organizers:</strong> 
+                   {{ event.created_by.first_name }} {{ event.created_by.last_name }}</p>
+            </div>
+        </div>
+        {% if score_update %}
+            <a href="{% url 'user_side:event_update_score' event.id %}" class="btn btn-primary btn-sm position-absolute update-score-btn">Update Score</a>
+        {% endif %}
+        
+    </div>
+</div>
+
+<!-- Joined Teams -->
+{% include 'component/event_join_team.html' %}
+
+<div class="card text-center">
+    <div class="card-header text-center d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <h2 class="h5">Your Joined Teams</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for team in user_registered_teams %}
+                <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+                    <div class="card join-team-block team-card h-100 border-0 shadow-sm text-center p-2 m-0">
+                        {% if is_unregister %}
+                        <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                                data-bs-toggle="modal"
+                                data-bs-target="#removeTeamModal"
+                                data-team-id="{{ team.id }}"
+                                data-league-id="{{ event.id }}"
+                                data-team-name="{{ team.name }}">
+                            &minus;
+                        </button>
+                        {% endif %}
+                        {% if team.team_image %}
+                            <img src="{{ team.team_image.url }}" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                        {% else %}
+                            <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="{{ team.name }}" class="rounded-circle mb-2" width="80" height="80">
+                        {% endif %}
+                        <h6 class="card-title mb-0">{{ team.name }}</h6>
+                    </div>
+                </div>
+                <div class="modal fade" id="removeTeamModal" tabindex="-1" aria-labelledby="removeTeamModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Remove Team</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="removeTeamModalBody">
+                                <!-- Will be filled by JS -->
+                                <p>Loading cancellation policy...</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                <button type="button" class="btn btn-danger" id="confirmRemoveBtn">Yes, Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                {% include 'base/not_found.html' %}
+            {% endfor %}
+        </div>
+    </div>
+    
+</div>
+<!-- Matches -->
+{% include 'component/event_match.html' %}
+
+<!-- point table   -->
+{% include 'component/event_point_table.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById("teamSearch").addEventListener("input", function () {
+        let searchValue = this.value.toLowerCase();
+        let teams = document.querySelectorAll(".team-card");
+
+        teams.forEach(function (team) {
+            let teamName = team.querySelector("h6").innerText.toLowerCase();
+            if (teamName.includes(searchValue)) {
+                team.style.display = "flex";
+            } else {
+                team.style.display = "none";
+            }
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Start Tournament Modal Logic
+        const maxTeams = {{ event.max_number_team }};
+        const registeredTeams = {{ event.registered_team.count }};
+
+        document.getElementById("maxTeams").innerText = maxTeams;
+        document.getElementById("registeredTeams").innerText = registeredTeams;
+
+        const warningMessage = document.getElementById("warningMessage");
+        if (registeredTeams < maxTeams) {
+            warningMessage.innerText = "Warning: Not all slots are filled.";
+        } else {
+            warningMessage.innerText = "";
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let selectedTeamId = null;
+        let selectedLeagueId = null;
+
+        // When the modal is shown
+        var removeTeamModal = document.getElementById('removeTeamModal');
+        removeTeamModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            selectedTeamId = button.getAttribute('data-team-id');
+            selectedLeagueId = button.getAttribute('data-league-id');
+            const teamName = button.getAttribute('data-team-name');
+
+            const modalBody = document.getElementById('removeTeamModalBody');
+            modalBody.innerHTML = `<p>Loading cancellation policy...</p>`;
+
+            // AJAX call to fetch cancellation policy
+            fetch(`/user_side/get-cancellation-policy/?league_id=${selectedLeagueId}`)
+                .then(response => response.json())
+                .then(data => {
+                    let content = '';
+                    if (data.has_policy) {
+                        content += `<h6>Cancellation Policy:</h6><p>${data.policy}</p>`;
+                    } else {
+                        content += `<p><strong>No refund</strong> will be provided for removing the team.</p>`;
+                    }
+                    content += `<hr><p>Are you sure you want to remove <strong>${teamName}</strong> from the league?</p>`;
+                    modalBody.innerHTML = content;
+                })
+                .catch(err => {
+                    modalBody.innerHTML = `<p class="text-danger">Failed to load cancellation policy.</p>`;
+                });
+        });
+
+        // Confirm removal
+        document.getElementById('confirmRemoveBtn').addEventListener('click', function () {
+            fetch('/user_side/remove-team-from-league/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    team_id: selectedTeamId,
+                    league_id: selectedLeagueId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();  // Refresh page or update DOM to reflect removal
+                } else {
+                    alert('Failed to remove team.');
+                }
+            })
+            .catch(err => {
+                alert('An error occurred while removing the team.');
+            });
+        });
+    });
+</script>
+{% endblock %}

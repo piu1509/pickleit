@@ -1,0 +1,49 @@
+<div class="advertisement-container">
+    <a href="" class="ad-link" style="text-decoration: none; color: inherit;">
+        <div class="card d-flex flex-row align-items-center" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); overflow: hidden; transition: transform 0.2s; height: 150px;">
+            <!-- Image (Left side) -->
+            <div class="ad-image" style="width: 50%; height: 100%; padding:10px; overflow: hidden; border-radius: 8px;">
+                <img class="ad-image-src" src="" alt="Ad Image" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <!-- Text content (Right side) -->
+            <div class="p-3 d-flex flex-column justify-content-center" style="flex: 1;">
+                <h6 class="ad-title mb-1" style="font-weight: 600;"></h6>
+                <p class="ad-description mb-0" style="font-size: 14px; color: #555;"></p>
+            </div>
+        </div>
+    </a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // URL to fetch advertisement data
+        const apiUrl = "/user_side/advertisements/";
+        console.log("Fetching advertisement data from:", apiUrl);
+        
+        // Iterate over each advertisement container
+        $('.advertisement-container').each(function() {
+            const $container = $(this);
+            $.ajax({
+                url: apiUrl,
+                method: 'GET',
+                dataType: 'json',
+                success: function(ad) {
+                    // Update elements within this specific container
+                    $container.find('.ad-link').attr('href', ad.url);
+                    $container.find('.ad-image-src').attr('src', ad.image_url);
+                    $container.find('.ad-title').text(ad.company_name);
+                    $container.find('.ad-description').text(ad.script_text);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching advertisement data:', error);
+                    // Fallback values for this container
+                    $container.find('.ad-link').attr('href', 'https://example.com');
+                    $container.find('.ad-image-src').attr('src', 'https://via.placeholder.com/150');
+                    $container.find('.ad-title').text('Fallback Brand');
+                    $container.find('.ad-description').text('Check out our amazing products!');
+                }
+            });
+        });
+    });
+</script>

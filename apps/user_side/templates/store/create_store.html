@@ -1,0 +1,32 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center mb-3 text-center">
+    <h1 class="h3 m-0">Create Your Store</h1>
+</div>
+<div class="create-store-form nw-form">
+    <form action="{% url 'user_side:create_store_user_side' %}" method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="store_name" class="form-label">Store Name</label>
+            <input type="text" class="form-control" id="store_name" name="store_name" required>
+        </div>
+        <div class="mb-3">
+            <label for="company_name" class="form-label">Company Name</label>
+            <input type="text" class="form-control" id="company_name" name="company_name" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="company_website" class="form-label">Company Website</label>
+            <input type="url" class="form-control" id="company_website" name="company_website">
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Create Store</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'base/base_user.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-end align-items-center">
+    <a class="btn btn-success" href="{% url 'user_side:club_view' club_id %}">Back</a>
+    </div>
+    <h2 class="text-center">Joined List</h2>
+
+    <hr>
+
+    <!-- Show Total Bookings -->
+    {% if total_bookings is not None %}
+        <h5>Total Bookings: <span class="badge bg-success">{{ total_bookings }}</span></h5>
+    {% endif %}
+
+    <!-- Search User -->
+    <form method="GET" class="mt-3">
+
+        <div class="input-group">
+            <input type="text" class="form-control" name="search" placeholder="Search user..." value="{{ search_query }}">
+            <button class="btn btn-outline-secondary" type="submit">🔍 Search</button>
+        </div>
+    </form>
+
+    <hr>
+
+    <!-- Booking List Table -->
+    <table class="table table-bordered mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>User Name</th>
+                <th>Email</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% if results %}
+                {% for user in results %}
+                    <tr>
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3" class="text-center">No joined user found.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% if results.has_other_pages %}
+<nav aria-label="Club pagination">
+    <ul class="pagination justify-content-center mt-4">
+        {% if results.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}">&laquo; First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ results.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in results.paginator.page_range %}
+        {% if results.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > results.number|add:'-2' and num < results.number|add:'2' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if results.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ results.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ results.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}">Last &raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+</div>
+{% endblock %}

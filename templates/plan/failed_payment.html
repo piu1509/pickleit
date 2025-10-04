@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Failed</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .pay-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: fadeIn 1s ease-in-out;
+            margin: 0 10px;
+        }
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #dc3545;
+            position: relative;
+            margin: 0;
+            animation: scaleIn 0.5s ease-in-out;
+        }
+        .error-icon::before,
+        .error-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 6px;
+            background: white;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .error-icon::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+        h1 {
+            color: #333;
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: background 0.3s, transform 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .btn { background: #023047; border-color: #023047; }
+        .btn:hover, .btn:focus{background-color: #219ebc; border-color: #219ebc;}
+
+        .nw-top { display: flex; align-items: center; justify-content: center; gap: 10px; }
+            
+        .checkmark, .error-icon { width: 40px; height: 40px; }
+        .checkmark::after { top: 7px; left: 12px; width: 8px; height: 17px; }
+        .error-icon::before, .error-icon::after{width: 25px;}
+
+        .nw-logo { display: block; margin: 0; }
+        .nw-logo img{margin: 0 !important;}
+
+        @media (max-width: 767.98px) {
+            .pay-container{padding: 20px;}
+            .pay-container * { font-size: 14px; line-height: 22px; margin: 0 auto 18px; }
+            .btn { padding: 9px 18px; }
+            .pay-container h1{font-size: 22px; margin:20px 0;}
+            .checkmark, .error-icon{margin: 0;}
+        }
+    </style>
+</head>
+<body>
+    <div class="pay-container">
+        <a href="javascript:void(0);" class="nw-logo"><img src="https://dev.pickleit.app/static/images/indexing/footer-logo.png" alt=""></a>
+        <div class="nw-top">
+            <div class="error-icon"></div>
+            <h1>Payment Failed</h1>
+        </div>
+        {% if error %}
+            <p>Error: {{ error }}</p>
+        {% elif message %}
+            <p>{{ message }}</p>
+        {% else %}
+            <p>Payment was not completed. Please try again or contact support.</p>
+        {% endif %}
+        <a href="{% url 'user_side:subcription_plan' %}" class="btn">Retry Payment</a>
+    </div>
+</body>
+</html>

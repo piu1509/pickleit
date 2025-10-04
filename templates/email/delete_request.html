@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Request for Account Deletion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d9534f;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content {
+            font-size: 16px;
+            color: #333;
+        }
+        .footer {
+            font-size: 14px;
+            color: #888;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p class="header">Request for Account Deletion</p>
+        
+        <p>Dear Admin,</p>
+
+        <p>I hope this message finds you well.</p>
+
+        <p>I am writing to formally request the deletion of my account associated with your Pickleit App. Below are my account details for your reference:</p>
+
+        <p><strong>Name:</strong> {{ full_name }}</p>
+        <p><strong>Email Address:</strong> {{ user_email }}</p>
+        <p><strong>Reason for Deletion Request:</strong> {{ reason }}</p>
+
+        <p>Please confirm once my account has been deleted and let me know if you require any additional information to process this request.</p>
+
+        <p>Thank you for your attention to this matter. I look forward to your prompt response.</p>
+
+        <p>Best regards,</p>
+        <p><strong>{{ full_name }}</strong></p>
+
+        <p class="footer">This is an automated request from the Pickleit App.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<div id="multipleVariationFields" class="variation-section" style="display: block;">
+    <h5><i class="bi bi-boxes"></i> Multiple Variations</h5>
+    <div id="variationEntries">
+        {% for variation in product.specificProduct.all %}
+            {% with variation_id=variation.id %}
+                <div class="variation-card card variation-entry" id="variation-{{ variation_id }}">
+                    <div class="card-header">
+                        <span>Variation</span>
+                        <i class="bi bi-x close-btn" onclick="document.getElementById('variation-{{ variation_id }}').remove()"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <label class="form-label"><i class="bi bi-sliders"></i> Variation Type</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="variationType-{{ variation_id }}" value="size"
+                                           {% if variation.size and not variation.color %}checked{% endif %}
+                                           onchange="toggleVariationFields({{ variation_id }})">
+                                    <label class="form-check-label">Size</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="variationType-{{ variation_id }}" value="color"
+                                           {% if variation.color and not variation.size %}checked{% endif %}
+                                           onchange="toggleVariationFields({{ variation_id }})">
+                                    <label class="form-check-label">Color</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="variationType-{{ variation_id }}" value="both"
+                                           {% if variation.size and variation.color %}checked{% endif %}
+                                           onchange="toggleVariationFields({{ variation_id }})">
+                                    <label class="form-check-label">Both</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="inline-fields">
+                            <div class="field-group size-field" id="sizeField-{{ variation_id }}" style="{% if variation.size and not variation.color %}display:none;{% endif %}">
+                                <label class="form-label"><i class="bi bi-rulers"></i> Size</label>
+                                <input type="text" class="form-control" name="size-{{ variation_id }}" value="{{ variation.size }}">
+                            </div>
+                            <div class="field-group color-field" id="colorField-{{ variation_id }}" style="{% if variation.color and not variation.size %}display:none;{% endif %}">
+                                <label class="form-label"><i class="bi bi-palette"></i> Color</label>
+                                <input type="text" class="form-control" name="color-{{ variation_id }}" value="{{ variation.color }}">
+                            </div>
+                            <div class="field-group">
+                                <label class="form-label"><i class="bi bi-currency-dollar"></i> Regular Price</label>
+                                <input type="number" class="form-control" name="regularPrice-{{ variation_id }}" min="0" step="0.01" value="{{ variation.old_price }}">
+                            </div>
+                            <div class="field-group">
+                                <label class="form-label"><i class="bi bi-tag-fill"></i> Sale Price</label>
+                                <input type="number" class="form-control" name="salePrice-{{ variation_id }}" min="0" step="0.01" value="{{ variation.current_price }}">
+                            </div>
+                            <div class="field-group">
+                                <label class="form-label"><i class="bi bi-boxes"></i> Available Products</label>
+                                <input type="number" class="form-control" name="available-{{ variation_id }}" min="0" value="{{ variation.available_product }}">
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <label class="form-label"><i class="bi bi-star"></i> Highlights</label>
+                            <div id="highlights-{{ variation_id }}">
+                                {% for highlight in variation.specificHighlight.all %}
+                                    <div class="highlight-entry mb-2" id="highlight-{{ forloop.counter }}">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label"><i class="bi bi-bookmark"></i> Topic</label>
+                                                <input type="text" class="form-control" name="highlightTopic-{{ variation_id }}" value="{{ highlight.highlight_key }}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label"><i class="bi bi-text-paragraph"></i> Description</label>
+                                                <textarea class="form-control" name="highlightDesc-{{ variation_id }}" rows="2">{{ highlight.highlight_des }}</textarea>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-danger mt-2" onclick="this.closest('.highlight-entry').remove();">
+                                            <i class="bi bi-trash"></i> Remove Highlight
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="addHighlight('multiple', {{ variation_id }})">
+                                <i class="bi bi-plus-circle"></i> Add Highlight
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endwith %}
+        {% endfor %}
+    </div>
+    <button type="button" class="btn btn-sm btn-secondary" onclick="addVariation()"><i class="bi bi-plus-circle"></i> Add Variation</button>
+</div>

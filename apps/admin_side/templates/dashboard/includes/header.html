@@ -1,0 +1,405 @@
+{% load static %}
+<style>
+     /* Overlay */
+   .custom-modal {
+        display: none; /* only this, at first */
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5); /* dark background */
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Modal content box */
+    .custom-modal-content {
+        background-color: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    /* Title and text */
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .modal-text {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 25px;
+    }
+
+    /* Button group */
+    .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    /* Primary and Outline Buttons */
+    .btn {
+        padding: 10px 20px;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+    }
+
+    .btn-outline-primary {
+        background-color: white;
+        border: 2px solid #0d6efd;
+        color: #0d6efd;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #e6f0ff;
+    }
+    .notification-badge {
+        top: 5px;
+        right: 5px;
+        font-size: 12px;
+        padding: 3px 7px;
+    }
+
+    .notification-dropdown {
+        width: 550px;
+        max-height: 600px;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .notification-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 18px;
+        margin-right: 10px;
+    }
+
+    .notification-text {
+        flex-grow: 1;
+    }
+    
+    .unread-notification {
+        background-color: #f1f1f1 !important;
+    }
+</style>
+
+
+ <header class="topbar" data-navbarbg="skin5">
+    <nav class="navbar fixed-top top-navbar navbar-expand-md navbar-dark">
+        <div class="navbar-header" data-logobg="skin5">
+            
+            <a class="nav-toggler waves-effect waves-light d-block d-md-none" href="javascript:void(0)"><i class="ti-menu ti-close"></i></a>
+            
+            <a class="navbar-brand" href="/admin/">
+                
+                <b class="logo-icon p-l-10">
+                    
+                    <h4>PICKLEit Admin</h4>
+                </b>
+                
+                
+            </a>
+            
+            <a class="topbartoggler d-block d-md-none waves-effect waves-light" href="javascript:void(0)" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><i class="ti-more"></i></a>
+        </div>
+        
+        <div class="navbar-collapse collapse" id="navbarSupportedContent" data-navbarbg="skin5">
+            
+            <ul class="navbar-nav float-left mr-auto">
+                <li class="nav-item d-none d-md-block"><a class="nav-link sidebartoggler waves-effect waves-light" href="javascript:void(0)" data-sidebartype="mini-sidebar"><i class="mdi mdi-menu font-24"></i></a></li>
+                                        
+            </ul>
+            
+            <ul class="navbar-nav float-right">                       
+                <!-- Notification Dropdown -->
+                <li class="nav-item dropdown mr-3">
+                    <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark position-relative" href="#" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span class="badge badge-pill badge-danger position-absolute notification-badge" id="notificationCount" style="display: none;">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow-lg notification-dropdown" aria-labelledby="notificationDropdown">
+                        <h6 class="dropdown-header">Notifications</h6>
+                        <div id="notificationList" class="notification-list">
+                            <!-- Dynamic Notifications will be inserted here -->
+                        </div>
+                        
+                    </div>
+                </li>
+                
+
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark pro-pic" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="{% if request.user.image %}{{request.user.image.url}}{% endif %}" alt="user" class="rounded-circle" width="31"></a>
+                    <div class="dropdown-menu dropdown-menu-right user-dd animated">
+                        <a class="dropdown-item" href="{% url "dashboard:admin_profile" %}"><i class="mdi mdi-account m-r-5 m-l-5"style="font-size: 20px;"></i> View Profile</a>
+                        <a class="dropdown-item" href="/pickleit-admin-main/" target="_blank"><i class="mdi mdi-account-settings-variant m-r-5 m-l-5"style="font-size: 20px;"></i> Admin Console</a>
+                        <a id="logoutLink" class="dropdown-item" href="#"><i class="fas fa-sign-out-alt m-r-5 m-l-5"></i> Logout</a>
+                        
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+<div id="logoutModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <h3 class="modal-title">Logout Confirmation</h3>
+        <p class="modal-text">Are you sure you want to do logout?</p>
+        <div class="modal-buttons">
+            <button id="confirmLogout" class="btn btn-primary">Confirm</button>
+            <button id="cancelLogout" class="btn btn-outline-primary">Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('logoutLink').addEventListener('click', function(event) {
+        event.preventDefault();
+        document.getElementById('logoutModal').style.display = 'flex'; // Use flex for centering
+    });
+
+    document.getElementById('confirmLogout').addEventListener('click', function () {
+        window.location.href = "{% url 'dashboard:logout' %}";
+    });
+
+    document.getElementById('cancelLogout').addEventListener('click', function () {
+        document.getElementById('logoutModal').style.display = 'none';
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const roomName = "user_1";  // Replace dynamically
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const wsUrl = `${wsScheme}://${window.location.host}/ws/notify/${roomName}/`;
+
+        const notificationDropdown = document.getElementById("notificationDropdown");
+        const notificationList = document.getElementById("notificationList");
+        const notificationCount = document.getElementById("notificationCount");
+
+        let unreadNotificationIds = [];
+
+        const socket = new WebSocket(wsUrl);
+
+        socket.onopen = function () {
+            console.log("✅ WebSocket Connected.");
+        };
+
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            console.log("🔔 Notification received:", data);
+
+            if (data.message === "Get Notification") {
+                updateNotifications(data.all_notifications, data.unread_noti_count);
+            }
+        };
+
+        socket.onclose = function () {
+            console.warn("⚠️ WebSocket Closed. Reconnecting in 5 seconds...");
+            setTimeout(() => window.location.reload(), 5000);
+        };
+
+        socket.onerror = function (error) {
+            console.error("❌ WebSocket Error:", error);
+        };
+
+        function updateNotifications(notifications, unreadCount) {
+            notificationList.innerHTML = "";
+            unreadNotificationIds = [];
+
+            notifications.forEach(notification => {
+                const notificationItem = document.createElement("a");
+                notificationItem.href = "#";
+                notificationItem.classList.add("dropdown-item", "d-flex", "align-items-center", "notification-item");
+
+                const iconWrapper = document.createElement("div");
+                iconWrapper.classList.add("notification-icon", "bg-primary", "text-white");
+
+                const icon = document.createElement("i");
+                icon.classList.add("fas", "fa-bell");
+                iconWrapper.appendChild(icon);
+
+                const textWrapper = document.createElement("div");
+                textWrapper.classList.add("notification-text", "ms-2");
+
+                const title = document.createElement("span");
+                title.classList.add("fw-bold");
+                title.textContent = notification.titel || "New Notification";
+
+                const message = document.createElement("small");
+                message.classList.add("d-block", "text-muted");
+                message.innerHTML = breakText(notification.text_message, 30);
+
+                const timestamp = document.createElement("small");
+                timestamp.classList.add("d-block", "text-muted");
+                timestamp.textContent = formatTimestamp(notification.created_at);
+
+                textWrapper.appendChild(title);
+                textWrapper.appendChild(message);
+                textWrapper.appendChild(timestamp);
+
+                notificationItem.appendChild(iconWrapper);
+                notificationItem.appendChild(textWrapper);
+                const deleteBtn = document.createElement("button");
+                deleteBtn.classList.add("btn", "btn-sm", "ml-2", "text-danger");
+                deleteBtn.innerHTML = '<i class="fa fa-trash-alt"></i>';  // Trash icon
+                deleteBtn.style.marginLeft = "auto";
+                deleteBtn.style.alignSelf = "center";
+                deleteBtn.setAttribute("title", "Delete Notification");
+
+                // Append delete button
+                notificationItem.appendChild(deleteBtn);
+
+                // Attach delete handler
+                deleteBtn.addEventListener("click", function (e) {
+                    e.stopPropagation(); // Prevent dropdown from closing
+                    deleteNotification(notification.id, notificationItem);
+                });
+                notificationList.appendChild(notificationItem);
+
+                if (!notification.is_read) {
+                    notificationItem.classList.add("unread-notification");
+                    unreadNotificationIds.push(notification.id);
+
+                    notificationItem.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        markSingleNotificationAsRead(notification.id, notificationItem);
+                    });
+                }
+            });
+
+            updateNotificationCounter();
+        }
+
+        function markSingleNotificationAsRead(notificationId, element) {
+            fetch(`/admin/read_notification/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ unread_notification_ids: [notificationId] }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("✅ Notification marked as read:", data);
+                element.classList.remove("unread-notification");
+                unreadNotificationIds = unreadNotificationIds.filter(id => id !== notificationId);
+                updateNotificationCounter();
+            })
+            .catch(error => {
+                console.error("❌ Error marking notification as read:", error);
+            });
+        }
+
+        function updateNotificationCounter() {
+            if (unreadNotificationIds.length > 0) {
+                notificationCount.textContent = unreadNotificationIds.length;
+                notificationCount.style.display = "block";
+            } else {
+                notificationCount.style.display = "none";
+            }
+        }
+
+        function breakText(text, length) {
+            if (!text) return "No message available";
+            return text.replace(new RegExp(`(.{1,${length}})`, "g"), "$1<br>");
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return "Unknown time";
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        // Mark all unread as read when dropdown clicked
+        notificationDropdown.addEventListener("click", function () {
+            if (unreadNotificationIds.length > 0) {
+                markNotificationsAsRead(unreadNotificationIds);
+            }
+        });
+
+        function markNotificationsAsRead(notificationIds) {
+            fetch(`/admin/read_notification/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ unread_notification_ids: notificationIds }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("✅ All notifications marked as read:", data);
+                document.querySelectorAll(".unread-notification").forEach(el => {
+                    el.classList.remove("unread-notification");
+                });
+                unreadNotificationIds = [];
+                updateNotificationCounter();
+            })
+            .catch(error => console.error("❌ Error marking all notifications as read:", error));
+        }
+
+        function getCSRFToken() {
+            return document.cookie.split("; ")
+                .find(row => row.startsWith("csrftoken"))
+                ?.split("=")[1] || "";
+        }
+        function deleteNotification(notificationId, element) {
+            fetch(`/admin/delete_notification/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ notification_id: notificationId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("🗑️ Notification deleted:", data);
+                element.remove(); // Remove from DOM
+                unreadNotificationIds = unreadNotificationIds.filter(id => id !== notificationId);
+                updateNotificationCounter();
+            })
+            .catch(error => console.error("❌ Error deleting notification:", error));
+        }
+    });
+</script>

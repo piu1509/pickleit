@@ -1,0 +1,139 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="text-center mb-4">Add a New Club</h3>
+    <div class="nw-form">
+        <form id="addClubForm" method="POST" enctype="multipart/form-data" action="{% url 'user_side:add_my_club' %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Club Name:</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="location" class="form-label">Location:</label>
+                <textarea name="location" id="location" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="open_time" class="form-label">Open Time:</label>
+                    <input type="time" name="open_time" id="open_time" class="form-control">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="close_time" class="form-label">Close Time:</label>
+                    <input type="time" name="close_time" id="close_time" class="form-control">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="contact" class="form-label">Contact:</label>
+                <input type="text" name="contact" id="contact" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" name="email" id="email" class="form-control">
+            </div>
+
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_vip" id="is_vip" class="form-check-input">
+                <label for="is_vip" class="form-check-label">Is VIP</label>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description:</label>
+                <textarea name="description" id="description" class="form-control" rows="4" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="join_amount" class="form-label">Join Amount:</label>
+                <input type="number" step="0.01" name="join_amount" id="join_amount" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="unit" class="form-label">Currency:</label>
+                <select name="unit" id="unit" class="form-select">
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Upload Images:</label>
+                <div id="image-upload-container">
+                    <div class="input-group mb-2">
+                        <input type="file" name="images" class="form-control" required>
+                        <button type="button" class="btn btn-success add-image">➕</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function initAutocomplete() {
+        var input = document.getElementById('location');
+        var options = {
+            types: ['geocode'], // Restrict to address-based suggestions
+            
+        };
+    
+        // Create a new Autocomplete object and bind it to the location input
+        var autocomplete = new google.maps.places.Autocomplete(input, options);
+    
+        // Add listener to update the location field when an address is selected
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                return;
+            }
+            // Optional: You can log place details or handle them here
+            console.log(place);
+        });
+    }
+    
+    // Load Google Maps API with Places API
+    function loadGoogleMapsAPI() {
+        var script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAQ_OGAb4yuL8g55IMufP3Dwd4yjrWxrdI&libraries=places&callback=initAutocomplete';
+        script.async = true;
+        document.head.appendChild(script);
+    }
+    
+    // Call the function to load Google Maps API
+    loadGoogleMapsAPI();
+    </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const container = document.getElementById("image-upload-container");
+
+        container.addEventListener("click", function (event) {
+            if (event.target.classList.contains("add-image")) {
+                event.preventDefault();
+                let newField = document.createElement("div");
+                newField.classList.add("input-group", "mb-2");
+                newField.innerHTML = `
+                    <input type="file" name="images" class="form-control" required>
+                    <button type="button" class="btn btn-danger remove-image">➖</button>
+                `;
+                container.appendChild(newField);
+            } else if (event.target.classList.contains("remove-image")) {
+                event.preventDefault();
+                event.target.parentElement.remove();
+            }
+        });
+    });
+</script>
+
+{% endblock %}

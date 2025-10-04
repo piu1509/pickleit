@@ -1,0 +1,118 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% block content %}
+<div class="container-fluid mt-2">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-lg p-4">
+                <h3 class="text-center mb-4">Edit Profile</h3>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Profile Picture -->
+                    <div class="text-center mb-3">
+                        {% if user_details.image %}
+                            <img src="{{ user_details.image.url }}" alt="Profile Picture" class="rounded-circle" width="120" height="120" id="profilePicPreview">
+                        {% endif %}
+                        <div class="mt-2">
+                            <input type="file" name="profile_picture" class="form-control" id="profilePicInput">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First Name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ user_details.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ user_details.last_name }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ user_details.email }}" required readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" name="phone" class="form-control" value="{{ user_details.phone }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-control">
+                                <option value="Male" {% if user_details.gender == "Male" %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if user_details.gender == "Female" %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if user_details.gender == "Other" %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Rank</label>
+                            <input type="text" name="rank" class="form-control" value="{{ user_details.rank }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" name="dob" class="form-control" value="{{ user_details.user_birthday|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" id="location" name="location" class="form-control" value="{{ user_details.permanent_location }}" placeholder="Enter your location">
+                            <input type="hidden" id="latitude" name="latitute" value="{{ user_details.latitute }}">
+                            <input type="hidden" id="longitude" name="longitute" value="{{ user_details.longitute }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bio</label>
+                        <textarea name="bio" class="form-control" rows="3">{{ user_details.bio }}</textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ MAP_API_KEY }}&libraries=places"></script>
+<script>
+    function initAutocomplete() {
+        var locationInput = document.getElementById("location");
+        var autocomplete = new google.maps.places.Autocomplete(locationInput, { types: ["geocode"] });
+        autocomplete.addListener("place_changed", function () {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) return;
+            document.getElementById("latitude").value = place.geometry.location.lat();
+            document.getElementById("longitude").value = place.geometry.location.lng();
+        });
+    }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        initAutocomplete();
+        var profilePicInput = document.getElementById("profilePicInput");
+        var profilePicPreview = document.getElementById("profilePicPreview");
+        
+        profilePicInput.addEventListener("change", function () {
+            var file = profilePicInput.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    profilePicPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
+{% endblock %}

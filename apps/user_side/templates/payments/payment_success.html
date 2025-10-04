@@ -1,0 +1,6 @@
+{% extends "base/base_user.html" %}
+{% block content %}
+<h2>Payment Successful!</h2>
+<p>Your payment of ${{ amount }} has been processed successfully.</p>
+<a href="{% url 'user_side:user_wallet' %}">Go Back to Dashboard</a>
+{% endblock %}

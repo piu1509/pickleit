@@ -1,0 +1,38 @@
+{% load custom_tags %}
+<div class="row mt-2">
+    <div class="col-xl-12">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Subscription Details</h5>
+                <div style="height: 200px; overflow-y: auto">
+                    <table class="table">
+                        <thead>
+                          <tr>                            
+                            <th scope="col">Plan</th>
+                            <th scope="col">Start Date</th>
+                            <th scope="col">End Date</th>
+                            
+                          </tr>
+                        </thead>
+                        <tbody>  
+                            {% if all_buy_plan %}
+                                {% for plan in all_buy_plan %}
+                                    <tr>
+                                    <td>{{plan.plan.name}}</td>
+                                    <td>{{plan.start_date}}</td>
+                                    <td>{{plan.end_date}}</td>
+                                    
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <td>Free Version</td>
+                                <td>N/A</td>
+                                <td>N/A</td>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

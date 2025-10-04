@@ -1,0 +1,272 @@
+{% load custom_tags %}
+
+<div class="row mt-2">
+    <div class="col-xl-12">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Social Feeds</h5>
+                <div class="row">
+                    {% for post in social_feed_list %}
+                        <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            <div class="post-card border p-3 d-flex flex-column" id="post-{{ post.id }}">
+                                <!-- Header -->
+                                <div class="post-header d-flex align-items-center gap-2">
+                                    <img src="{% if post.user.image %}{{ post.user.image.url }}{% else %}https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-0.png{% endif %}" alt="User Avatar" width="50" height="50" class="rounded-circle">
+                                    <div>
+                                        <small class="font-bold">{{ post.user.first_name }} {{ post.user.last_name }}</small><br>
+                                        <small class="text-muted">{{ post.created_at|date:"F d, Y" }}</small>
+                                    </div>
+                                </div>
+
+                                <!-- Content -->
+                                <div class="post-content mt-2">
+                                    <p>{{ post.text }}</p>
+                                    <div id="feedCarousel{{ post.id }}" class="carousel slide" data-bs-ride="carousel">
+                                        <div class="carousel-inner">
+                                            {% for file in post.post_file.all %}
+                                                {% if file.file %}
+                                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                                        <img src="{{ file.file.url }}" class="d-block w-100 rounded club-image" alt="">
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        {% if post.post_file.all|length > 1 %}
+                                            <button class="carousel-control-prev" type="button" data-bs-target="#feedCarousel{{ post.id }}" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            </button>
+                                            <button class="carousel-control-next" type="button" data-bs-target="#feedCarousel{{ post.id }}" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="post-actions mt-2">
+                                    <button class="btn btn-link like-btn" data-post-id="{{ post.id }}">
+                                        {% if post.is_like %}
+                                            <i class="fa fa-heart text-danger"></i>
+                                        {% else %}
+                                            <i class="fa fa-heart "></i>
+                                        {% endif %}
+                                        <span class="like-count">({{ post.number_like }})</span>
+                                    </button>
+                                    <button class="btn btn-link" onclick="toggleComments({{ post.id }})">
+                                        <i class="fa fa-comment"></i> ({{ post.number_comment }})
+                                    </button>
+                                    <button class="btn btn-link" onclick="copyLink('{% url 'user_side:view_post' post.id %}')">
+                                        <i class="fa fa-share"></i>
+                                    </button>
+                                    <a class="btn btn-link" href="{% url 'dashboard:social_feed_view' post.id %}">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                </div>
+
+                                <!-- Comments -->
+                                <div id="comments-{{ post.id }}" class="comment-section d-none">
+                                    {% for comment in post.post_comment.all %}
+                                        <div class="comment mb-1">
+                                            <strong>{{ comment.user.username }}</strong>: {{ comment.comment_text }}
+                                            <br>
+                                            <small class="text-muted">{{ comment.created_at|date:"F d, Y H:i" }}</small>
+                                        </div>
+                                    {% endfor %}
+                                    <form class="comment-form mt-2" action="{% url 'user_side:add_comment' post.id %}" method="POST">
+                                        {% csrf_token %}
+                                        <textarea class="form-control mb-1" rows="2" name="comment_text" placeholder="Add a comment..."></textarea>
+                                        <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+                                    </form>
+                                    <!-- Comments -->
+                                </div>
+                               
+                            </div>
+                        </div>
+                        <script>
+                            function toggleComments(id) {
+                                const commentDiv = document.getElementById(`comments-${id}`);
+                                commentDiv.classList.toggle('d-none');
+                            }
+                        </script>
+
+                        <!-- Edit Post Modal -->
+                        <div class="modal fade" id="editPostModal{{ post.id }}" tabindex="-1" aria-labelledby="editPostModalLabel{{ post.id }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editPostModalLabel{{ post.id }}">Edit Post</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="edit-post-form-{{ post.id }}">
+                                            {% csrf_token %}
+                                            <textarea class="form-control" rows="4" name="text">{{ post.text }}</textarea>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary edit-post-btn" data-post-id="{{ post.id }}">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                    <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'dashboard/not_found.html' %}
+</div>
+                    {% endfor %}
+                    </div>
+                    {% if social_feed_list.paginator.num_pages > 1 %}
+                    <div class="pagination">
+                        {% if social_feed_list.has_previous %}
+                            <a href="?feed_page={{ social_feed_list.previous_page_number }}">&laquo; Previous </a>
+                        {% endif %}
+
+                        <span>Page {{ social_feed_list.number }} of {{ social_feed_list.paginator.num_pages }}</span>
+
+                        {% if social_feed_list.has_next %}
+                            <a href="?feed_page={{ social_feed_list.next_page_number }}"> Next &raquo;</a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Like functionality (existing)
+        const likeButtons = document.querySelectorAll('.like-btn');
+        likeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.getAttribute('data-post-id');
+                const heartIcon = this.querySelector('i');
+                const likeCountSpan = this.querySelector('.like-count');
+
+                fetch(`/user_side/like_post/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    // Toggle heart icon
+                    if (data.is_liked) {
+                        heartIcon.classList.remove('bi', 'bi-heart');
+                        heartIcon.classList.add('fa-solid', 'fa-heart', 'text-danger');
+                    } else {
+                        heartIcon.classList.remove('fa-solid', 'fa-heart', 'text-danger');
+                        heartIcon.classList.add('bi', 'bi-heart');
+                    }
+
+                    // Update like count
+                    likeCountSpan.textContent = `(${data.like_count})`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+            });
+        });
+
+        // Edit post functionality
+        const editButtons = document.querySelectorAll('.edit-post-btn');
+        editButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.getAttribute('data-post-id');
+                const form = document.querySelector(`#edit-post-form-${postId}`);
+                const textArea = form.querySelector('textarea[name="text"]');
+                const newText = textArea.value.trim();
+
+                if (!newText) {
+                    alert('Post content cannot be empty.');
+                    return;
+                }
+
+                fetch(`/user_side/edit_post/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: newText })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    // Update post content in the UI
+                    const postContent = document.querySelector(`#post-content-${postId} p`);
+                    postContent.textContent = data.text;
+
+                    // Close the modal
+                    const modal = document.querySelector(`#editPostModal${postId}`);
+                    const bootstrapModal = bootstrap.Modal.getInstance(modal);
+                    bootstrapModal.hide();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+            });
+        });
+
+        // Delete post functionality
+        const deleteButtons = document.querySelectorAll('.delete-post-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const postId = this.getAttribute('data-post-id');
+                
+                if (!confirm('Are you sure you want to delete this post?')) {
+                    return;
+                }
+
+                fetch(`/user_side/delete_post/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Error: ' + data.error);
+                        return;
+                    }
+
+                    // Remove the post from the UI
+                    const postElement = document.querySelector(`#post-${postId}`);
+                    postElement.remove();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                });
+            });
+        });
+    });
+
+    // Copy link function (unchanged)
+    function copyLink(url) {
+        navigator.clipboard.writeText(window.location.origin + url)
+            .then(() => alert('Link copied to clipboard!'))
+            .catch(err => console.error('Failed to copy: ', err));
+    }
+</script>

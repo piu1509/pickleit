@@ -1,0 +1,598 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% load custom_tags %}
+
+{% block extra_css %}
+
+<style>
+  .team-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      font-size: 16px;
+  }
+
+  .team-name-wrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+  }
+
+  .card-header span {
+      font-weight: bold;
+  }
+
+  .match-card {
+      margin-bottom: 1rem;
+  }
+
+  .card-body {
+      text-align: center;
+  }
+
+  @media (max-width: 768px) {
+      .col-md-4 {
+          flex: 0 0 100%;
+          max-width: 100%;
+      }
+  }
+    .main_winner_wrapper{
+        position: relative;
+    }
+    .main_winner_wrapper .img-thumbnail{
+        padding: 0;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        object-position: top;
+    }
+    .crown_add .img-thumbnail{
+        border-color: #212121;
+        border-width: 4px;
+        border-radius: 50%;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block page_title %}
+    Tournament
+{% endblock %}
+
+{% block content %}
+    <div class="">
+
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><i class='fa fa-times'></i></button>
+            </div>
+        {% endfor %}
+        {% endif %}
+        
+        {% if play_details_update %}
+        <div class="alert alert-danger alert-dismissible fade show mt-4 m-4" role="alert">
+            <p style="color: red;"><strong>Courts, set, point</strong> are not define for event. <a href="/admin/edit_open_play/{{league_details.id}}/">go to edit event</a> </p>
+        </div>
+        {% endif %}
+            
+
+      <!-- League Details Section -->
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <!-- League Title -->
+            <h5 class="mb-0">{{ league_details.name }}</h5>
+            
+            <!-- Buttons on the Right -->
+            <div>
+                {% if is_join %}
+                <a href="{% url 'dashboard:join_team_event' league_details.id %}" class="btn btn-success btn-sm">Register Team</a>
+                {% else %}
+                {% endif %}
+                
+                {% if matches %}
+                {% else %}
+                    {% if play_details_update %}
+                    <a type="button" style="color: black;" class="btn btn-light btn-sm mx-1" data-toggle="tooltip" data-placement="top" title="First set the Play types details for this tournament">Start Tournamnet</a>
+                    {% else %}
+                    <button type="button"
+                            class="btn btn-light btn-sm mx-1"
+                            data-bs-toggle="modal"
+                            data-bs-target="#startTournamentModal"
+                            data-league-id="{{ league_details.id }}">
+                        Start Tournament
+                    </button>
+                    <div class="modal fade" id="startTournamentModal" tabindex="-1" aria-labelledby="startTournamentModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content text-dark">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirm Start</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to start the tournament?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <a id="confirmStartBtn" class="btn btn-primary">Yes, Start</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% endif %}
+
+                {% endif %}
+                <a href="/admin/edit_open_play/{{league_details.id}}/" class="btn btn-light btn-sm mx-1"><i class="fa-solid fa-file-pen"></i></a>
+                {% comment %} <a href="{% url 'dashboard:delete_tournament' league_details.id %}" class="btn btn-light btn-sm mx-1"><i class="fa-regular fa-trash-can"></i></a> {% endcomment %}
+                <a href="javascript:void(0);" 
+                    class="btn btn-light btn-sm mx-1" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#deleteModal" 
+                    data-league-id="{{ league_details.id }}"
+                    data-delete-url="{% url 'dashboard:delete_open_play' league_details.id %}">
+                    <i class="fa-regular fa-trash-can"></i>
+                </a>
+                <!-- Delete Confirmation Modal -->
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content text-dark">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                            <button type="button" class="btn" data-bs-dismiss="modal" aria-label="Close">
+                                <i class="fa fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete this tournament?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <a href="#" class="btn btn-danger" id="confirmDeleteBtn">Confirm</a>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var deleteModal = document.getElementById('deleteModal');
+                        var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+                        deleteModal.addEventListener('show.bs.modal', function (event) {
+                            var button = event.relatedTarget;
+                            var deleteUrl = button.getAttribute('data-delete-url');
+                            confirmDeleteBtn.setAttribute('href', deleteUrl);
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+          <div class="card-body d-flex align-items-center gap-3">
+            <div class="tournament-img">
+                {% if league_details.image %}
+                    <img src="/media/{{ league_details.image }}" alt="{{ league_details.name }}" class="img-thumbnail">
+                {% else %}
+                    <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="Default Tournament" class="img-thumbnail">
+                {% endif %}
+            </div>
+            <div class="tournament-details">
+                <div class="sgl-info d-flex align-items-center gap-3 mb-2">
+                    <h6 class="mb-0">Player Type:</h6>
+                    <p class="mb-0"><strong><span id="player-type">{{league_details.team_type.name}}</span></strong></p>
+                </div>
+                <div class="sgl-info d-flex align-items-center gap-3 mb-2">
+                    <h6 class="mb-0">Registration Fee:</h6>
+                    <p class="mb-0"><strong>$<span id="register-fee">{{league_details.registration_fee}}</span></strong></p>
+                </div>
+                <div class="sgl-info d-flex align-items-center gap-3 mb-2">
+                    <h6 class="mb-0">Winner:</h6>
+                    <p class="mb-0"><strong>{{league_details.winner_team.name}}</strong></p>
+                </div>
+                <div class="sgl-info d-flex align-items-center gap-3 mb-2">
+                    <h6 class="mb-0">Joined Team:</h6>
+                    <p class="mb-0"><strong>{{teams|length}}</strong></p>
+                </div>
+                <!-- <div class="progress">
+                    <div 
+                        class="progress-bar" 
+                        role="progressbar" 
+                        style="width: 80%" 
+                        aria-valuenow="80" 
+                        aria-valuemin="0" 
+                        aria-valuemax="100">                        
+                    </div>
+                </div> -->
+            </div>
+          </div>
+      </div>
+
+      <!-- Join Teams Section -->
+       <div class="card mb-4">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+             <h5 class="mb-0">Joined Teams</h5>              
+          </div>
+          <div class="card-body">
+              <div class="row justify-content-center" style="gap: 15px;">
+                
+                {% for team in teams %}
+                <div class="jt-block position-relative">
+                    {% if is_unregister %}
+                        <button style="z-index: 1000; display: block;"
+                            class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 open-remove-modal"
+                            data-bs-toggle="modal"
+                            data-bs-target="#removeTeamModal"
+                            data-team-id="{{ team.id }}"
+                            data-league-id="{{ league_details.id }}"
+                            data-team-name="{{ team.name }}">
+                            &minus;
+                        </button>
+                    {% endif %}
+
+                    <div class="main_winner_wrapper crown_add" style="position: relative;">
+                        {% if team.id == league_details.winner_team.id %}
+                            <div style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;background-color: #ffffff70; backdrop-filter: blur(2px);">
+                                <i class="fas fa-crown" style="font-size: 24px; color: gold; position: absolute;top: 50%; left: 50%;transform: translate(-50%,-50%);z-index: 1;"></i>
+                            </div>
+                        {% endif %}
+
+                        {% if team.team_image and team.team_image != 'null' %}
+                            <img src="{{ team.team_image.url }}" alt="{{ forloop.counter }}{{ team.team_image }}" class="img-thumbnail team-image" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                            <img src="https://i.sstatic.net/l60Hf.png" alt="{{ forloop.counter }}" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                        {% endif %}
+                    </div>
+                    <h6 class="mt-2 mb-0">{{ team.name }}</h6>
+                </div>
+                <div class="modal fade" id="removeTeamModal" tabindex="-1" aria-labelledby="removeTeamModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Remove Team</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="removeTeamModalBody">
+                                <!-- Will be filled by JS -->
+                                <p>Are you sure you want to remove this team?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                <button type="button" class="btn btn-danger" id="confirmRemoveBtn">Yes, Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% empty %}
+                    <p>No teams joined yet.</p>
+                {% endfor %}
+
+                                
+              </div>
+          </div>
+      </div>
+      
+      <!-- Matches Section -->
+      <div class="card mb-4">
+          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <!-- League Title -->
+            <h5 class="mb-0">Matches List</h5>
+            
+            <!-- Buttons on the Right -->
+            <div>
+                
+                {% if is_edit_match %}
+                <a href="{% url 'dashboard:edit_matches_open_play' league_details.id %}" class="btn btn-light btn-sm mx-1"><i class="fa-solid fa-file-pen"></i></a>
+                {% else %}
+                <a href="#" class="btn btn-light btn-sm mx-1" class="disabled"><i class="fa-solid fa-file-pen"></i></a>
+                {% endif %}
+                    
+                
+            </div>
+        </div>
+          <div class="card-body">
+              <div class="row">
+                  
+                  {% for match in matches %}
+                    <div class="col-md-4">
+                        <div class="card match-card border shadow-sm">
+                            <div class="card-header d-flex justify-content-between">
+                                <span>Match {{match.match_number}}: {{match.team1|truncate_team_name}} VS {{match.team2|truncate_team_name}}</span>
+                                <div>
+                                    <a href="#" class="mr-2" data-toggle="modal" data-target="#editModal{{ match.id }}"><i class="fa-solid fa-file-pen"></i></a>
+                                    <a href="#" data-toggle="modal" data-target="#exampleModal{{ match.id }}"><i class="fa-solid fa-eye"></i></a>
+                                    <!-- <button class="btn btn-primary btn-sm">Show Score</button> -->
+                                    
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-5 team-name-wrapper">
+                                        {% if match.team1_image and match.team1_image != 'null' %}
+                                            {% if match.team1_image.url %}
+                                                <img src="{{ match.team1_image.url }}" alt="{{ forloop.counter }}" class="img-thumbnail team-image" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="https://i.sstatic.net/l60Hf.png" alt="{{ forloop.counter }}" class="img-thumbnail team-image" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                        {% else %}
+                                            <img src="https://i.sstatic.net/l60Hf.png" alt="{{ forloop.counter }}" class="img-thumbnail team-image" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% endif %}
+                                        <p class="team-name">{{match.team1}} 
+                                        {% if match.team1 == match.winner_team and match.is_completed %}
+                                        <span >&#9989;</span>
+                                        {% else %}
+                                        
+                                            {% if match.is_completed %}
+                                                <span >&#10062;</span>
+                                            {% else %}
+
+                                            {% endif %}
+                                            
+                                        {% endif %}
+                                            </p>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <span>VS</span>
+                                    </div>
+                                    <div class="col-md-5 team-name-wrapper">
+                                        {% if match.team2_image and match.team2_image != 'null' %}
+                                            {% if match.team2_image.url %}
+                                                <img src="{{ match.team2_image.url }}" alt="{{ forloop.counter }}" class="img-thumbnail team-image" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="https://i.sstatic.net/l60Hf.png" alt="{{ forloop.counter }}" class="img-thumbnail team-image" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                        {% else %}
+                                            <img src="https://i.sstatic.net/l60Hf.png" alt="{{ forloop.counter }}" class="img-thumbnail team-image" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% endif %}
+                                        <p class="team-name">{{match.team2}}
+                                        {% if match.team2 == match.winner_team and match.is_completed %}
+                                            <span>&#9989;</span>
+                                        {% else %}
+                                            
+                                            {% if match.is_completed %}
+                                                <span >&#10062;</span>
+                                            {% else %}
+                                            
+                                            {% endif %}
+                                            
+                                        {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Modal for show result-->
+                    <div class="modal fade" id="exampleModal{{ match.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel{{ match.id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">{{match.match_number}}: {{match.team1}} VS {{match.team2}}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    {% if match.is_completed %}
+                                    {% else %}
+                                    <div class="alert alert-dark" role="alert"> 
+                                        Match is Not Completed
+                                    </div>
+                                    {% endif %}
+                                    <table class="table">
+                                        <thead>
+                                          <tr>
+                                            <th scope="col">SET NO</th>
+                                            <th scope="col">Team 1</th>
+                                            <th scope="col">Team 2</th>
+                                            <th scope="col">Status</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                            
+                                          {% for court in match.result %}     
+                                            <tr>
+                                                <th scope="row">{{court.set_number}}</th>
+                                                <td>{{court.team1_point}} 
+                                                {% if match.team1 == court.win_team.name %}
+                                                <span>&#10003;</span>
+                                                {% endif %}
+                                                </td>    
+                                                <td>{{court.team2_point}}
+                                                {% if match.team2 == court.win_team.name %}
+                                                <span>&#10003;</span>
+                                                {% endif %}
+                                                </td>
+                                                <td>{% if court.is_completed %} Completed {% else %} Not Completed {% endif %}</td>
+                                            </tr>
+                                          {% endfor %}
+                                        </tbody>
+                                    </table>
+                                        
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Modal for show result-->
+                    <div class="modal fade" id="editModal{{ match.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ match.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editModalLabel{{ match.id }}">
+                                        <strong>Edit Match {{ match.match_number }}</strong>: {{ match.team1 }} VS {{ match.team2 }}
+                                    </h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Set No</th>
+                                                    <th scope="col">{{ match.team1 }}</th>
+                                                    <th scope="col">{{ match.team2 }}</th>
+                                                    <th scope="col">Status</th>
+                                                    <th scope="col">Action</th>
+                                                </tr>
+                                            </thead>
+                                            
+                                                {% if match.result %}
+                                                <tbody>
+                                                {% for court in match.result %}
+                                                    <form method="POST" action="{% url 'dashboard:update_match_open_play' set_score_id=court.id %}">
+                                                        {% csrf_token %}
+                                                        <tr>
+                                                            <td>
+                                                                <input type="number" name="set_num_{{ court.id }}" value="{{ court.set_number }}" class="form-control" readonly>
+                                                                <input type="hidden" name="tournament_id" value="{{ league_details.id }}">
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" name="t1_score_{{ court.id }}" value="{{ court.team1_point }}" class="form-control">
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" name="t2_score_{{ court.id }}" value="{{ court.team2_point }}" class="form-control">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" name="status_{{ court.id }}" value="{{ court.is_completed }}" class="form-control" readonly>
+                                                            </td>
+                                                            <td>
+                                                                <button type="submit" class="btn btn-primary btn-sm save-btn">Save</button>
+                                                            </td>
+                                                        </tr>
+                                                    </form>
+                                                {% endfor %}
+                                                </tbody>
+                                                {% else %}
+                                                <tbody>
+                                                    <form method="POST" action="{% url 'dashboard:submit_score_open_play' tour_id=league_details.id %}">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="match_id" value="{{ match.id }}">
+                                                    {% for i in match.set_number|times %}
+                                                        <tr>
+                                                            <td>
+                                                                <input type="number" name="set_num_{{ forloop.counter }}" value="{{ forloop.counter }}" class="form-control" readonly>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" name="team1_score" class="form-control" required>
+                                                            </td>
+                                                            <td>
+                                                                <input type="number" name="team2_score" class="form-control" required>
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control" value="Pending" readonly>
+                                                            </td>
+                                                            
+                                                        </tr>
+                                                    {% endfor %}
+                                                    <tr>
+                                                        <td colspan="5" class="text-end">
+                                                            <button type="submit" class="btn btn-success">Submit All Scores</button>
+                                                        </td>
+                                                    </tr>
+                                                </form>
+                                                </tbody>
+                                                {% endif %}
+                                            
+                                            
+                                        </table>
+                                    
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    
+                    <p>Matches not started yet.</p>
+                    {% endfor %}
+  
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5/8b3Of/9FSVlvNfLuGzRY/j7MXLV17pG4YsYVg+" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    
+    <script>
+        const teamImages = document.querySelectorAll('.team-image');
+        teamImages.forEach(img => {
+            img.onerror = function() {
+                img.src = "https://i.sstatic.net/l60Hf.png";
+            }
+        });
+    </script>
+    
+    <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('startTournamentModal');
+    const confirmBtn = document.getElementById('confirmStartBtn');
+
+    modal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      const leagueId = button.getAttribute('data-league-id');
+
+      // Set the URL on the confirm button
+      confirmBtn.href = `/admin/start_open_play/${leagueId}/`;  // Adjust if URL pattern is different
+    });
+  });
+</script>
+        
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let selectedTeamId = null;
+        let selectedLeagueId = null;
+
+        const removeTeamModal = document.getElementById('removeTeamModal');
+
+        removeTeamModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            selectedTeamId = button.getAttribute('data-team-id');
+            selectedLeagueId = button.getAttribute('data-league-id');
+            const teamName = button.getAttribute('data-team-name');
+
+            const modalBody = document.getElementById('removeTeamModalBody');
+            modalBody.innerHTML = `<p>Are you sure you want to remove <strong>${teamName}</strong> from the league?</p>`;
+        });
+
+        document.getElementById('confirmRemoveBtn').addEventListener('click', function () {
+            fetch('/admin/remove-team-from-league/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    team_id: selectedTeamId,
+                    league_id: selectedLeagueId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();  // Reload the page to reflect removal
+                } else {
+                    alert('Failed to remove team.');
+                }
+            })
+            .catch(() => {
+                alert('An error occurred while removing the team.');
+            });
+        });
+    });
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

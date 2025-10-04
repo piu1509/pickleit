@@ -1,0 +1,68 @@
+{% load custom_filters %}
+<div class="mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="card-title">Invitations</h5>
+        <a href="{% url 'user_side:invitation_list' %}" class="btn btn-primary btn-sm">View All</a>
+    </div>
+    <div class="row">
+        {% for item in invitation_list|slice:":3" %}
+            <div class="col-lg-4 col-md-4 col-sm-12">
+                <div class="card invitation-card border-0 shadow-sm" style="background-size: cover; background-position: center; border-radius: 10px;">
+                    <div class="card-body p-3 d-flex flex-column" style="background-color: rgba(255, 255, 255, 0.85); border-radius: 10px;">
+                        <h6 class="card-title mb-2 fs-6 fw-semibold">{{ item.event.name }}</h6>
+                        <p class="card-text mb-1 small">
+                            <strong>Invited by:</strong> {{ item.invited_by.first_name }} {{ item.invited_by.last_name }}
+                        </p>
+                        <p class="card-text mb-1 small">
+                            <strong>Date:</strong> {{ item.created_at|date:"j" | ordinal_day }} {{ item.created_at|date:"M, Y" }}
+                        </p>
+                        <p class="card-text mb-2 small">
+                            <strong>Status:</strong> 
+                            <span class="{% if item.status == 'pending' %}text-warning{% elif item.status == 'accepted' %}text-success{% else %}text-danger{% endif %}">
+                                {{ item.status|capfirst }}
+                            </span>
+                        </p>
+                        <div class="invitation-option d-flex justify-content-end gap-2">
+                            {% if item.status == 'Pending' %}
+                                <div class="d-flex gap-2">
+                                    <!-- <a href="javascript:void(0);" class="btn btn-outline-success btn-sm action-btn"
+                                    data-url="#" data-redirect="#">
+                                        <i class="fas fa-check-circle"></i>
+                                    </a>
+                                    <a href="javascript:void(0);" class="btn btn-outline-danger btn-sm action-btn"
+                                    data-url="#" data-redirect="#">
+                                        <i class="fas fa-times-circle"></i>
+                                    </a> -->
+                                    <form method="post" action="{% url 'user_side:accept_openplay_invitation' item.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-check-circle"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'user_side:decline_openplay_invitation' item.id %}" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-times-circle"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% elif item.status == 'Accepted' %}
+                                <!-- <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm action-btn"
+                                data-url="#" data-redirect="#">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </a> -->
+                                <a href="{% url 'user_side:join_team_event' item.event.id %}" 
+                                class="btn btn-outline-primary btn-sm action-btn">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            {% include 'base/not_found.html' %}
+        {% endfor %}
+    </div>
+</div>

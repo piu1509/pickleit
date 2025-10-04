@@ -1,0 +1,528 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">         
+    <h3 class="text-center"> 🏆 Edit {{ event.name }}</h3>       
+     
+    {% if play_details_update %}
+    <div class="alert alert-danger alert-dismissible fade show mt-4 m-4" role="alert">
+        <p style="color: red;"><strong>Courts, set, point</strong> are not define for tournamnet. <a href="#dynamic_fields">click for edit</a> </p>
+    </div>
+    {% endif %}
+        
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Tournament Name -->
+        <div class="mb-3">
+            <label for="tournamentName" class="form-label">Tournament Name</label>
+            <input type="text" id="tournamentName" name="tournament_name" class="form-control" value="{{ event.name }}" required>
+        </div>
+
+        <!-- League Start and End Dates -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="leagueStartDate" class="form-label">League Start Date</label>
+                    <input type="date" id="leagueStartDate" name="league_start_date" class="form-control" 
+                        value="{{ event.leagues_start_date|date:'Y-m-d' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="leagueEndDate" class="form-label">League End Date</label>
+                    <input type="date" id="leagueEndDate" name="league_end_date" class="form-control" 
+                        value="{{ event.leagues_end_date|date:'Y-m-d' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="registrationStartDate" class="form-label">Registration Start Date</label>
+                    <input type="date" id="registrationStartDate" name="registration_start_date" class="form-control" 
+                        value="{{ event.registration_start_date|date:'Y-m-d' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="registrationEndDate" class="form-label">Registration End Date</label>
+                    <input type="date" id="registrationEndDate" name="registration_end_date" class="form-control" 
+                        value="{{ event.registration_end_date|date:'Y-m-d' }}" required>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="imageUpload" class="form-label">League Image</label>
+                    <input type="file" id="imageUpload" name="image" class="form-control" accept="image/*" onchange="previewImage(event)">
+                </div>
+                <div class="mb-3 text-center">
+                    <label class="form-label">Current Image</label>
+                    <div>
+                        <img id="imagePreview" src="/media/{{ event.image }}" alt="League Image" class="img-fluid rounded" style="max-height: 200px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            function previewImage(event) {
+                const reader = new FileReader();
+                reader.onload = function(){
+                    const preview = document.getElementById("imagePreview");
+                    preview.src = reader.result;
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        </script>
+
+        <!-- Registration Start and End Dates -->
+        
+
+        <div class="form-group mb-3">
+            <label for="location">Location:</label>
+            <input type="text" class="form-control" id="location" name="location" 
+                    value="{{ event.location }}" placeholder="Enter a location">
+        </div>
+        <!-- Maximum Join Team -->
+        <div class="mb-3">
+            <label for="maxJoinTeam" class="form-label">Maximum No. Of Team Can Join</label>
+            <input type="number" id="maxJoinTeam" name="max_join_team" class="form-control" value="{{ event.max_number_team }}" required>
+        </div>
+
+        <!-- Join Team -->
+        <div class="mb-3">
+            <label for="joinTeam" class="form-label">Joined Teams</label>
+            
+            <div class="mb-3">
+                <label for="team-search" class="form-label">Search Team</label>
+                <div class="input-group">
+                    <input type="text" id="team-search" class="form-control" placeholder="Enter team name...">
+                    <button type="button" id="search-btn" class="btn btn-primary">🔍 Search</button>
+                </div>
+                <ul id="search-results" class="list-group mt-2" style="max-height: 200px; overflow-y: auto;"></ul>
+            </div>
+            
+            <div class="mb-3">
+                <label for="joinTeam" class="form-label">Joined Teams</label>
+                <ul id="joined-teams" class="list-group">
+                    {% for team in event.registered_team.all %}
+                        <li class="list-group-item d-flex align-items-center justify-content-between" data-id="{{ team.id }}">
+                            <img src="{% if team.team_image %}{{ team.team_image.url }} {% endif %}" class="team-image rounded-circle me-2">
+                            <span>{{ team.name }}</span>
+                            <button type="button" class="btn btn-danger btn-sm remove-btn">❌</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Hidden select field to store selected team IDs -->
+            <select id="joinTeam" name="join_team" class="form-control d-none" multiple>
+                {% for team in event.registered_team.all %}
+                    <option value="{{ team.id }}" selected>{{ team.name }}</option>
+                {% endfor %}
+            </select>
+            
+        <!-- JavaScript -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let searchInput = document.getElementById("team-search");
+                let searchBtn = document.getElementById("search-btn");
+                let searchResults = document.getElementById("search-results");
+                let joinedTeamsList = document.getElementById("joined-teams");
+                let selectField = document.getElementById("joinTeam");
+        
+                // ✅ Function to update hidden select field with selected team IDs
+                function updateSelectField() {
+                    selectField.innerHTML = "";
+                    document.querySelectorAll("#joined-teams li").forEach(li => {
+                        let teamId = li.getAttribute("data-id");
+                        selectField.innerHTML += `<option value="${teamId}" selected>${li.querySelector("span").textContent}</option>`;
+                    });
+                }
+        
+                // ✅ Function to remove a team
+                function removeTeam(event) {
+                    event.preventDefault();  // Prevent any accidental form submission
+                    let teamItem = event.target.closest("li"); // Get the <li> element
+        
+                    if (teamItem) {
+                        teamItem.remove(); // Remove from the list
+                        updateSelectField(); // Update hidden input
+                    }
+                }
+        
+                // ✅ Attach event listener to parent for dynamically added ❌ buttons
+                joinedTeamsList.addEventListener("click", function (event) {
+                    if (event.target.classList.contains("remove-btn")) {
+                        removeTeam(event);
+                    }
+                });
+        
+                // ✅ Function to add a team to the list
+                function addTeam(team) {
+                    if (!document.querySelector(`li[data-id='${team.id}']`)) {
+                        let li = document.createElement("li");
+                        li.className = "list-group-item d-flex align-items-center justify-content-between";
+                        li.setAttribute("data-id", team.id);
+                        li.innerHTML = `
+                            <img src="${team.image}" class="team-image rounded-circle me-2" width="30" height="30">
+                            <span>${team.name}</span>
+                            <button class="btn btn-danger btn-sm remove-btn">❌</button>
+                        `;
+        
+                        joinedTeamsList.appendChild(li);
+                        updateSelectField();
+                    }
+                }
+        
+                // ✅ Function to search teams via AJAX
+                function searchTeams() {
+                    let query = searchInput.value.trim();
+                    if (query.length === 0) return;
+        
+                    fetch(`/user_side/search_teams/?q=${query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            searchResults.innerHTML = ""; // Clear previous results
+                            data.teams.forEach(team => {
+                                if (!document.querySelector(`li[data-id='${team.id}']`)) {
+                                    let li = document.createElement("li");
+                                    li.className = "list-group-item d-flex align-items-center";
+                                    li.innerHTML = `
+                                        <img src="${team.team_image}" class="team-image rounded-circle me-2" width="30" height="30">
+                                        <span>${team.name}</span>
+                                    `;
+                                    li.onclick = function () {
+                                        addTeam(team);
+                                    };
+                                    searchResults.appendChild(li);
+                                }
+                            });
+                        });
+                }
+        
+                // ✅ Event Listener for the Search Button
+                searchBtn.addEventListener("click", searchTeams);
+            });
+        </script>
+        
+        
+
+        <!-- Registration Fee -->
+        <div class="mb-3">
+            <label for="registrationFee" class="form-label">Registration Fee</label>
+            <input type="number" id="registrationFee" name="registration_fee" class="form-control" value="{{ event.registration_fee }}" required>
+        </div>
+
+        <!-- Other Fees -->
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Other Fees</label>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="add-fee">+</button>
+            </div>
+            <div id="otherFeesContainer">
+                {% for topic, fee in event.others_fees.items %}
+                    <div class="input-group mb-2">
+                        <input type="text" name="other_fees_topic[]" class="form-control mr-2" placeholder="Enter fee description" value="{{ topic }}">
+                        <input type="number" name="other_fees[]" class="form-control mr-2" placeholder="Enter fees" value="{{ fee }}">
+                        <button type="button" class="btn btn-outline-danger remove-fee">-</button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        
+
+        <!-- Description -->
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter league description" required>{{ event.description }}</textarea>
+        </div>
+
+
+        <div class="container d-flex justify-content-center mt-4">
+            <h5>Add Organizer</h5>
+        </div>
+        
+        <div class="mb-3">
+            <label for="organizer-search" class="form-label">Search Organizer</label>
+            <div class="input-group">
+                <input type="text" id="organizer-search" class="form-control" placeholder="Enter organizer name...">
+                <button type="button" id="organizer-search-btn" class="btn btn-primary">🔍 Search</button>
+            </div>
+            <ul id="organizer-search-results" class="list-group mt-2" style="max-height: 200px; overflow-y: auto;"></ul>
+        </div>
+        
+        <!-- Selected Organizers List -->
+        <div class="mb-3">
+            <label for="selected-organizers" class="form-label">Selected Organizers</label>
+            <ul id="selected-organizers" class="list-group">
+                {% for user in event.add_organizer.all %}
+                    <li class="list-group-item d-flex align-items-center justify-content-between" data-id="{{ user.id }}">
+                        <img src="{% if user.profile_image %}{{ user.profile_image.url }}{% endif %}" 
+                             class="rounded-circle me-2" width="30" height="30">
+                        <span>{{ user.first_name }} {{ user.last_name }} ({{ user.email }})</span>
+                        <button type="button" class="btn btn-danger btn-sm remove-organizer">❌</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <!-- Hidden Select Field -->
+        <select id="organizer" name="organizer" class="form-control d-none" multiple>
+            {% for user in event.add_organizer.all %}
+                <option value="{{ user.id }}" selected>{{ user.first_name }} {{ user.last_name }}</option>
+            {% endfor %}
+        </select>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                let organizerSearchInput = document.getElementById("organizer-search");
+                let organizerSearchBtn = document.getElementById("organizer-search-btn");
+                let organizerSearchResults = document.getElementById("organizer-search-results");
+                let selectedOrganizersList = document.getElementById("selected-organizers");
+                let selectField = document.getElementById("organizer");
+            
+                // Function to update hidden select field
+                function updateSelectField() {
+                    selectField.innerHTML = "";
+                    document.querySelectorAll("#selected-organizers li").forEach(li => {
+                        let organizerId = li.getAttribute("data-id");
+                        let organizerName = li.querySelector("span").textContent;
+                        selectField.innerHTML += `<option value="${organizerId}" selected>${organizerName}</option>`;
+                    });
+                }
+            
+                // Function to remove organizer from the list
+                selectedOrganizersList.addEventListener("click", function (event) {
+                    if (event.target.classList.contains("remove-organizer")) {
+                        event.preventDefault();
+                        let organizerItem = event.target.closest("li");
+                        if (organizerItem) {
+                            organizerItem.remove();
+                            updateSelectField();
+                        }
+                    }
+                });
+            
+                // Function to add an organizer
+                function addOrganizer(organizer) {
+                    if (!document.querySelector(`li[data-id='${organizer.id}']`)) {
+                        let li = document.createElement("li");
+                        li.className = "list-group-item d-flex align-items-center justify-content-between";
+                        li.setAttribute("data-id", organizer.id);
+                        li.innerHTML = `
+                            <img src="${organizer.image}" class="rounded-circle me-2" width="30" height="30">
+                            <span>${organizer.first_name} ${organizer.last_name} (${organizer.email})</span>
+                            <button class="btn btn-danger btn-sm remove-organizer">❌</button>
+                        `;
+            
+                        selectedOrganizersList.appendChild(li);
+                        updateSelectField();
+                    }
+                }
+            
+                // Function to search organizers via AJAX
+                function searchOrganizers() {
+                    let query = organizerSearchInput.value.trim();
+                    if (query.length === 0) return;
+            
+                    fetch(`/user_side/search_organizers/?q=${query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            organizerSearchResults.innerHTML = "";
+                            data.organizers.forEach(organizer => {
+                                if (!document.querySelector(`li[data-id='${organizer.id}']`)) {
+                                    let li = document.createElement("li");
+                                    li.className = "list-group-item d-flex align-items-center";
+                                    li.innerHTML = `
+                                        <img src="${organizer.image}" class="rounded-circle me-2" width="30" height="30">
+                                        <span>${organizer.first_name} ${organizer.last_name} (${organizer.email})</span>
+                                    `;
+                                    li.onclick = function () {
+                                        addOrganizer(organizer);
+                                    };
+                                    organizerSearchResults.appendChild(li);
+                                }
+                            });
+                        });
+                }
+            
+                // Event listener for search button
+                organizerSearchBtn.addEventListener("click", searchOrganizers);
+            });
+            
+        </script>
+        <div class="container d-flex justify-content-center mt-4">
+            <h5>Cancellation Policy</h5>
+        </div>
+        <div id="cancellation_policies" class="mt-4">
+            {% for policy in policies %}
+            <div class="cancellation-policy dynamic-section">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label>Within Days</label>
+                            <input type="number" class="form-control" name="cancellation_days[]" value="{{ policy.within_day }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label>Refund %</label>
+                            <input type="number" class="form-control" name="refund_percentage[]" value="{{ policy.refund_percentage }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-policy">-</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        
+        <div class="d-flex justify-content-end my-2">
+            <button type="button" id="add_policy" class="btn btn-success btn-sm">Add Policy</button>
+        </div>
+
+        <div class="container d-flex justify-content-center mt-4">
+            <h5>Group Stage Details</h5>
+            
+        </div>
+        <div id="dynamic_fields" class="mt-4">
+            
+            {% for typ in play_type_details %}
+            {% if typ.is_show %}
+            <div id="round_robin_section" class="dynamic-section">
+                <h6>{{typ.name}}</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="round_robin_courts">Number of Courts</label>
+                            <input type="number" class="form-control" id="round_robin_courts" value="{{typ.number_of_courts}}" name="courts_{{forloop.counter}}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="round_robin_sets">Number of Sets</label>
+                            <input type="number" class="form-control" id="round_robin_sets" value="{{typ.sets}}" name="sets_{{forloop.counter}}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="round_robin_points">Points</label>
+                            <input type="number" class="form-control" id="round_robin_points" value="{{typ.point}}" name="points_{{forloop.counter}}">
+                        </div>
+                    </div>
+                </div>
+            </div> 
+            {% endif %}
+            {% endfor %}
+                
+        </div>
+        
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-center mt-4">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+        
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-beta.1/js/select2.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addFeeButton = document.getElementById("add-fee");
+            const otherFeesContainer = document.getElementById("otherFeesContainer");
+
+            // Add new fee input row
+            addFeeButton.addEventListener("click", function () {
+                const newFeeRow = document.createElement("div");
+                newFeeRow.classList.add("input-group", "mb-2");
+
+                newFeeRow.innerHTML = `
+                    <input type="text" name="other_fees_topic[]" class="form-control mr-2" placeholder="Enter fee description">
+                    <input type="number" name="other_fees[]" class="form-control mr-2" placeholder="Enter fees">
+                    <button type="button" class="btn btn-outline-danger remove-fee">-</button>
+                `;
+
+                otherFeesContainer.appendChild(newFeeRow);
+            });
+
+            // Remove fee input row
+            otherFeesContainer.addEventListener("click", function (e) {
+                if (e.target.classList.contains("remove-fee")) {
+                    const feeRow = e.target.closest(".input-group");
+                    feeRow.remove();
+                }
+            });
+
+            // Initialize Select2
+            if (typeof jQuery !== "undefined") {
+                $(".select2").select2({
+                    placeholder: "Select teams",
+                    allowClear: true,
+                });
+            }
+        });
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQ_OGAb4yuL8g55IMufP3Dwd4yjrWxrdI&libraries=places"></script>
+    <script>
+        function initAutocomplete() {
+            const locationInput = document.getElementById("location");
+    
+            // Initialize Google Places Autocomplete
+            const autocomplete = new google.maps.places.Autocomplete(locationInput);
+    
+            // Add a listener for when a place is selected
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+    
+                if (place.formatted_address) {
+                    // Set the input field value to the formatted address (location text)
+                    locationInput.value = place.formatted_address;
+                }
+            });
+        }
+    
+        // Initialize autocomplete when the page loads
+        window.onload = initAutocomplete;
+    </script>
+    
+    <script>
+        $(document).ready(function() {
+            $('#organizers').select2({
+                placeholder: "Search and Select Organizers",
+                allowClear: true
+            });
+        });
+    </script>
+
+    <script>
+        document.getElementById("add_policy").addEventListener("click", function() {
+            const container = document.getElementById("cancellation_policies");
+            const newPolicy = document.createElement("div");
+            newPolicy.classList.add("cancellation-policy", "dynamic-section");
+            newPolicy.innerHTML = `
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label>Within Days</label>
+                            <input type="number" class="form-control" name="cancellation_days[]" required>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label>Refund %</label>
+                            <input type="number" class="form-control" name="refund_percentage[]" required>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-policy">-</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newPolicy);
+        });
+        
+        document.addEventListener("click", function(event) {
+            if (event.target.classList.contains("remove-policy")) {
+                event.target.closest(".cancellation-policy").remove();
+            }
+        });
+    </script>
+{% endblock %}

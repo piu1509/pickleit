@@ -1,0 +1,67 @@
+<div class="point-table-main mt-3">
+    <h3 class="mb-4 text-start">League Point Tables</h3>
+    {% if not point_table %}
+        {% include 'base/not_found.html' %}
+    {% endif %}
+    <ul class="nav nav-tabs" id="courtTabs" role="tablist">
+        {% for court_data in point_table %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                        id="court-{{ court_data.id }}-tab" 
+                        data-bs-toggle="tab" 
+                        data-bs-target="#court-{{ court_data.id }}" 
+                        type="button" 
+                        role="tab" 
+                        aria-controls="court-{{ court_data.id }}" 
+                        aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                    Court {{ court_data.court }}
+                </button>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content" id="courtTabContent">
+        {% for court_data in point_table %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                    id="court-{{ court_data.id }}" 
+                    role="tabpanel" 
+                    aria-labelledby="court-{{ court_data.id }}-tab">
+                <div class="card text-center mt-3">
+                    <div class="card-body">    
+                        <div class="table-wrap">
+                            <table class="table table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Team</th>
+                                        <th>Matches Played</th>
+                                        <th>Wins</th>
+                                        <th>Losses</th>
+                                        <th>Draws</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for team in court_data.all_teams|dictsortreversed:"point" %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ team.name }}</td>
+                                            <td>{{ team.completed_match }}</td>
+                                            <td>{{ team.win_match }}</td>
+                                            <td>{{ team.loss_match }}</td>
+                                            <td>{{ team.drow_match }}</td>
+                                            <td><strong>{{ team.point }}</strong></td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-danger">No matches played yet.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>

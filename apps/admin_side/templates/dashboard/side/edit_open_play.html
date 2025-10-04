@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Optional: Bootstrap 5 theme for Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+{% endblock extra_css %}
+
+{% block page_title %}
+    Tournament
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <!-- League Details Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Edit {{ league_details.name }}</h3>
+        </div>
+
+        
+        {% if play_details_update %}
+        <div class="alert alert-danger alert-dismissible fade show mt-4 m-4" role="alert">
+            <p style="color: red;"><strong>Courts, set, point</strong> are not define for tournamnet. <a href="#dynamic_fields">click for edit</a> </p>
+        </div>
+        {% endif %}
+            
+        
+
+
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Tournament Name -->
+                <div class="mb-3">
+                    <label for="tournamentName" class="form-label">Tournament Name</label>
+                    <input type="text" id="tournamentName" name="tournament_name" class="form-control" value="{{ league_details.name }}" required>
+                </div>
+
+                <!-- League Start and End Dates -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="leagueStartDate" class="form-label">League Start Date</label>
+                            <input type="date" id="leagueStartDate" name="league_start_date" class="form-control" 
+                                value="{{ league_details.leagues_start_date|date:'Y-m-d' }}" required>
+                        </div>
+                        
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="imageUpload" class="form-label">League Image</label>
+                            <input type="file" id="imageUpload" name="image" class="form-control" accept="image/*" onchange="previewImage(event)">
+                        </div>
+                        <div class="mb-3 text-center">
+                            <label class="form-label">Current Image</label>
+                            <div>
+                                <img id="imagePreview" src="/media/{{ league_details.image }}" alt="League Image" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    function previewImage(event) {
+                        const reader = new FileReader();
+                        reader.onload = function(){
+                            const preview = document.getElementById("imagePreview");
+                            preview.src = reader.result;
+                        };
+                        reader.readAsDataURL(event.target.files[0]);
+                    }
+                </script>
+
+                <!-- Registration Start and End Dates -->
+                
+
+                <div class="form-group">
+                    <label for="location">Location:</label>
+                    <input type="text" class="form-control" id="location" name="location" 
+                           value="{{ league_details.location }}" placeholder="Enter a location">
+                </div>
+
+                <!-- Join Team -->
+                <div class="mb-3">
+                    <label for="joinTeam" class="form-label">Joined Teams</label>
+                    <select id="joinTeam" name="join_team" class="select2" multiple>
+                        {% for team in teams %}
+                            <option value="{{ team.id }}" {% if team in league_details.registered_team.all %}selected{% endif %}>{{ team.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Registration Fee -->
+                <div class="mb-3">
+                    <label for="registrationFee" class="form-label">Registration Fee</label>
+                    <input type="number" id="registrationFee" name="registration_fee" class="form-control" value="{{ league_details.registration_fee }}" required>
+                </div>
+
+                <!-- Other Fees -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Other Fees</label>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="add-fee">+</button>
+                    </div>
+                    <div id="otherFeesContainer">
+                        {% for topic, fee in league_details.others_fees.items %}
+                            <div class="input-group mb-2">
+                                <input type="text" name="other_fees_topic[]" class="form-control mr-2" placeholder="Enter fee description" value="{{ topic }}">
+                                <input type="number" name="other_fees[]" class="form-control mr-2" placeholder="Enter fees" value="{{ fee }}">
+                                <button type="button" class="btn btn-outline-danger remove-fee">-</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter league description" required>{{ league_details.description }}</textarea>
+                </div>
+
+
+                <div class="container d-flex justify-content-center mt-4">
+                    <h5>Add Organizer</h5>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <label for="organizer">Select Organizer</label>
+                    <select id="organizer" name="organizer" class="select2" multiple>
+                        <option value="">Search and Select Organizer</option>
+                        {% for user in users %}
+                        <option value="{{ user.id }}" {% if user in league_details.add_organizer.all %}selected{% endif %}>{{ user.first_name }} {{ user.last_name }} ({{ user.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="container d-flex justify-content-center mt-4">
+                    <h5>Cancellation Policy</h5>
+                </div>
+                <div id="cancellation_policies" class="mt-4">
+                    {% for policy in policies %}
+                    <div class="cancellation-policy dynamic-section">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label>Within Days</label>
+                                    <input type="number" class="form-control" name="cancellation_days[]" value="{{ policy.within_day }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label>Refund %</label>
+                                    <input type="number" class="form-control" name="refund_percentage[]" value="{{ policy.refund_percentage }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger remove-policy">-</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                
+                <div class="d-flex justify-content-end my-2">
+                    <button type="button" id="add_policy" class="btn btn-outline-secondary btn-sm">Add Policy</button>
+                </div>
+
+                <div class="container d-flex justify-content-center mt-4">
+                    <h5>Group Stage Details</h5>
+                    
+                </div>
+                <div id="dynamic_fields" class="mt-4">
+                    
+                    {% for typ in play_type_details %}
+                    {% if typ.is_show %}
+                    <div id="round_robin_section" class="dynamic-section">
+                        <h6>{{typ.name}}</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="round_robin_courts">Number of Courts</label>
+                                    <input type="number" class="form-control" id="round_robin_courts" value="{{typ.number_of_courts}}" name="courts_{{forloop.counter}}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="round_robin_sets">Number of Sets</label>
+                                    <input type="number" class="form-control" id="round_robin_sets" value="{{typ.sets}}" name="sets_{{forloop.counter}}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="round_robin_points">Points</label>
+                                    <input type="number" class="form-control" id="round_robin_points" value="{{typ.point}}" name="points_{{forloop.counter}}">
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+                    {% endif %}
+                    {% endfor %}
+                        
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Select2 (latest stable release) -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addFeeButton = document.getElementById("add-fee");
+            const otherFeesContainer = document.getElementById("otherFeesContainer");
+
+            // Add new fee input row
+            addFeeButton.addEventListener("click", function () {
+                const newFeeRow = document.createElement("div");
+                newFeeRow.classList.add("input-group", "mb-2");
+
+                newFeeRow.innerHTML = `
+                    <input type="text" name="other_fees_topic[]" class="form-control mr-2" placeholder="Enter fee description">
+                    <input type="number" name="other_fees[]" class="form-control mr-2" placeholder="Enter fees">
+                    <button type="button" class="btn btn-outline-danger remove-fee">-</button>
+                `;
+
+                otherFeesContainer.appendChild(newFeeRow);
+            });
+
+            // Remove fee input row
+            otherFeesContainer.addEventListener("click", function (e) {
+                if (e.target.classList.contains("remove-fee")) {
+                    const feeRow = e.target.closest(".input-group");
+                    feeRow.remove();
+                }
+            });
+
+            // Initialize Select2
+            
+        });
+</script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap4',  // works with the theme linked above
+            width: '100%',
+            placeholder: "Select an option",
+            allowClear: true
+        });
+    });
+</script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfBo6-cZlOpKGrD1ZYwISIGjYvhH_wPmk&libraries=places"></script>
+    <script>
+        function initAutocomplete() {
+            const locationInput = document.getElementById("location");
+    
+            // Initialize Google Places Autocomplete
+            const autocomplete = new google.maps.places.Autocomplete(locationInput);
+    
+            // Add a listener for when a place is selected
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+    
+                if (place.formatted_address) {
+                    // Set the input field value to the formatted address (location text)
+                    locationInput.value = place.formatted_address;
+                }
+            });
+        }
+    
+        // Initialize autocomplete when the page loads
+        window.onload = initAutocomplete;
+    </script>
+    
+    {% comment %} <script>
+        $(document).ready(function() {
+            $('#organizers').select2({
+                placeholder: "Search and Select Organizers",
+                allowClear: true
+            });
+        });
+    </script> {% endcomment %}
+
+    <script>
+        document.getElementById("add_policy").addEventListener("click", function() {
+            const container = document.getElementById("cancellation_policies");
+            const newPolicy = document.createElement("div");
+            newPolicy.classList.add("cancellation-policy", "dynamic-section");
+            newPolicy.innerHTML = `
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label>Within Days</label>
+                            <input type="number" class="form-control" name="cancellation_days[]" required>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label>Refund %</label>
+                            <input type="number" class="form-control" name="refund_percentage[]" required>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-policy">-</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newPolicy);
+        });
+        
+        document.addEventListener("click", function(event) {
+            if (event.target.classList.contains("remove-policy")) {
+                event.target.closest(".cancellation-policy").remove();
+            }
+        });
+    </script>
+{% endblock %}

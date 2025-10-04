@@ -1,0 +1,69 @@
+{% load custom_filters %}
+<div class="row mt-4">
+    <div class="col-xl-12">
+        <h5 class="card-title mb-3">Match History</h5>
+        
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for match in match_history %}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="versus-card">
+                    <h3><span><i class="" data-feather="compass"></i></span>{{ match.leagues.name }}</h3>
+                    <div class="v-team">
+                    <div class="v-team-left">
+                            <p class=""><span class="v-team-thumb"><img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="" class="me-2"></span> {{ match.team1.name }} 
+                            {% if match.winner_team.name == match.team1.name %}
+                                <span class="winner"><img src="https://dev.pickleit.app/static/images/trophy.gif" alt="" class="ms-2"></span>
+                            {% endif %}
+                            </p>
+                            <p class=""><span class="v-team-thumb"><img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="" class="me-2"></span> {{ match.team2.name }}
+                            {% if match.winner_team.name == match.team2.name %}
+                                <span class="winner"><img src="https://dev.pickleit.app/static/images/trophy.gif" alt="" class="ms-2"></span>
+                            {% endif %}
+                            </p>
+                        </div>
+                        <div class="v-team-right">
+                            <p>{{ match.created_at|date:"j" | ordinal_day }} {{ match.created_at|date:"M, Y" }} <span>{{ match.created_at.time}}</span></p>
+                        </div>
+                    </div>
+                    <div class="v-info">
+                        <p><strong>Match</strong> {{ match.match_number }}</p>
+                        <a class="btn btn-info" data-bs-toggle="collapse" href="#showdata{{ match.id }}" role="button" aria-expanded="false" aria-controls="showdata">View <i class="align-middle" data-feather="chevron-right"></i></a>
+                    </div>
+                    <div class="collapse mt-2" id="showdata{{ match.id }}">
+                        <div class="card card-body">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Sr. No.</th>
+                                    <th>{{ match.team1.name|truncate_team_name }}</th>
+                                    <th>{{ match.team2.name|truncate_team_name }}</th>
+                                    
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% if match.scores %}
+                                    {% for score in match.scores %}
+                                        <tr>
+                                            <td>{{ score.set_number }}</td>
+                                            <td>{{ score.team1_point }}</td>
+                                            <td>{{ score.team2_point }}</td>
+                                            
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No scores available yet!</td>
+                                    </tr>
+                                {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            {% include 'base/not_found.html' %}
+        {% endfor %}
+    </div>
+    </div>
+</div>

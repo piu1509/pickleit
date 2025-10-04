@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Pickle</title>
+    <style>
+
+    </style>
+	
+    <title>Document</title>
+</head>
+<body>
+    <div class="main_logo" style="text-align: center; margin-bottom: 20px; padding: 10px 20px; background-color: #385263;">
+        <a href="#"><img src="https://pickleit.app/static/assets/images/logo.png" alt="" width="120px"></a>
+    </div>
+
+    <div class="container mt-5">        
+        <h2 style="margin:0;">{{league_name}}</h2>
+        <p style="margin:0;"><strong>Starts:</strong> {{start_date}} - {{end_date}}</p>
+        <p style="margin:0;"><strong>Location:</strong> {{location}}</p>
+        
+        
+        <hr/>
+        {% for ty in data %}
+            <p style="margin:0;"><strong>Team Type:</strong><b>   {{ty.team_type}}</b></p>
+            <p style="margin:0;"><strong>Total Teams:</strong>    {{ty.total_team}}</p>
+            <p style="margin:0;"><strong>Total Players:</strong>   {{ty.total_player}}</p>
+            <table class="table table-striped mb-5" border="1" cellspacing="0" cellpadding="5" width="100%" style="margin-bottom: 30px;">
+                <thead>
+                    <tr>
+                        <th bgcolor="#e7e7e7">First name</th>
+                        <th bgcolor="#e7e7e7">Last name</th>
+                        <th bgcolor="#e7e7e7">Email</th>
+                        <th bgcolor="#e7e7e7">Phone</th>
+                        <th bgcolor="#e7e7e7">Address</th>
+                        <th bgcolor="#e7e7e7">Rank</th>
+                        <th bgcolor="#e7e7e7">M/F</th>
+                        <th bgcolor="#e7e7e7">Team</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for player in ty.player_details %}
+                    <tr>
+                        <td>{{player.player__first_name}}</td>
+                        <td>{{player.player__last_name}}</td>
+                        <td width="120">{{player.player__email}}</td>
+                        <td>{{player.player__phone}}</td>
+                        <td>
+                            {% if player.full_address %}
+                                {{player.full_address}} 
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td width="30">
+                            {% if player.player__rank %}
+                                {{player.player__rank}}
+                            {% else %}
+                                1
+                            {% endif %}
+                           
+                        </td>
+                        <td width="38">
+                           {% if player.player__gender %}
+                              {{player.player__gender}}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                           
+                        </td>
+                        <td>{{player.team_name}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+        
+    </div>
+    
+</body>
+</html>
+
+
+<!-- <!DOCTYPE  html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <title>b9e84861-b0dc-4bee-854a-27e5a84c9734</title>
+      <style type="text/css"> * {margin:0; padding:0; text-indent:0; }
+         h1 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: bold; text-decoration: none; font-size: 14pt; }
+         p { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 12pt; margin:0pt; }
+         .s1 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 8pt; vertical-align: 4pt; }
+         h2 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: bold; text-decoration: none; font-size: 12pt; }
+         .s2 { color: black; font-family:Calibri, sans-serif; font-style: normal; font-weight: normal; text-decoration: none; font-size: 12pt; }
+         table, tbody {vertical-align: top; overflow: visible; }
+      </style>
+   </head>
+   <body>
+      <h1 style="padding-top: 3pt;padding-left: 5pt;text-indent: 0pt;line-height: 17pt;text-align: left;">{{league_name}}</h1>
+      <p style="padding-left: 5pt;text-indent: 0pt;text-align: left;">Starts: {{start_date}} -{{end_date}}</p>
+      <p style="padding-left: 5pt;text-indent: 0pt;text-align: left;">{{location}}</p>
+      <p style="padding-left: 5pt;text-indent: 0pt;text-align: left;">Players: {{total_player}}</p>
+      <p style="padding-left: 5pt;text-indent: 0pt;text-align: left;">Teams: {{total_team}}</p>
+      <h2 style="padding-top: 14pt;padding-left: 5pt;text-indent: 0pt;text-align: left;">{{team_type}}:</h2>
+      <p style="padding-top: 2pt;text-indent: 0pt;text-align: left;"><br/></p>
+      <table style="border-collapse:collapse;margin-left:5.89pt" cellspacing="0">
+         <tr style="height:15pt">
+            <td style="width:64pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">First name</p>
+            </td>
+            <td style="width:63pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">Last name</p>
+            </td>
+            <td style="width:64pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">Email</p>
+            </td>
+            <td style="width:64pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">Phone</p>
+            </td>
+            <td style="width:85pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">Address</p>
+            </td>
+            <td style="width:43pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">Rank</p>
+            </td>
+            <td style="width:35pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">M/F</p>
+            </td>
+            <td style="width:71pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p class="s2" style="padding-left: 5pt;text-indent: 0pt;line-height: 14pt;text-align: left;">Team</p>
+            </td>
+         </tr>
+         <tr style="height:15pt">
+            <td style="width:64pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{player.player__first_name}}</p>
+            </td>
+            <td style="width:63pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{player.player__last_name}}</p>
+            </td>
+            <td style="width:64pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{player.player__email}}</p>
+            </td>
+            <td style="width:64pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{player.player__phone}}</p>
+            </td>
+            <td style="width:85pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{player.player__city}},{{player.player__state}},{{player.player__country}}</p>
+            </td>
+            <td style="width:43pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{player.player__rank}}</p>
+            </td>
+            <td style="width:35pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{player.player__gender}}</p>
+            </td>
+            <td style="width:71pt;border-top-style:solid;border-top-width:1pt;border-left-style:solid;border-left-width:1pt;border-bottom-style:solid;border-bottom-width:1pt;border-right-style:solid;border-right-width:1pt">
+               <p style="text-indent: 0pt;text-align: left;">{{team.name}}</p>
+            </td>
+         </tr>
+         
+      </table>
+      
+   </body>
+</html> -->

@@ -1,0 +1,354 @@
+{% load static %}
+<style>
+    .dropdown-menu {
+        width: 350px !important; /* Increase width */
+        max-height: 400px !important; /* Fixed height */
+        overflow: hidden; /* Prevent dropdown from scrolling */
+    }
+    
+    .list-group {
+        max-height: 350px; /* Ensure the notification list fits inside the dropdown */
+        overflow-y: auto; /* Enable vertical scrolling */
+    }
+
+    .dropdown-menu {
+        width: 380px !important;
+        max-height: 450px !important;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+    }
+
+    .dropdown-menu-header {
+        font-weight: bold;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        background-color: #f8f9fa;
+        font-size: 16px;
+    }
+
+    .list-group {
+        max-height: 350px;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .notification-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        gap: 10px;
+        text-decoration: none;
+        transition: background 0.3s ease;
+    }
+
+    .notification-item:hover {
+        background-color: #f1f1f1;
+    }
+
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .notification-text {
+        flex-grow: 1;
+    }
+
+    .notification-text .font-weight-bold {
+        font-size: 14px;
+        color: #343a40;
+    }
+
+    .notification-text small {
+        font-size: 12px;
+    }
+
+    .dropdown-menu-footer {
+        padding: 10px 16px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #eee;
+        text-align: center;
+    }
+
+    .dropdown-menu-footer a {
+        color: #6c757d;
+        font-size: 14px;
+        text-decoration: none;
+    }
+
+    .dropdown-menu-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .indicator {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+</style>
+<nav class="navbar navbar-expand navbar-light navbar-bg">
+    <a class="sidebar-toggle js-sidebar-toggle">
+        <i class="hamburger align-self-center"></i>
+    </a>
+
+    <div class="navbar-collapse collapse">
+        <ul class="navbar-nav navbar-align">
+            <li class="nav-item">
+                <a class="nav-icon" href="{% url 'user_side:wishlist_user_side' %}" title="Wishlist">
+                    <i class="fas fa-heart fa-sm text-danger"></i>
+                </a>
+            </li>
+
+            <!-- 🛒 Cart -->
+            <li class="nav-item position-relative">
+                <a class="nav-icon" href="{% url 'user_side:cart_user_side' %}" title="Cart">
+                    <i class="fas fa-shopping-cart fa-sm text-primary"></i>
+                    <span class="indicator bg-danger text-white cart-indicator" style="display: none;">0</span>
+                </a>
+            </li>
+
+            <!-- 📦 Orders Received -->
+            <li class="nav-item">
+                <a class="nav-icon" href="{% url 'user_side:my_order_user_side' %}" title="Orders Received">
+                    <i class="fas fa-box-open fa-sm text-success"></i>
+                    <span class="indicator bg-danger text-white order-indicator" style="display: none;">0</span>
+                </a>
+            </li>
+
+            <!-- 🚚 Orders Placed -->
+            <li class="nav-item">
+                <a class="nav-icon" href="{% url 'user_side:my_placed_orders_user_side' %}" title="Orders Placed">
+                    <i class="fas fa-truck fa-sm text-info"></i>
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-icon dropdown-toggle" href="#" id="notificationDropdown" data-bs-toggle="dropdown" data-user-id="{{ request.user.id }}">
+                    <div class="position-relative">
+                        <i class="fas fa-bell fa-sm text-secondary"></i>
+                        <span id="notificationCount" class="indicator" style="display: none;">0</span>
+                    </div>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0 noti-main" aria-labelledby="notificationDropdown">
+                    <div class="dropdown-menu-header"><span id="notificationHeader">Notifications</span></div>
+                    <div id="notificationList" class="list-group"></div>
+                    <div class="dropdown-menu-footer">
+                        <a href="#" class="text-muted">Show all notifications</a>
+                    </div>
+                </div>
+            </li>
+            
+            <li class="nav-item dropdown">
+                <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+                    <i class="align-middle" data-feather="settings"></i>
+                </a>
+                <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+                    
+                    {% if request.user.image %}
+                        <img src="{{request.user.image.url}}" class="avatar img-fluid rounded me-1" /> <span class="text-dark">{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                    {% else %}
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/2048px-No_image_available.svg.png" class="avatar img-fluid rounded me-1" alt="Charles Hall" /> <span class="text-dark">{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                    {% endif %}
+                        
+                    <i class="bi bi-caret-down-fill"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end profile-main">
+                    <a class="dropdown-item" href="{% url 'user_side:user_profile' %}"><i class="align-middle me-1" data-feather="user"></i> Profile</a>
+                    <!-- <a class="dropdown-item" href="#"><i class="align-middle me-1" data-feather="pie-chart"></i> Analytics</a> -->
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'user_side:logout_view_user' %}">Log out</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const userId = document.getElementById("notificationDropdown").getAttribute("data-user-id");
+    
+        if (!userId) {
+            console.error("❌ User ID not found!");
+            return;
+        }
+
+        const roomName = `user_${userId}`;
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const wsUrl = `${wsScheme}://${window.location.host}/ws/notify/${roomName}/`;
+        
+        const notificationDropdown = document.getElementById("notificationDropdown");
+        const notificationList = document.getElementById("notificationList");
+        const notificationCount = document.getElementById("notificationCount");
+
+        let unreadNotificationIds = [];
+        const socket = new WebSocket(wsUrl);
+
+        socket.onopen = function () {
+            console.log("✅ WebSocket Connected.");
+        };
+
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            console.log("🔔 Notification received:", data);
+
+            if (data.message === "Get Notification") {
+                updateNotifications(data.all_notifications, data.unread_noti_count);
+            }
+        };
+
+        socket.onclose = function () {
+            console.warn("⚠️ WebSocket Closed. Reconnecting in 5 seconds...");
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000);
+        };
+
+        socket.onerror = function (error) {
+            console.error("❌ WebSocket Error:", error);
+        };
+
+        function updateNotifications(notifications, unreadCount) {
+            notificationList.innerHTML = "";
+            unreadNotificationIds = [];
+
+            if (unreadCount > 0) {
+                notificationCount.textContent = unreadCount;
+                notificationCount.style.display = "block";
+            } else {
+                notificationCount.style.display = "none";
+            }
+
+            notifications.forEach(notification => {
+                const notificationItem = document.createElement("a");
+                notificationItem.href = "#"; 
+                notificationItem.classList.add("list-group-item", "d-flex", "align-items-center", "notification-item", "sgl-noti");
+
+                const iconWrapper = document.createElement("div");
+                iconWrapper.classList.add("notification-icon", "bg-primary", "text-white");
+
+                const icon = document.createElement("i");
+                icon.classList.add("fas", "fa-bell");
+                iconWrapper.appendChild(icon);
+
+                const textWrapper = document.createElement("div");
+                textWrapper.classList.add("notification-text");
+
+                const title = document.createElement("span");
+                title.classList.add("font-weight-bold");
+                title.textContent = notification.titel || "New Notification";
+
+                const message = document.createElement("small");
+                message.classList.add("d-block", "text-muted");
+                message.innerHTML = breakText(notification.text_message, 30);
+
+                const timestamp = document.createElement("small");
+                timestamp.classList.add("d-block", "text-muted");
+                timestamp.textContent = formatTimestamp(notification.created_at);
+
+                textWrapper.appendChild(title);
+                textWrapper.appendChild(message);
+                textWrapper.appendChild(timestamp);
+
+                notificationItem.appendChild(iconWrapper);
+                notificationItem.appendChild(textWrapper);
+                notificationList.appendChild(notificationItem);
+
+                if (!notification.is_read) {
+                    unreadNotificationIds.push(notification.id);
+                }
+            });
+        }
+
+        function breakText(text, length) {
+            if (!text) return "No message available";
+            return text.replace(new RegExp(`(.{1,${length}})`, "g"), "$1<br>");
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return "Unknown time";
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        notificationDropdown.addEventListener("click", function () {
+            if (unreadNotificationIds.length > 0) {
+                markNotificationsAsRead(unreadNotificationIds);
+            }
+        });
+
+        function markNotificationsAsRead(notificationIds) {
+            fetch('/user_side/read_notifications/', {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken(),
+                },
+                body: JSON.stringify({ unread_notification_ids: notificationIds }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("✅ Notifications marked as read:", data);
+                notificationCount.style.display = "none";
+            })
+            .catch(error => console.error("❌ Error marking notifications as read:", error));
+        }
+
+        function getCSRFToken() {
+            return document.cookie.split("; ")
+                .find(row => row.startsWith("csrftoken"))
+                ?.split("=")[1] || "";
+        }
+    });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Only run if user is logged in
+    const cartIndicator = document.querySelector(".cart-indicator");
+    if (!cartIndicator) return;
+
+    fetch("{% url 'user_side:cart_count' %}")
+        .then(response => response.json())
+        .then(data => {
+            const count = data.count;
+            if (count > 0) {
+                cartIndicator.textContent = count;
+                cartIndicator.style.display = "block";
+            } else {
+                cartIndicator.style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error fetching cart count:", error));
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Only run if user is logged in
+    const cartIndicator = document.querySelector(".order-indicator");
+    if (!cartIndicator) return;
+
+    fetch("{% url 'user_side:pending_received_order_count' %}")
+        .then(response => response.json())
+        .then(data => {
+            const count = data.count;
+            if (count > 0) {
+                cartIndicator.textContent = count;
+                cartIndicator.style.display = "block";
+            } else {
+                cartIndicator.style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error fetching order count:", error));
+});
+</script>

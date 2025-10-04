@@ -1,0 +1,203 @@
+{% extends "base_store.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .quantity-wrapper {
+    max-width: 140px;
+}
+
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.quantity-input {
+    -moz-appearance: textfield;
+}
+
+</style>
+<div class="container">
+    <h3>Cart Products</h3>
+
+    <form id="cart-form" method="POST" action="{% url 'dashboard:update_cart' %}">
+        {% csrf_token %}
+        {% for product in cart_list %}
+        <div class="card p-3 mb-3 position-relative">
+            <div class="position-relative top-0 end-0 justfy-content-end p-2">
+            <button type="button" class="btn-close btn-danger delete-item" aria-label="Close"
+                data-product-id="{{ product.product.id }}"
+                data-color="{{ product.color }}"
+                data-size="{{ product.size }}"><i class="fa fa-times"></i></button>
+            </div>
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <img src="{{ product.image.image.url }}" alt="{{ product.product.name }}" class="img-fluid">
+                </div>
+                <div class="col-md-6">
+                    <h5>{{ product.product.name }}</h5>
+                    <p><strong>Size:</strong> {{ product.size }}</p>
+                    <p><strong>Color:</strong> {{ product.color }}</p>
+                    <p><strong>Price per item:</strong> ${{ product.price }}</p>
+                </div>
+                <div class="col-md-3">
+                    <label for="quantity_{{ product.id }}">Quantity:</label>
+                    <div class="input-group quantity-wrapper">
+                        <button type="button" class="btn btn-outline-secondary minus-btn">−</button>
+                        <input type="number"
+                            name="quantity_{{ product.id }}"
+                            value="{{ product.quantity }}"
+                            min="1"
+                            class="form-control text-center quantity-input"
+                            data-product-id="{{ product.product.id }}"
+                            data-price="{{ product.price }}">
+                        <button type="button" class="btn btn-outline-secondary plus-btn">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+            {% include 'dashboard/not_found.html' %}
+        </div>
+        {% endfor %}
+    </form>
+    {% if cart_list %}
+    <div class="card p-3">
+        <h5>Apply Coupon</h5>
+        <div class="input-group mb-3">
+            <input type="text" id="coupon-code" class="form-control" placeholder="Enter coupon code">
+            <button class="btn btn-outline-secondary" type="button" id="apply-coupon">Apply</button>
+        </div>
+        <p id="coupon-message" class="text-danger"></p>
+    </div>
+
+    <div class="card p-3">
+        <h5>Price Details</h5>
+        <p>Total Items: <span id="total-items">0</span></p>
+        <p>Total Price: $<span id="total-price">0</span></p>
+        <p>Discount: $<span id="discount-amount">0</span></p>
+        <hr>
+        <p><strong>Grand Total: $<span id="grand-total">0</span></strong></p>
+    </div>
+
+    <div class="text-center mt-3 mb-5">
+        <form method="post" action="{% url 'dashboard:select_address' %}" id="cart-continue-form">
+            {% csrf_token %}
+            <input type="hidden" name="grand_total" id="grand-total-input">
+            <button type="submit" class="btn btn-primary">Continue</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    // Prevent typing in quantity fields
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('keydown', e => e.preventDefault());
+    });
+
+    // Plus button
+    document.querySelectorAll('.plus-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.previousElementSibling;
+            input.value = parseInt(input.value) + 1;
+            input.dispatchEvent(new Event('change'));
+        });
+    });
+
+    // Minus button
+    document.querySelectorAll('.minus-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.nextElementSibling;
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+                input.dispatchEvent(new Event('change'));
+            }
+        });
+    });
+});
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    function updateTotals() {
+        let totalItems = 0;
+        let totalPrice = 0;
+        document.querySelectorAll(".quantity-input").forEach(input => {
+            const quantity = parseInt(input.value);
+            const price = parseFloat(input.dataset.price);
+            totalItems += quantity;
+            totalPrice += quantity * price;
+        });
+        document.getElementById("total-items").textContent = totalItems;
+        document.getElementById("total-price").textContent = totalPrice.toFixed(2);
+        document.getElementById("grand-total").textContent = totalPrice.toFixed(2);  // Will update with discount below
+    }
+
+    updateTotals();
+
+    document.querySelectorAll(".quantity-input").forEach(input => {
+        input.addEventListener("change", function () {
+            if (this.value < 1) this.value = 1;
+            updateTotals();
+        });
+    });
+
+    document.getElementById("apply-coupon").addEventListener("click", function () {
+        const code = document.getElementById("coupon-code").value;
+        const totalPrice = parseFloat(document.getElementById("total-price").textContent);
+
+        fetch("{% url 'dashboard:apply_coupon' %}?code=" + code + "&price=" + totalPrice)
+            .then(response => response.json())
+            .then(data => {
+                if (data.valid) {
+                    document.getElementById("discount-amount").textContent = data.discount;
+                    document.getElementById("grand-total").textContent = (totalPrice - data.discount).toFixed(2);
+                    document.getElementById("coupon-message").textContent = "Coupon applied!";
+                } else {
+                    document.getElementById("discount-amount").textContent = "0";
+                    document.getElementById("grand-total").textContent = totalPrice.toFixed(2);
+                    document.getElementById("coupon-message").textContent = "Invalid coupon code.";
+                }
+            });
+    });
+});
+</script>
+<script>
+    document.getElementById("cart-continue-form").addEventListener("submit", function () {
+    const grandTotal = document.getElementById("grand-total").textContent;
+    document.getElementById("grand-total-input").value = grandTotal;
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".delete-item").forEach(button => {
+        button.addEventListener("click", function () {
+            const productId = this.getAttribute("data-product-id");
+            const color = this.getAttribute("data-color");
+            const size = this.getAttribute("data-size");
+
+            fetch("{% url 'dashboard:remove_cart_item' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ product_id: productId, color: color, size: size })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {                   
+                    location.reload();  // Recalculate totals
+                } else {
+                    alert("Failed to remove item.");
+                }
+            });
+        });
+    });
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    
+</head>
+<body>
+  <h1>Payment</h1>
+  <button id="submit">Pay</button>
+  
+  <script>
+    // Get the button element by its ID
+    var submitButton = document.getElementById('submit');
+  
+    // Add a click event listener to the button
+    submitButton.addEventListener('click', function() {
+      // Specify the URL you want to open in a new window/tab
+      var urlToOpen = 'https://buy.stripe.com/test_6oE4habl91Oa1AQ4gg';
+  
+      // Open the URL in a new window/tab
+      window.open(urlToOpen);
+    });
+  </script>
+</body>
+</html>
+
+
+
+
+

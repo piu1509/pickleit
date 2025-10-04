@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Player
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <div class="row">
+            <div class="col-12 d-flex no-block align-items-center">
+                <h4 class="page-title">{{oppration}} Team Form</h4>
+                <div class="ml-auto text-right">
+                    <nav aria-label="breadcrumb">
+                        {% if message %}
+                        <div id="alertMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <strong>{{message}}</strong>  
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>                         
+                          </div> 
+                          <script>                            
+                            setTimeout(function() {
+                                document.getElementById('alertMessage').style.display = 'none';
+                            }, 5000);
+                        </script>                          
+                          {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid mt-4">
+        <div class="card p-5 shadow">
+            <form class="form-horizontal" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="form-group row">
+                        <label for="team_name" class="col-sm-3 text-right control-label col-form-label">Team Name</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" id="team_name" name="team_name" value="{{team_info.name}}" placeholder="Team Name Here">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="team_person" class="col-sm-3 text-right control-label col-form-label">Team Person</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" id="team_person" name="team_person">
+                                <option value="{{team_info.team_person}}" selected>{% if team_info.team_person %}
+                                                                            {{team_info.team_person}}
+                                                                        {% else %}
+                                                                            Select Team Person Type
+                                                                        {% endif %}
+                                                                    </option>
+                                <option value="Two Person Team">Two Person Team</option>
+                                <option value="One Person Team">One Person Team</option>
+                                <!-- Add other options if needed -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="team_type" class="col-sm-3 text-right control-label col-form-label">Team Type</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" id="team_type" name="team_type">
+                                <option value="{{team_info.team_type}}" selected>{% if team_info.team_type %}
+                                                                                    {{team_info.team_type}}
+                                                                                {% else %}
+                                                                                    Select Team Type
+                                                                                {% endif %}
+                                                                                </option>
+                                <option value="Men">Men</option>
+                                <option value="Women">Women</option>
+                                <option value="Co-ed">Co-ed</option>
+                                <!-- Add other options if needed -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="team_image" class="col-sm-3 text-right control-label col-form-label">Team Image</label>
+                        <div class="col-sm-8">
+                            {% if team_info.team_image %}
+                                <img src="{{ team_info.team_image.url }}" alt="Team Image" class="img-fluid" width="200">
+                                <input type="file" class="form-control " id="team_image" value="{{ team_info.team_image.url }}" name="team_image" width="150">
+                                {% else %}
+                                <input type="file" class="form-control" id="team_image" name="team_image">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="player_ids" class="col-sm-3 text-right control-label col-form-label">Select Players</label>
+                        <div class="col-sm-8">
+                            <select multiple class="form-control" id="player_ids" name="player_ids">
+                                <!-- Options will be populated via JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-top mt-5">
+                    <div class="card-body text-center">
+                        <button type="submit" class="btn btn-primary">{{button}}</button>
+                        <button type="submit" class="btn btn-secondary">
+                            <a href="{% url 'dashboard:view_team_' team_info.id %}" style="text-decoration: none; color: inherit;">Cancel</a></button>
+                    </div>                    
+                </div>
+            </form>            
+        </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const preselectedPlayerIds = {{ pre_player_ids|safe }};
+</script>
+<script>
+    function loadPlayers(teamType, selectedPlayerIds = []) {
+        $.ajax({
+            url: "{% url 'dashboard:get_players_by_team_type' %}",
+            type: "GET",
+            data: {
+                'team_type': teamType
+            },
+            success: function (data) {
+                const $playerSelect = $('#player_ids');
+                $playerSelect.empty(); // Clear current options
+
+                if (data.players && data.players.length > 0) {
+                    data.players.forEach(function (player) {
+                        const isSelected = selectedPlayerIds.includes(player.id);
+                        $playerSelect.append(
+                            `<option value="${player.id}" ${isSelected ? 'selected' : ''}>
+                                ${player.name} - ${player.gender} - ${player.rank}
+                             </option>`
+                        );
+                    });
+                } else {
+                    $playerSelect.append(`<option disabled>No players found for selected team type</option>`);
+                }
+            }
+        });
+    }
+
+    // On change of team type
+    $('#team_type').on('change', function () {
+        const teamType = $(this).val();
+        loadPlayers(teamType);  // On change, don't preselect anything
+    });
+
+    // On page load (for edit)
+    $(document).ready(function () {
+        const currentTeamType = $('#team_type').val();
+        loadPlayers(currentTeamType, preselectedPlayerIds);
+    });
+</script>
+
+
+{% endblock %}

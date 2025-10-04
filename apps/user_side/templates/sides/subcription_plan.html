@@ -1,0 +1,205 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% block style %}
+<style>
+    /* Only affects modal table */
+    .modal .table {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(150px, 1fr);
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+
+    .modal .column {
+        list-style: none;
+        padding: 0;
+        margin: 0 10px;
+        border-right: 1px solid #ccc;
+    }
+
+    .modal .column li {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 13px;
+    }
+
+    /* Highlight active plan card */
+    .card.active-plan {
+        border: 2px solid #007bff !important;
+        background-color: #f8f9fa;
+    }
+
+    @media (max-width: 768px) {
+        .modal .table {
+            grid-auto-columns: 70%;
+        }
+
+        /* Ensure card is fully visible in mobile view */
+        .sub-plans .card {
+            margin: 0 auto;
+            width: 90%;
+        }
+
+        .sub-plans .row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<section class="">
+    <!-- Header with icon trigger -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Membership</h1>
+        <!-- Trigger Button -->
+        <span class="text-muted fs-3" data-bs-toggle="modal" data-bs-target="#membershipModal" style="cursor: pointer;"><i class="bi bi-sliders2-vertical"></i></span>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="membershipModalLabel">Membership Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="overflow-x: auto;">
+                    <!-- Table inside modal -->
+                    <div class="table">
+                        {% for plan in plans %}
+                            <ul class="column">
+                                <li class="">{{plan.name}}</li>
+                                {% for fe in plan.features %}
+                                    {% if fe.is_show %}
+                                        <li style="background-color: #7ef87b8c;">{{fe.name}}</li>
+                                    {% else %}
+                                        <li style="background-color: #ff494996;">{{fe.name}}</li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sub-plans">
+        <div class="row">
+            {% for plan in plans %}
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-3" id="{{plan.product_id}}">
+                    <div class="card h-100 shadow-sm border-0 position-relative {% if plan.is_active %}active-plan{% endif %}">
+                        <div class="card-header border-0 p-0 bg-transparent">
+                            <h4 class="card-title fw-bold">{{ plan.name }}</h4>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="subs-price">${{ plan.price }}</div>
+                            <ul class="list-unstyled my-4">
+                                {% for feature in plan.features %}
+                                    <li class="mb-3">
+                                        {% if feature.is_show %}
+                                            <span><i class="bi bi-check-circle-fill"></i></span>
+                                        {% else %}
+                                            <span><i class="bi bi-x-circle-fill"></i></span>
+                                        {% endif %}
+                                        {{ feature.name }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+
+                            {% if plan.name == 'Free Version' %}
+                                <p>Included by default</p>
+                            {% else %}
+                                {% if plan.is_active %}
+                                    <p class="text-success">Active until: {{ plan.expire_on }}</p>
+                                    <button class="btn btn-secondary" disabled>Active Plan</button>
+                                {% else %}
+                                    <button class="btn btn-primary purchase-btn" data-plan-id="{{ plan.product_id }}" data-platform="google" data-user-uuid="{{ request.user.uuid }}" {% if plan.is_desable %}disabled{% endif %}>Purchase Now</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Function to get CSRF token from cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// Handle button click for purchase
+document.querySelectorAll('.purchase-btn').forEach(button => {
+    button.addEventListener('click', async () => {
+        const planId = button.getAttribute('data-plan-id');
+        const platform = button.getAttribute('data-platform');
+        const userUuid = button.getAttribute('data-user-uuid');
+
+        const requestBody = {
+            user_uuid: userUuid,
+            platform: platform,
+            product_id: planId
+        };
+
+        try {
+            const response = await fetch("{% url 'get_subscription_payment_link' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                alert("Error: " + (data.message || "No redirect URL provided."));
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Something went wrong. Please try again.");
+        }
+    });
+});
+
+// Scroll to the active plan on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const activePlan = document.querySelector('.card.active-plan');
+    if (activePlan) {
+        const planContainer = activePlan.closest('.col-lg-3');
+        if (planContainer) {
+            // Scroll to the active plan with smooth behavior
+            planContainer.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center', // Center the plan in the viewport
+                inline: 'center' // Center horizontally, important for mobile
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

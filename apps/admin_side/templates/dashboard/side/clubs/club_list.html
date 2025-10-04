@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block extra_css %}
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" crossorigin="anonymous"> -->
+<!-- Custom CSS -->
+
+{% endblock %}
+
+{% block page_title %}
+    Club
+{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb">
+    <form method="GET" action="">
+        <div class="row d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center m-2">
+                <h4 class="page-title">Club List</h4>
+                <select class="form-control ml-3" name="page_length" style="width: 120px;" onchange="this.form.submit()">
+                    <option value="20" {% if page_length == "20" %}selected{% endif %}>20</option>
+                    <option value="50" {% if page_length == "50" %}selected{% endif %}>50</option>
+                    <option value="100" {% if page_length == "100" %}selected{% endif %}>100</option>
+                    <option value="200" {% if page_length == "200" %}selected{% endif %}>200</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center">
+                
+                <select name="filter_type" class="form-control">
+                    
+                    <option value="all" {% if filter_type == "all" %}selected{% endif %}>All</option>
+                    <option value="active" {% if filter_type == "active" or not filter_type  %}selected{% endif %}>Active</option>
+                    <option value="disabled" {% if filter_type == "disabled" %}selected{% endif %}>Disabled</option>
+                    
+                </select>          
+                <input type="text" id="location_input" name="location" class="form-control mx-2" placeholder="Search By Location..." style="width: 250px;" value="{{ request.GET.location }}"> 
+                <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfBo6-cZlOpKGrD1ZYwISIGjYvhH_wPmk&libraries=places"></script>
+                <script>
+                    function initialize() {
+                        var input = document.getElementById('location_input');
+                        var autocomplete = new google.maps.places.Autocomplete(input);
+                    }
+
+                    google.maps.event.addDomListener(window, 'load', initialize);
+                </script>
+                
+                <input type="text" name="search_text" class="form-control mr-2" placeholder="Search Club..." 
+                value="{% if search_text %}{{ search_text }}{% endif %}" style="width: 200px;">
+            
+                <button type="submit" class="btn btn-secondary"><i class="fas fa-search"></i></button>
+                <a href="{% url 'dashboard:add_club' %}" class="btn btn-primary font-weight-bold ml-2">Add Club</a>
+            </div>
+                   
+        </div>
+    </form>
+</div>
+
+<div class="container-fluid mb-4">
+    <div class="row mb-5">
+        <div id="map" style="height: 400px; width: 100%; border-radius: 10px;"></div>
+    </div>
+    <div class="row">
+        {% for club in clubs %}
+            <div class="col-md-3 mb-4 d-flex ">
+                <a href="{% url 'dashboard:view_club' club.id%}" class="text-decoration-none text-dark">
+                    <div class="card border w-100 shadow-sm" style="display: flex; flex-direction: column; height: 100%;">
+                        
+                        <!-- Header -->
+                        <div class="card-header text-center" style="font-weight: bold;">
+                            {{ club.name }}
+                        </div>
+                        
+                        <!-- Image Section -->
+                        <div style="height: 200px; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #f0f0f0;">
+                            <img src="{% if club.image %}{{ club.image }}{% else %}https://pickleit.app/static/images/pickleit_newlogo.jpg{% endif %}" 
+                                alt="{{ club.name }}" 
+                                width="200" 
+                                height="200" 
+                                class="card-image">
+                        </div>
+
+                        
+                        <!-- Body -->
+                        <div class="card-body" style="flex-grow: 1; display: flex; flex-direction: column;">
+                            <p style="margin-bottom: 5px;"><strong>Founded:</strong> {{ club.founded_date }}</p>
+                            <p style="margin-bottom: 5px;"><strong>Location:</strong> {{ club.location }}</p>
+                            <p class="card-text" style="flex-grow: 1; overflow: hidden; text-overflow: ellipsis; max-height: 50px;">{{ club.description }}</p>
+
+                            
+                        </div>
+
+                    </div>
+                </a>
+            </div>
+
+           
+
+            <!-- Delete Modal -->
+            
+
+        {% empty %}
+            <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'dashboard/not_found.html' %}
+</div>
+        {% endfor %}
+    </div>
+
+    {% if clubs.paginator.num_pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if clubs.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ clubs.previous_page_number }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for p in page_range %}
+                    {% if p == "..." %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% else %}
+                        <li class="page-item {% if clubs.number == p %}active{% endif %}">
+                            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if clubs.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ clubs.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ clubs.paginator.num_pages }}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>  
+    {% endif %}
+</div>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{google_api_key}}&callback=initMap&libraries=places"></script>
+<script>
+    let map;
+    let userLat = 40.7128, userLng = -74.0060; // Default location (New York)
+    let clubs = JSON.parse('{{ clubs_json|safe }}'); // Use JSON-serialized data from Django
+
+    function initMap() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                userLat = position.coords.latitude;
+                userLng = position.coords.longitude;
+                initializeMap();
+            }, () => {
+                initializeMap();
+            });
+        } else {
+            initializeMap();
+        }
+    }
+
+    function initializeMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: userLat, lng: userLng },
+            zoom: 12
+        });
+
+        plotSystemClubs();
+        fetchGoogleClubs();
+    }
+
+    function plotSystemClubs() {
+        clubs.forEach(club => {
+            const marker = new google.maps.Marker({
+                position: { lat: parseFloat(club.latitude), lng: parseFloat(club.longitude) },
+                map,
+                title: club.name,
+                icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Blue for system clubs
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<strong>${club.name}</strong><br>📍 ${club.location}`
+            });
+
+            marker.addListener("click", () => {
+                infoWindow.open(map, marker);
+            });
+        });
+    }
+
+    function fetchGoogleClubs() {
+        fetch(`/admin/fetch_google_clubs?lat=${userLat}&lng=${userLng}`)
+            .then(response => response.json())
+            .then(data => {
+                data.google_clubs.forEach(club => {
+                    const marker = new google.maps.Marker({
+                        position: { lat: club.latitude, lng: club.longitude },
+                        map,
+                        title: club.name,
+                        icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" // Red for Google clubs
+                    });
+
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `<strong>${club.name}</strong>`
+                    });
+
+                    marker.addListener("click", () => {
+                        infoWindow.open(map, marker);
+                    });
+                });
+            });
+    }
+
+    function filterClubs() {
+        let searchQuery = document.getElementById('searchBar').value.trim();
+        if (event.key === "Enter") {
+            window.location.href = `?q=${searchQuery}`;
+        }
+    }
+
+    function filterClubByLocation() {
+        let locationQuery = document.getElementById('locationSearch').value.trim();
+        if (event.key === "Enter") {
+            window.location.href = `?location=${locationQuery}`;
+        }
+    }
+</script>
+{% endblock %}
+ 

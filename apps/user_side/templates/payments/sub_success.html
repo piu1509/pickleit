@@ -1,0 +1,9 @@
+{% extends 'base/base_user.html' %}
+{% block content %}
+<section class="container my-5">
+    <h1 class="h3 mb-4">Payment Successful</h1>
+    <p>Your subscription has been activated. Thank you for your purchase!</p>
+    <a href="{% url 'user_side:subcription_plan' %}" class="btn btn-primary">Back to Membership</a>
+    <a href="{% url 'user_side:user_index' %}" class="btn btn-primary">Back to Home</a>
+</section>
+{% endblock %}

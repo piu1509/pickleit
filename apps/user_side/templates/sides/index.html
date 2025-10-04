@@ -1,0 +1,699 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% block style %}
+<style>
+    
+</style>
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">      
+        <div class="row dash-top">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-6 mb-3">
+                <div class="card nw-card w-100">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col mt-0">
+                                <h5 class="card-title text-white">Your Teams</h5>
+                            </div>
+        
+                            <div class="col-auto">
+                                <div class="stat text-primary">
+                                    <i class="fa-solid fa-people-group"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <h4 class="h1 mt-1 mb-3 text-white">{{user_teams_count}}</h4>
+                        <div class="mb-0">
+                            <span class="text-white"><a href="{% url 'user_side:find_my_team_list' %}">Click</a> view for team list</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-6 mb-3">
+                <div class="card nw-card w-100">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col mt-0">
+                                <h5 class="card-title text-white">Balance</h5>
+                            </div>
+        
+                            <div class="col-auto">
+                                <div class="stat text-primary">
+                                    <i class="fa-solid fa-wallet"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <h4 class="h1 mt-1 mb-3 text-white">${{balance}}</h4>
+                        <div class="mb-0">
+                            <span class="text-white"><a href="{% url 'user_side:user_wallet' %}">Click</a> view for wallet details</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-6 mb-3">
+                <div class="card nw-card w-100">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col mt-0">
+                                <h5 class="card-title text-white">Join event</h5>
+                            </div>
+        
+                            <div class="col-auto">
+                                <div class="stat text-primary">
+                                    <i class="fa-solid fa-award"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <h4 class="h1 mt-1 mb-3 text-white">{{join_event_count}}</h4>
+                        <div class="mb-0">
+                            <span class="text-white"><a href="{% url 'user_side:event_user' %}">Click</a> view for event list</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-sm-6 col-6 mb-3">
+                <div class="card nw-card w-100">
+                    <div class="card-body p-0">
+                        <div class="row">
+                            <div class="col mt-0">
+                                <h5 class="card-title text-white">Subcription</h5>
+                            </div>
+        
+                            <div class="col-auto">
+                                <div class="stat text-primary">
+                                    <i class="fa-solid fa-crown"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <h4 class="h1 mt-1 mb-3 text-white">Free</h4>
+                        <div class="mb-0">
+                            <span class="text-white"><a href="{% url 'user_side:subcription_plan' %}" >Click</a> Upgrate plan </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% include 'advertisement/advertisement.html' %}
+{% include 'component/home_invitation_list.html' %}
+{% include 'advertisement/advertisement.html' %}
+{% include 'component/match_htstory.html' %}
+{% include 'advertisement/advertisement.html' %}
+<div class="row mt-4">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Nearby Clubs & Pickleball Courts</h5>
+            </div>
+            <div class="card-body">
+                <!-- Counts Row -->
+                <div class="row mb-3">
+                    <div class="col-12 d-flex justify-content-around text-center">
+                        <div role="button" data-bs-toggle="modal" data-bs-target="#playersModal">
+                            <strong id="playerCount">0</strong><br>Players
+                        </div>
+                        <div role="button" data-bs-toggle="modal" data-bs-target="#eventsModal">
+                            <strong id="eventCount">0</strong><br>Events
+                        </div>
+                        <div role="button" data-bs-toggle="modal" data-bs-target="#courtsModal">
+                            <strong id="courtCount">0</strong><br>Courts
+                        </div>
+                        <div role="button" data-bs-toggle="modal" data-bs-target="#clubsModal">
+                            <strong id="clubCount">0</strong><br>Clubs
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Map -->
+                <input id="locationSearch" class="form-control mb-3" type="text" placeholder="Search for location...">
+                <div id="map" style="width: 100%; height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="playersModal" tabindex="-1" aria-labelledby="playersModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nearby Players</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+        <div id="playerList" class="row g-3"></div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- Events Modal -->
+<div class="modal fade" id="eventsModal" tabindex="-1" aria-labelledby="eventsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nearby Events</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+         <div id="eventList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Courts Modal -->
+<div class="modal fade" id="courtsModal" tabindex="-1" aria-labelledby="courtsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nearby Courts</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      
+      <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+         <div id="courtList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Clubs Modal -->
+<div class="modal fade" id="clubsModal" tabindex="-1" aria-labelledby="clubsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nearby Clubs</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+         <div id="clubList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% include 'advertisement/advertisement.html' %}
+{% include 'component/feed_list.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://maps.googleapis.com/maps/api/js?key={{ API_KEY }}&libraries=places"></script>
+<!-- JavaScript for Map and Autocomplete -->
+<!-- <script>
+    // Initialize the map
+    var map = L.map('map').setView([37.7749, -122.4194], 13); // Default: San Francisco
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Layer to manage markers
+    var markersLayer = L.layerGroup().addTo(map);
+
+    // Function to clear existing markers
+    function clearMarkers() {
+        markersLayer.clearLayers();
+    }
+
+    // Function to plot markers from API data
+    function plotMarkers(data) {
+        clearMarkers(); // Remove old markers
+
+        // Add player markers (blue)
+        data.player_data.forEach(function(player) {
+            L.marker([parseFloat(player.lat), parseFloat(player.lng)], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34]
+                })
+            })
+            .bindPopup(`<b>${player.name}</b><br>${player.description}`)
+            .addTo(markersLayer);
+        });
+
+        // Add event markers (red)
+        data.event_data.forEach(function(event) {
+            L.marker([parseFloat(event.lat), parseFloat(event.lng)], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34]
+                })
+            })
+            .bindPopup(`<b>${event.name}</b><br>${event.description}`)
+            .addTo(markersLayer);
+        });
+    }
+
+    // Google Places Autocomplete
+    var input = document.getElementById('locationSearch');
+    var autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['geocode'], // Limit to addresses
+        fields: ['place_id', 'geometry', 'formatted_address'] // Optimize API usage
+    });
+
+    // Handle place selection
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+            alert('No details available for input: "' + place.name + '"');
+            return;
+        }
+
+        // Center map on selected location
+        var lat = place.geometry.location.lat();
+        var lng = place.geometry.location.lng();
+        map.setView([lat, lng], 13);
+
+        // Fetch nearby players and events
+        fetch('/user_side/api/nearby-pickleball/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ lat: lat, lng: lng })
+        })
+        .then(response => response.json())
+        .then(data => {
+            plotMarkers(data); // Plot markers
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+           
+        });
+    });
+
+    // Handle Enter key for manual search
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && this.value.trim() !== '') {
+            var query = this.value;
+            // Use Google Geocoding API to convert query to coordinates
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=YOUR_GOOGLE_API_KEY`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'OK' && data.results.length > 0) {
+                        var lat = data.results[0].geometry.location.lat;
+                        var lng = data.results[0].geometry.location.lng;
+                        map.setView([lat, lng], 13);
+
+                        // Fetch nearby players and events
+                        fetch('/user_side/api/nearby-pickleball/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ lat: lat, lng: lng })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            plotMarkers(data);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching data:', error);
+                            alert('Failed to load nearby players and events');
+                        });
+                    } else {
+                        alert('Location not found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error geocoding:', error);
+                    alert('Error searching location');
+                });
+        }
+    });
+</script> -->
+<script>
+    var map = L.map('map').setView([20.5937, 78.9629], 5); // Default India center
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var markersLayer = L.layerGroup().addTo(map);
+
+    function clearMarkers() {
+        markersLayer.clearLayers();
+    }
+
+    function plotMarkers(data) {
+        clearMarkers();
+        const mergedCourts = (data.local_courts || []).concat(
+            (data.google_places || []).filter(p => p.name?.toLowerCase().includes("court"))
+                .map(p => ({
+                    name: p.name,
+                    latitude: p.geometry?.location?.lat,
+                    longitude: p.geometry?.location?.lng,
+                    type: "court",
+                    rating: p.rating || null,
+                    image: "", // no image from Google
+                    opening_time: null,
+                    closing_time: null,
+                    contact: null
+                }))
+        );
+
+        const mergedClubs = (data.local_clubs || []).concat(
+            (data.google_places || []).filter(p => p.name?.toLowerCase().includes("club"))
+                .map(p => ({
+                    name: p.name,
+                    latitude: p.geometry?.location?.lat,
+                    longitude: p.geometry?.location?.lng,
+                    type: "club",
+                    rating: p.rating || null,
+                    image: "",
+                    opening_time: null,
+                    closing_time: null,
+                    contact: null
+                }))
+        );
+        // Update counts
+        document.getElementById('playerCount').textContent = data.player_data?.length || 0;
+        document.getElementById('eventCount').textContent = data.event_data?.length || 0;
+        document.getElementById('courtCount').textContent = mergedCourts.length;
+        document.getElementById('clubCount').textContent = mergedClubs.length;
+
+        // Players
+        data.player_data?.forEach(player => {
+            L.marker([+player.lat, +player.lng], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34]
+                })
+            })
+            .bindPopup(`<b>${player.name}</b><br>${player.description || ''}`)
+            .bindTooltip(player.name, { permanent: false, direction: 'top' })
+            .addTo(markersLayer);
+        });
+
+        // Events
+        data.event_data?.forEach(event => {
+            L.marker([+event.lat, +event.lng], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34]
+                })
+            })
+            .bindPopup(`<b>${event.name}</b><br>${event.description || ''}`)
+            .bindTooltip(event.name, { permanent: false, direction: 'top' })
+            .addTo(markersLayer);
+        });
+
+        // Courts
+        mergedCourts.forEach(court => {
+            if (court.latitude && court.longitude) {
+                L.marker([+court.latitude, +court.longitude], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34]
+                    })
+                })
+                .bindPopup(`<b>${court.name}</b><br>Court`)
+                .bindTooltip(court.name, { permanent: false, direction: 'top' })
+                .addTo(markersLayer);
+            }
+        });
+
+        // Clubs
+        mergedClubs.forEach(club => {
+            if (club.latitude && club.longitude) {
+                L.marker([+club.latitude, +club.longitude], {
+                    icon: L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41],
+                        popupAnchor: [1, -34]
+                    })
+                })
+                .bindPopup(`<b>${club.name}</b><br>Club`)
+                .bindTooltip(club.name, { permanent: false, direction: 'top' })
+                .addTo(markersLayer);
+            }
+        });
+
+        const players = data.player_data || [];
+        let playertHtml = '';
+
+        for (let i = 0; i < players.length; i += 2) {
+            playertHtml += '<div class="row g-3 mb-2">';
+
+            for (let j = i; j < i + 2 && j < players.length; j++) {
+                const p = players[j];
+                playertHtml += `
+                    <div class="col-md-6 d-flex justify-content-center">
+                        <div class="card" style="width: 100%; max-width: 320px; height: 150px;">
+                            <div class="card-body d-flex align-items-center">
+                                <img src="${p.image || '/static/images/default-profile.png'}"
+                                    alt="${p.name}"
+                                    class="rounded-circle me-3"
+                                    style="width: 70px; height: 70px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-1">${p.name}</h6>
+                                    <p class="mb-1"><strong>Rank:</strong> ${p.rank || 'N/A'}</p>
+                                    <p class="mb-0"><strong>Location:</strong> ${p.location || 'Unknown'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            playertHtml += '</div>'; // close row
+        }
+
+        document.getElementById('playerList').innerHTML = playertHtml || '<p class="text-center">No players found</p>';
+
+        console.log("Event data:", data.event_data);
+        const events = data.event_data || [];
+        let eventHtml = '';
+
+        for (let i = 0; i < events.length; i += 2) {
+            eventHtml += '<div class="row g-3 mb-2">';
+
+            for (let j = i; j < i + 2 && j < events.length; j++) {
+                const e = events[j];
+                eventHtml += `
+                    <div class="col-md-6 d-flex justify-content-center">
+                        <div class="card" style="width: 100%; max-width: 360px; height: 180px;">
+                            <div class="card-body d-flex align-items-start">
+                                <img src="${e.image || '/static/images/default-event.png'}"
+                                    alt="${e.name}"
+                                    class="rounded-circle me-3"
+                                    style="width: 70px; height: 70px; object-fit: cover;">
+                                <div style="font-size: 0.875rem;">
+                                    
+                                    <h6 class="mb-1">${e.name} || ${e.team_type || 'Open'}</h6>
+                                    <p class="mb-1">
+                                        <strong>Start:</strong> ${e.start_date || 'N/A'} |
+                                        <strong>Reg:</strong> ${e.reg_start_date || 'N/A'} to ${e.reg_end_date || 'N/A'}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Max Teams:</strong> ${e.max_teams || 'N/A'} |
+                                        <strong>Joined:</strong> ${e.joined_teams || 0}
+                                    </p>
+                                    <p class="mb-0"><strong>Location:</strong> ${e.location || 'Unknown'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            eventHtml += '</div>'; // close row
+        }
+
+        document.getElementById('eventList').innerHTML = eventHtml || '<p class="text-center">No events found</p>';
+
+        let courtHtml = '';
+
+        for (let i = 0; i < mergedCourts.length; i += 2) {
+            courtHtml += '<div class="row g-3 mb-2">';
+
+            for (let j = i; j < i + 2 && j < mergedCourts.length; j++) {
+                const c = mergedCourts[j];
+                courtHtml += `
+                    <div class="col-md-6 d-flex justify-content-center">
+                        <div class="card" style="width: 100%; max-width: 360px; height: 180px;">
+                            <div class="card-body d-flex align-items-start">
+                                <img src="${c.image || '/static/images/default-event.png'}"
+                                    alt="${c.name}"
+                                    class="rounded-circle me-3"
+                                    style="width: 70px; height: 70px; object-fit: cover;">
+                                <div style="font-size: 0.875rem;">
+                                    <h6 class="mb-1">${c.name}</h6>
+                                    <p class="mb-1"><strong>Location:</strong> ${c.location || 'Unknown'}</p>
+                                    <p class="mb-1"><strong>Time:</strong> ${c.opening_time || 'N/A'} - ${c.closing_time || 'N/A'}</p>
+                                    <p class="mb-1"><strong>Contact:</strong> ${c.contact || 'N/A'}</p>
+                                    <p class="mb-0"><strong>Rating:</strong> ${c.rating || '0.0'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            courtHtml += '</div>'; // close row
+        }
+
+        document.getElementById('courtList').innerHTML = courtHtml || '<p class="text-center">No courts found</p>';
+
+    let clubHtml = '';
+
+        for (let i = 0; i < mergedClubs.length; i += 2) {
+            clubHtml += '<div class="row g-3 mb-2">';
+
+            for (let j = i; j < i + 2 && j < mergedClubs.length; j++) {
+                const c = mergedClubs[j];
+                clubHtml += `
+                    <div class="col-md-6 d-flex justify-content-center">
+                        <div class="card" style="width: 100%; max-width: 360px; height: 180px;">
+                            <div class="card-body d-flex align-items-start">
+                                <img src="${c.image || '/static/images/default-event.png'}"
+                                    alt="${c.name}"
+                                    class="rounded-circle me-3"
+                                    style="width: 70px; height: 70px; object-fit: cover;">
+                                <div style="font-size: 0.875rem;">
+                                    <h6 class="mb-1">${c.name}</h6>
+                                    <p class="mb-1"><strong>Location:</strong> ${c.location || 'Unknown'}</p>
+                                    <p class="mb-1"><strong>Time:</strong> ${c.opening_time || 'N/A'} - ${c.closing_time || 'N/A'}</p>
+                                    <p class="mb-1"><strong>Contact:</strong> ${c.contact || 'N/A'}</p>
+                                    <p class="mb-0"><strong>Rating:</strong> ${c.rating || '0.0'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            clubHtml += '</div>'; // close row
+        }
+
+        document.getElementById('clubList').innerHTML = clubHtml || '<p class="text-center">No clubs found</p>';
+
+    }
+
+    function fetchGooglePlaces(lat, lng, callback) {
+        fetch('/user_side/api/proxy-google-places/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                lat,
+                lng,
+                radius: 10000,
+                keyword: 'pickleball court club'
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            callback(data); // pass entire result to plotMarkers
+        })
+        .catch(err => {
+            console.error('Google Places fetch error:', err);
+            callback({});
+        });
+    }
+
+
+
+    function loadNearbyData(lat, lng) {
+        map.setView([lat, lng], 13);
+
+        // Mark user location
+        L.marker([lat, lng])
+            .bindPopup("<b>You are here</b>")
+            .addTo(markersLayer);
+
+        // Get player/event data from backend
+        fetch('/user_side/api/nearby-pickleball/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat, lng })
+        })
+        .then(response => response.json())
+        .then(baseData => {
+            fetchGooglePlaces(lat, lng, googleResult => {
+                const combined = {
+                    ...googleResult,
+                    player_data: baseData.player_data || [],
+                    event_data: baseData.event_data || []
+                };
+                plotMarkers(combined);
+            });
+        })
+        .catch(err => console.error('Fetch error:', err));
+    }
+
+    function getCurrentLocationAndLoad() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    loadNearbyData(lat, lng);
+                },
+                err => {
+                    console.error(err);
+                    alert("Location access denied. Showing default view.");
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+
+    window.addEventListener("load", getCurrentLocationAndLoad);
+
+    // Google Places Autocomplete
+    const input = document.getElementById('locationSearch');
+    const autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['geocode'],
+        fields: ['geometry']
+    });
+
+    autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+            alert('No details available');
+            return;
+        }
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        loadNearbyData(lat, lng);
+    });
+
+    input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter' && this.value.trim() !== '') {
+            fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(this.value)}&key=YOUR_GOOGLE_API_KEY`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'OK' && data.results.length > 0) {
+                        const loc = data.results[0].geometry.location;
+                        loadNearbyData(loc.lat, loc.lng);
+                    } else {
+                        alert("Location not found.");
+                    }
+                })
+                .catch(err => {
+                    console.error('Geocode error:', err);
+                    alert("Search failed.");
+                });
+        }
+    });
+</script>
+{% endblock %}
+

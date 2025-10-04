@@ -1,0 +1,212 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% block style %}
+<style>
+    .club-image {
+        width: 400px; /* Fixed width */
+        height: 250px; /* Fixed height */
+        object-fit: cover; /* Ensures the image maintains aspect ratio and fills the area */
+        border-radius: 10px; /* Optional: Adds rounded corners */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4"> 
+        <h1 class="h3 mb-0">Clubs Listing</h1> 
+    </div>
+
+<div id="map" style="height: 400px; width: 100%; border-radius: 10px;"></div>
+
+<!-- Search Bars -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 mb-4">
+    <input type="text" id="searchBar" class="form-control" placeholder="🔍 Search club..." value="{{ query }}" style="max-width: 350px; border-radius: 20px;" onkeyup="filterClubs()">
+    <input type="text" id="locationSearch" class="form-control mt-2 mt-md-0" placeholder="📍 Search by location..." value="{{ location_query }}" style="max-width: 350px; border-radius: 20px;" onkeyup='filterClubByLocation()'>
+</div>
+
+<!-- Clubs List -->
+<div class="row club-list">
+    {% for club in clubs %}
+        <div class="col-lg-4 col-md-4 col-sm-12 mb-3">
+            <div class="card">
+                <!-- Club Images (Carousel) -->
+                <div id="clubCarousel{{ club.id }}" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% with club.clubimage_set.all as images %}
+                            {% for image in images %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    <img src="{{ image.image.url }}" class="d-block w-100 rounded club-image" alt="{{ club.name }}">
+                                </div>
+                            {% empty %}
+                                <div class="carousel-item active">
+                                    <img src="{% static 'images/default-club.jpg' %}" class="d-block w-100 rounded" alt="No Image">
+                                </div>
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#clubCarousel{{ club.id }}" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#clubCarousel{{ club.id }}" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    </button>
+                </div>
+
+                <!-- Club Info -->
+                <div class="mt-3">
+                    <h5 class="mb-3"><a href="{% url 'user_side:club_view' club.id %}" class="text-decoration-none text-dark">{{ club.name }}</a></h5>
+                    <p class="text-muted small mb-1"><i class="bi bi-geo"></i> {{ club.location }}</p>
+                    <p class="text-muted small mb-1"><i class="bi bi-clock"></i> {{ club.open_time|default:"N/A" }} - {{ club.close_time|default:"N/A" }}</p>
+                    <p class="text-muted small mb-1"><i class="bi bi-telephone"></i> {{ club.contact }}</p>
+                    <p class="text-muted small mb-1"><i class="bi bi-star-fill"></i> Rating: {{ club.overall_rating|floatformat:1 }}</p>
+                    <p class="text-muted small mb-1"><i class="bi bi-tag"></i> Membership Fee: {{ club.join_amount }} {{ club.unit }}</p>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        {% include 'base/not_found.html' %}
+    {% endfor %}
+</div>
+{% if clubs.has_other_pages %}
+<nav aria-label="Club pagination">
+    <ul class="pagination justify-content-center mt-4">
+        {% if clubs.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if location_query %}&location={{ location_query }}{% endif %}">&laquo; First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ clubs.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if location_query %}&location={{ location_query }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in clubs.paginator.page_range %}
+        {% if clubs.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > clubs.number|add:'-2' and num < clubs.number|add:'2' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if location_query %}&location={{ location_query }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if clubs.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ clubs.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if location_query %}&location={{ location_query }}{% endif %}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ clubs.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if location_query %}&location={{ location_query }}{% endif %}">Last &raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{google_api_key}}&callback=initMap&libraries=places"></script>
+<script>
+    let map;
+    let userLat = 40.7128, userLng = -74.0060; // Default location (New York)
+    let clubs = JSON.parse('{{ clubs_json|safe }}'); // Use JSON-serialized data from Django
+
+    function initMap() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                userLat = position.coords.latitude;
+                userLng = position.coords.longitude;
+                initializeMap();
+            }, () => {
+                initializeMap();
+            });
+        } else {
+            initializeMap();
+        }
+    }
+
+    function initializeMap() {
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: userLat, lng: userLng },
+            zoom: 12
+        });
+
+        plotSystemClubs();
+        fetchGoogleClubs();
+    }
+
+    function plotSystemClubs() {
+        clubs.forEach(club => {
+            const marker = new google.maps.Marker({
+                position: { lat: parseFloat(club.latitude), lng: parseFloat(club.longitude) },
+                map,
+                title: club.name,
+                icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Blue for system clubs
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<strong>${club.name}</strong><br>📍 ${club.location}`
+            });
+
+            marker.addListener("click", () => {
+                infoWindow.open(map, marker);
+            });
+        });
+    }
+
+    function fetchGoogleClubs() {
+        fetch(`/user_side/fetch_google_clubs?lat=${userLat}&lng=${userLng}`)
+            .then(response => response.json())
+            .then(data => {
+                data.google_clubs.forEach(club => {
+                    const marker = new google.maps.Marker({
+                        position: { lat: club.latitude, lng: club.longitude },
+                        map,
+                        title: club.name,
+                        icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" // Red for Google clubs
+                    });
+
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `<strong>${club.name}</strong>`
+                    });
+
+                    marker.addListener("click", () => {
+                        infoWindow.open(map, marker);
+                    });
+                });
+            });
+    }
+
+    function filterClubs() {
+        let searchQuery = document.getElementById('searchBar').value.trim();
+        if (event.key === "Enter") {
+            window.location.href = `?q=${searchQuery}`;
+        }
+    }
+
+    function filterClubByLocation() {
+        let locationQuery = document.getElementById('locationSearch').value.trim();
+        if (event.key === "Enter") {
+            window.location.href = `?location=${locationQuery}`;
+        }
+    }
+</script>
+
+<script>
+    function initAutocomplete() {
+        var input = document.getElementById("locationSearch");
+        var autocomplete = new google.maps.places.Autocomplete(input, {
+            types: ["geocode"]
+        });
+
+        autocomplete.addListener("place_changed", function () {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                alert("No details available for the selected address.");
+            }
+        });
+    }
+
+    google.maps.event.addDomListener(window, "load", initAutocomplete);
+</script>
+{% endblock %}

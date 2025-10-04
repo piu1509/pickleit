@@ -1,0 +1,57 @@
+{% load custom_tags %}
+<div class="row mt-2">
+    <div class="col-xl-12">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Wallet Balance</h5>
+                <h3 class="text-success">${% if wallet_details.balance %}{{wallet_details.balance}}{% else %} 0.00{% endif %}</h3>
+                <hr />
+                <h6>Recent Transactions</h6>
+                <ul class="list-group">
+                    
+                    {% if transaction %}
+                        <ul id="initial-transactions" class="list-group">
+                            {% for trns in transaction|slice:":3" %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ trns.transaction_type }} from {{trns.sender.first_name}} {{trns.sender.last_name}} for {{ trns.transaction_for }}
+                                    {% if trns.transaction_type == "credit" %}
+                                        <span class="badge bg-success text-white">${{ trns.amount }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger text-white">${{ trns.amount }}</span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if transaction|length > 3 %}
+                            <div id="all-transactions" class="list-group mt-2" style="display: none; max-height: 250px; overflow-y: auto;">
+                                {% for trns in transaction %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ trns.transaction_type }} from {{trns.sender.first_name}} {{trns.sender.last_name}} for {{ trns.transaction_for }}
+                                        {% if trns.transaction_type == "credit" %}
+                                            <span class="badge bg-success text-white">${{ trns.amount }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger text-white">${{ trns.amount }}</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </div>
+
+                            <button class="btn btn-link p-0 mt-2" onclick="showAllTransactions()">See more</button>
+
+                            <script>
+                                function showAllTransactions() {
+                                    document.getElementById('initial-transactions').style.display = 'none';
+                                    document.getElementById('all-transactions').style.display = 'block';
+                                    event.target.style.display = 'none'; // hides the See more button
+                                }
+                            </script>
+                        {% endif %}
+                    {% else %}
+                        {% include 'dashboard/not_found.html' %}
+                    {% endif %} 
+                </ul>                
+            </div>
+        </div>
+    </div>
+</div>

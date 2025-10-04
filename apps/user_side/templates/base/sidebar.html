@@ -1,0 +1,142 @@
+{% load static %}
+<nav id="sidebar" class="sidebar js-sidebar">
+    <div class="sidebar-content js-simplebar">
+        <a class="sidebar-brand" href="{% url 'user_side:user_index' %}">
+            <span class="align-middle">PickleIT</span>
+        </a>
+
+        <ul class="sidebar-nav">
+            <li class="sidebar-header">Pages</li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'user_index' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:user_index' %}">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span class="align-middle">Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Teams Dropdown -->
+            <li class="sidebar-item {% if request.resolver_match.url_name in 'find_my_team_list' or request.resolver_match.url_name == 'find_team_list' or request.resolver_match.url_name in 'create_team_user_side' or request.resolver_match.url_name in 'team_view_user' %}active{% endif %}">
+                <a class="sidebar-link {% if request.resolver_match.url_name in 'find_my_team_list' or request.resolver_match.url_name == 'find_team_list' or request.resolver_match.url_name in 'create_team_user_side' or request.resolver_match.url_name in 'team_view_user' %}{% else %}collapsed{% endif %}" data-bs-toggle="collapse" href="#teamsDropdown" role="button" aria-expanded="{% if request.resolver_match.url_name in 'find_my_team_list' or request.resolver_match.url_name == 'find_team_list' or request.resolver_match.url_name in 'create_team_user_side' or request.resolver_match.url_name in 'team_view_user' %}true {% else %}false {% endif %}" aria-controls="teamsDropdown">
+                    <i class="fa-solid fa-people-group"></i>
+                    <span class="align-middle">Teams</span>
+                </a>
+                <ul id="teamsDropdown" class="sidebar-dropdown list-unstyled collapse {% if request.resolver_match.url_name in 'find_team_list' or request.resolver_match.url_name in 'find_my_team_list' or request.resolver_match.url_name in 'create_team_user_side' or request.resolver_match.url_name in 'team_view_user' %}show{% endif %}">
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name in 'find_team_list' or request.resolver_match.url_name in 'team_view_user' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:find_team_list' %}">Team List</a>
+                    </li>
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name == 'find_my_team_list' or request.resolver_match.url_name in 'create_team_user_side' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:find_my_team_list' %}">My Team</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'event_user' or request.resolver_match.url_name == 'event_view' or request.resolver_match.url_name == 'join_team_event' or request.resolver_match.url_name == 'edit_event' or request.resolver_match.url_name == 'start_tournament' or request.resolver_match.url_name == 'add_event' or request.resolver_match.url_name == 'event_update_score' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:event_user' %}">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span class="align-middle">Event</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'player_profile' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:user_list' %}">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span class="align-middle">Found User</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'openplay_list' or request.resolver_match.url_name == 'create_openplay' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:openplay_list' %}">
+                    <i class="fa-solid fa-group-arrows-rotate"></i>
+                    <span class="align-middle">OpenPlay</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'match_history_user' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:match_history_user' %}">
+                    <i class="fa-solid fa-retweet"></i>
+                    <span class="align-middle">Match History</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'user_wallet' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:user_wallet' %}">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span class="align-middle">Wallet</span>
+                </a>
+            </li>
+
+           <li class="sidebar-item {% if request.resolver_match.url_name in 'socail_feed_list,add_post,like_post,add_comment,view_post' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:socail_feed_list' %}">
+                    <i class="fa-regular fa-comment-dots"></i>
+                    <span class="align-middle">Social Feed</span>
+                </a>
+            </li>
+
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'my_ad_list' or request.resolver_match.url_name == 'add_advertisement' %}active{% endif %}">
+                <a class="sidebar-link {% if request.resolver_match.url_name in 'my_ad_list' or request.resolver_match.url_name == 'add_advertisement' %}{% else %}collapsed{% endif %}" data-bs-toggle="collapse" href="#adsDropdown" role="button" aria-expanded="{% if request.resolver_match.url_name in 'my_ad_list' or request.resolver_match.url_name == 'add_advertisement' %}true {% else %}false {% endif %}" aria-controls="teamsDropdown">
+                    <i class="fa-solid fa-image"></i>
+                    <span class="align-middle">Advertisements</span>
+                </a>
+                <ul id="adsDropdown" class="sidebar-dropdown list-unstyled collapse {% if request.resolver_match.url_name in 'my_ad_list' or request.resolver_match.url_name in 'add_advertisement' %}show{% endif %}">
+                    {% comment %} <li class="sidebar-item sub-menu {% if request.resolver_match.url_name in 'ad_list' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:ad_list' %}">Advertisement List</a>
+                    </li> {% endcomment %}
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name == 'my_ad_list' or request.resolver_match.url_name == 'add_advertisement' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:my_ad_list' %}">My Advertisements</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name in 'all_club_list' or request.resolver_match.url_name == 'my_club_list' or request.resolver_match.url_name in 'add_my_club' or request.resolver_match.url_name == 'club_view' %}active{% endif %}">
+                <a class="sidebar-link {% if request.resolver_match.url_name in 'all_club_list' or request.resolver_match.url_name == 'my_club_list' or request.resolver_match.url_name == 'my_club_list' or request.resolver_match.url_name in 'add_my_club' or request.resolver_match.url_name == 'club_view' %}{% else %}collapsed{% endif %}" data-bs-toggle="collapse" href="#clubsDropdown" role="button" aria-expanded="{% if request.resolver_match.url_name in 'all_club_list' or request.resolver_match.url_name == 'my_club_list' or request.resolver_match.url_name in 'add_my_club' or request.resolver_match.url_name == 'club_view' %}true {% else %}false {% endif %}" aria-controls="teamsDropdown">
+                    <i class="fa-solid fa-house-user"></i>
+                    <span class="align-middle">Clubs</span>
+                </a>
+                <ul id="clubsDropdown" class="sidebar-dropdown list-unstyled collapse {% if request.resolver_match.url_name in 'all_club_list' or request.resolver_match.url_name in 'my_club_list' or request.resolver_match.url_name == 'my_club_list' or request.resolver_match.url_name in 'add_my_club' or request.resolver_match.url_name == 'club_view' %}show{% endif %}">
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name in 'all_club_list' or request.resolver_match.url_name in 'club_view' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:all_club_list' %}">Club List</a>
+                    </li>
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name == 'my_club_list' or request.resolver_match.url_name == 'my_club_list' or request.resolver_match.url_name in 'add_my_club'%}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:my_club_list'  %}">My Clubs</a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item {% if request.resolver_match.url_name in 'all_court_list' or request.resolver_match.url_name == 'my_court_list' or request.resolver_match.url_name in 'add_my_court' or request.resolver_match.url_name == 'court_view' %}active{% endif %}">
+                <a class="sidebar-link {% if request.resolver_match.url_name in 'all_court_list' or request.resolver_match.url_name == 'my_court_list' or request.resolver_match.url_name in 'add_my_court' or request.resolver_match.url_name == 'court_view' %}{% else %}collapsed{% endif %}" data-bs-toggle="collapse" href="#courtsDropdown" role="button" aria-expanded="{% if request.resolver_match.url_name in 'all_court_list' or request.resolver_match.url_name == 'my_court_list' or request.resolver_match.url_name in 'add_my_court' or request.resolver_match.url_name == 'court_view' %}true {% else %}false {% endif %}" aria-controls="teamsDropdown">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span class="align-middle">Courts</span>
+                </a>
+                <ul id="courtsDropdown" class="sidebar-dropdown list-unstyled collapse {% if request.resolver_match.url_name in 'all_court_list' or request.resolver_match.url_name in 'my_court_list' or request.resolver_match.url_name in 'add_my_court' or request.resolver_match.url_name == 'court_view' %}show{% endif %}">
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name in 'all_court_list' or request.resolver_match.url_name == 'court_view' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:all_court_list' %}">Court List</a>
+                    </li>
+                    <li class="sidebar-item sub-menu {% if request.resolver_match.url_name == 'my_court_list' or request.resolver_match.url_name in 'add_my_court' %}active{% endif %}">
+                        <a class="sidebar-link" href="{% url 'user_side:my_court_list' %}">My Courts</a>
+                    </li>
+                </ul>
+            </li>
+
+            
+            <li class="sidebar-item ">
+                <a class="sidebar-link " href="{% url 'user_side:product_list_user_side' %}">
+                    <i class="fa-solid fa-store"></i>
+                    <span class="align-middle">Store</span>
+                </a>
+                
+            </li>
+            
+
+
+
+            <li class="sidebar-item {% if request.resolver_match.url_name == 'subcription_plan' or request.resolver_match.url_name == 'payment_success' or request.resolver_match.url_name == 'create_checkout_session' or request.resolver_match.url_name == 'payment_cancel' %}active{% endif %}">
+                <a class="sidebar-link" href="{% url 'user_side:subcription_plan' %}">
+                    <i class="fa-solid fa-certificate"></i>
+                    <span class="align-middle">Subcription</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

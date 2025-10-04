@@ -1,0 +1,629 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+{% block style %}
+<style>
+    .star {
+        font-size: 24px;
+        cursor: pointer;
+        color: #ccc;
+    }
+    
+    .star.selected {
+        color: gold;
+    }
+    </style>
+    
+{% endblock %}
+
+{% block content %}
+
+<div class="">
+    <div class="d-flex justify-content-end gap-2 align-items-center flex-wrap mb-3">
+    {% if request.user != club.user %}
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#bookClubModal">
+        <i class="fa-solid fa-plus"></i> Book Club
+    </button>
+    <div class="modal fade" id="bookClubModal" tabindex="-1" aria-labelledby="bookClubModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookClubModalLabel">Book Club</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Package selection -->
+                    <label for="packageSelect">Select Package</label>
+                    <select id="packageSelect" class="form-select">
+                        {% for package in packages %}
+                            <option value="{{ package.id }}">{{ package.name }} - ${{ package.price }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <!-- Booking date selection -->
+                    <label for="bookingDate">Select Booking Date</label>
+                    <input type="date" id="bookingDate" class="form-control">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="submitBooking">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="walletBalanceModal" tabindex="-1" aria-labelledby="walletBalanceModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="walletBalanceModalLabel">Wallet Balance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your Wallet Balance: $<span id="walletBalance"></span></p>
+                    <p>Amount to Pay: $<span id="amountToPay"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="confirmPayment" style="display:none;">Confirm Payment</button>
+                    <button type="button" class="btn btn-secondary" id="addMoney" style="display:none;">Add Money</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        {% if not is_joined %}
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#joinClubModal" onclick="updateWalletInfo()">
+            <i class="fa-solid fa-plus"></i> Join Club
+        </button>
+        {% endif %}
+        <div class="modal fade" id="joinClubModal" tabindex="-1" aria-labelledby="joinClubModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="joinClubModalLabel">Join Club</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Your Wallet Balance: $<span id="walletBalanceJoinClub">{{ wallet_balance }}</span></p>
+                        <p>Amount to Pay: $<span id="amountToPayJoinClub">{{ club.join_amount }}</span></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="confirmPaymentJoinClub" style="display:none;" onclick="confirmPayment()">Confirm Payment</button>
+                        <button type="button" class="btn btn-secondary" id="addMoneyJoinClub" style="display:none;" onclick="addMoney()">Add Money</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+  {% endif %}
+ 
+    <a href="{% url 'user_side:booking_list' club.id%}" class='btn btn-primary'>Booking List</a>
+    <a href="{% url 'user_side:joined_list' club.id%}" class='btn btn-primary'>Joined List</a>
+</div>
+
+    <h1 class="h3 mb-3">{{ club.name }}</h1>
+
+    <div class="club-view-top d-flex align-items-strech gap-3 mb-4">
+        <!-- Club Image Carousel -->
+        <div id="clubCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% with club.clubimage_set.all as images %}
+                    {% for image in images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ image.image.url }}" class="d-block w-100 rounded" alt="{{ club.name }}">
+                        </div>
+                    {% empty %}
+                        <div class="carousel-item active">
+                            <img src="{% static 'images/default-club.jpg' %}" class="d-block w-100 rounded" alt="No Image Available">
+                        </div>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#clubCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#clubCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
+        </div>
+
+        <!-- Club Information -->
+        <div class="card d-flex align-items-center justify-content-center p-4 shadow-sm m-0">
+            <div class="inner w-100">
+                <h4 class="h5 mb-3"><i class="fa-solid fa-house-chimney"></i> Club Information</h4>
+                <p><strong><i class="fa-solid fa-location-dot"></i> Location:</strong> {{ club.location }}</p>
+                <p><strong><i class="fa-solid fa-clock"></i> Open Hours:</strong> {{ club.open_time|default:"N/A" }} - {{ club.close_time|default:"N/A" }}</p>
+                <p><strong><i class="fa-solid fa-phone"></i> Contact:</strong> {{ club.contact }}</p>
+                <p><strong><i class="fa-solid fa-star"></i> Overall Rating:</strong> {{ club.overall_rating|floatformat:1 }}</p>
+                <p><strong><i class="fa-solid fa-wallet"></i> Membership Fee:</strong> {{ club.join_amount }} {{ club.unit }}</p>
+                <p><strong><i class="fa-solid fa-clipboard"></i> Description:</strong> {{ club.description }}</p>                
+            </div>
+        </div>
+    </div>
+
+    <!-- Club Packages -->
+    <div class="card p-4 shadow-sm">
+        <h4 class="h5 mb-3"><i class="fa-solid fa-boxes-packing"></i> Club Packages</h4>
+
+        {% if club.clubpackage_set.all %}
+            <ul class="list-group">
+                {% for package in club.clubpackage_set.all %}
+                    <li class="list-group-item">
+                        <strong>{{ package.name }}</strong> - {{ package.price }} {{ package.unit }} 
+                        <p class="mb-0 text-muted">{{ package.description }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">No packages available.</p>
+        {% endif %}
+
+        <!-- Show "Add Package" Button If Logged-In User is the Club Creator -->
+        {% if request.user == club.user %}
+    <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addPackageModal">
+        <i class="fa-solid fa-plus"></i> Add Package
+    </button>
+{% endif %}
+</div>
+
+<!-- Add Package Modal -->
+<div class="modal fade" id="addPackageModal" tabindex="-1" aria-labelledby="addPackageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPackageModalLabel">Add Club Package</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPackageForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="club_id" value="{{ club.id }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Package Name</label>
+                        <input type="text" id="package_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" id="package_price" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Unit</label>
+                        <select id="package_unit" class="form-control">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="INR">INR</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" id="start_date" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" id="end_date" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Max Members</label>
+                        <input type="number" id="max_members" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Membership Discount (%)</label>
+                        <input type="number" step="0.01" id="membership_discount" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea id="package_description" class="form-control"></textarea>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success" onclick="submitPackage()">Add Package</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Ratings & Reviews -->
+    {% if club.clubrating_set.exists %}
+    <div class="card p-4 mt-4 shadow-sm">
+        <h4 class="h5 mb-3"><i class="fa-solid fa-star"></i> Reviews</h4>
+        
+        <div id="reviewContainer">
+            {% for review in club.clubrating_set.all|slice:":2" %}
+                <div class="border-bottom pb-3 mb-3 review-item">
+                    <p><strong>{{ review.name }}</strong> - <i class="fa-solid fa-star" style="color: #ffd700;"></i> {{ review.rating }}/5</p>
+                    <p class="text-muted">{{ review.comment }}</p>
+                    {% if review.image %}
+                        <img src="{{ review.image.url }}" alt="Review Image" class="img-fluid" style="max-width: 100px;">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if club.clubrating_set.count > 2 %}
+            <button id="loadMoreReviews" class="btn btn-outline-primary">Load More</button>
+        {% endif %}
+    </div>
+{% else %}
+    <p class="text-muted mt-4">No reviews yet.</p>
+{% endif %}
+
+{% if request.user != club.user %}
+    <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+        <i class="fa-solid fa-plus"></i> Add Review
+    </button>
+{% endif %}
+
+
+<!-- Add Review Modal -->
+<div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReviewModalLabel">Add Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addReviewForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="club_id" value="{{ club.id }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <div class="star-rating">
+                            <span class="star" data-value="1"><i class="fa-solid fa-star"></i></span>
+                            <span class="star" data-value="2"><i class="fa-solid fa-star"></i></span>
+                            <span class="star" data-value="3"><i class="fa-solid fa-star"></i></span>
+                            <span class="star" data-value="4"><i class="fa-solid fa-star"></i></span>
+                            <span class="star" data-value="5"><i class="fa-solid fa-star"></i></span>
+                        </div>
+                        <input type="hidden" id="review_rating" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Comment (Optional)</label>
+                        <textarea id="review_comment" class="form-control"></textarea>
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="submitReview()">Submit Review</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Map -->
+<div class="mt-4">
+    <h4 class="h5 mb-3"><i class="fa-solid fa-location-dot"></i> Club Location</h4>
+    <div id="map" style="height: 300px;"></div>
+</div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function initMap() {
+        var clubLocation = { lat: {{ club.latitude }}, lng: {{ club.longitude }} };
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: clubLocation
+        });
+        new google.maps.Marker({
+            position: clubLocation,
+            map: map,
+            title: "{{ club.name }}"
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfBo6-cZlOpKGrD1ZYwISIGjYvhH_wPmk&callback=initMap" async defer></script>
+<script>
+    function submitPackage() {
+        var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+        
+        var formData = {
+            club_id: document.getElementById("club_id").value,
+            name: document.getElementById("package_name").value,
+            price: document.getElementById("package_price").value,
+            unit: document.getElementById("package_unit").value,
+            valid_start_date: document.getElementById("start_date").value,
+            valid_end_date: document.getElementById("end_date").value,
+            member: document.getElementById("max_members").value,
+            member_ship_discount: document.getElementById("membership_discount").value,
+            description: document.getElementById("package_description").value
+        };
+    
+        fetch("{% url 'user_side:add_my_club_package' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Package added successfully!");
+                location.reload(); // Reload to update the package list
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let reviewPage = 1; // Track the number of times "Load More" is clicked
+        let clubId = document.getElementById("club_id").value; // Get club ID from the hidden input
+    
+        document.getElementById("loadMoreReviews")?.addEventListener("click", function () {
+            reviewPage++;
+    
+            fetch(`/user_side/load-more-reviews/${clubId}/?page=${reviewPage}`)  // Ensure correct club ID
+                .then(response => response.json())
+                .then(data => {
+                    if (data.reviews.length > 0) {
+                        data.reviews.forEach(review => {
+                            let reviewDiv = document.createElement("div");
+                            reviewDiv.classList.add("border-bottom", "pb-3", "mb-3", "review-item");
+                            reviewDiv.innerHTML = `
+                                <p><strong>${review.username}</strong> - ⭐ ${review.rating}/5</p>
+                                <p class="text-muted">${review.comment}</p>
+                            `;
+                            document.getElementById("reviewContainer").appendChild(reviewDiv);
+                        });
+    
+                        // Hide "Load More" button if there are no more reviews
+                        if (!data.has_more) {
+                            document.getElementById("loadMoreReviews").style.display = "none";
+                        }
+                    }
+                })
+                .catch(error => console.error("Error loading reviews:", error));
+        });
+    });
+    
+        // Handle star rating selection
+        document.addEventListener("DOMContentLoaded", function () {
+            const stars = document.querySelectorAll(".star");
+            const ratingInput = document.getElementById("review_rating");
+        
+            stars.forEach(star => {
+                star.addEventListener("click", function () {
+                    const rating = this.getAttribute("data-value");
+                    ratingInput.value = rating; // Store rating value in hidden input
+        
+                    // Remove color from all stars
+                    stars.forEach(s => s.style.color = "black");
+        
+                    // Highlight the selected star and all previous ones
+                    for (let i = 0; i < rating; i++) {
+                        stars[i].style.color = "gold";
+                    }
+                });
+            });
+        });
+    
+    function submitReview() {
+        var csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    
+        var formData = {
+            club_id: document.getElementById("club_id").value,
+            rating: document.getElementById("review_rating").value,
+            comment: document.getElementById("review_comment").value
+        };
+    
+        fetch("{% url 'user_side:add_review' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Review added successfully!");
+                location.reload();
+            } else {
+                alert("Error: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    }
+</script>
+<script>
+    // Handle booking submission
+    document.getElementById('submitBooking').addEventListener('click', function () {
+        // Get selected package and booking date
+        const packageId = document.getElementById('packageSelect').value;
+        const bookingDate = document.getElementById('bookingDate').value;
+
+        if (packageId && bookingDate) {
+            // Make an AJAX request to the server to fetch wallet balance and the amount to pay
+            fetch('/user_side/get_wallet_balance_and_amount_to_pay/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    'package_id': packageId,
+                    'booking_date': bookingDate,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Show wallet balance and amount to pay
+                document.getElementById('walletBalance').innerText = data.wallet_balance;
+                document.getElementById('amountToPay').innerText = data.amount_to_pay;
+
+                // Show wallet modal
+                new bootstrap.Modal(document.getElementById('walletBalanceModal')).show();
+
+                // Check if wallet balance is sufficient
+                if (data.wallet_balance >= data.amount_to_pay) {
+                    document.getElementById('confirmPayment').style.display = 'inline-block';
+                    document.getElementById('addMoney').style.display = 'none';
+                } else {
+                    document.getElementById('confirmPayment').style.display = 'none';
+                    document.getElementById('addMoney').style.display = 'inline-block';
+                }
+            });
+        } else {
+            alert('Please select a package and booking date.');
+        }
+    });
+
+    // Handle confirm payment button click
+    document.getElementById('confirmPayment').addEventListener('click', function () {
+        // Make an AJAX request to confirm payment
+        fetch('user_side/confirm_payment_for_booking_club/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                'package_id': document.getElementById('packageSelect').value,
+                'booking_date': document.getElementById('bookingDate').value,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Payment successful!');
+                window.location.href = "{% url 'user_side:club_view' club.id %}";// Reload page or handle post-payment actions
+            } else {
+                alert('Payment failed.');
+            }
+        });
+    });
+
+    // Handle add money button click
+    document.getElementById('addMoney').addEventListener('click', function () {
+        // Get selected package and booking date
+        const packageId = document.getElementById('packageSelect').value;
+        const bookingDate = document.getElementById('bookingDate').value;
+    
+        // Get wallet balance and amount to pay
+        const walletBalance = parseFloat(document.getElementById('walletBalance').innerText);
+        const amountToPay = parseFloat(document.getElementById('amountToPay').innerText);
+    
+        // Calculate remaining amount (amount to pay - wallet balance)
+        const remainingAmount = Math.max(0, amountToPay - walletBalance);
+    
+        // Calculate total amount with fees (remaining amount + Stripe fees)
+        const stripeFees = 2.9;  // Example: Stripe fees are 2.9% (replace with your actual fee percentage if needed)
+        const totalAmountWithFees = remainingAmount + (remainingAmount * (stripeFees / 100));
+    
+        // Redirect to initiate Stripe payment
+        fetch('/user_side/initiate_stripe_payment_for_booking_club/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                'package_id': packageId,
+                'booking_date': bookingDate,
+                'remaining_amount': remainingAmount,
+                'total_amount_with_fees': totalAmountWithFees,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to Stripe checkout page
+                window.location.href = data.stripe_url;
+            } else {
+                alert('Stripe payment initiation failed: ' + data.error);
+            }
+        });
+    });
+    
+</script>
+<script>
+    function updateWalletInfo() {
+        let walletBalanceJoinClub = parseFloat(document.getElementById('walletBalanceJoinClub').innerText);
+        let amountToPayJoinClub = parseFloat(document.getElementById('amountToPayJoinClub').innerText);
+
+        // Show/hide buttons based on balance
+        if (walletBalanceJoinClub >= amountToPayJoinClub) {
+            document.getElementById('confirmPaymentJoinClub').style.display = 'inline-block';
+            document.getElementById('addMoneyJoinClub').style.display = 'none';
+        } else {
+            document.getElementById('confirmPaymentJoinClub').style.display = 'none';
+            document.getElementById('addMoneyJoinClub').style.display = 'inline-block';
+        }
+    }
+
+    function confirmPayment() {
+        const clubId = document.getElementById('club_id').value;
+        fetch('/user_side/confirm_payment_for_join_club/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({              
+                
+                'club_id': clubId,
+                
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Payment Successful! You have joined the club.");
+                location.reload();
+            } else {
+                alert("Payment failed! Try again.");
+            }
+        });
+    }
+
+    function addMoney() {
+        const clubId = document.getElementById('club_id').value;
+        const walletBalanceJoinClub = parseFloat(document.getElementById('walletBalanceJoinClub').innerText);
+        const amountToPayJoinClub = parseFloat(document.getElementById('amountToPayJoinClub').innerText);
+    
+        // Calculate remaining amount (amount to pay - wallet balance)
+        const remainingAmount = Math.max(0, amountToPayJoinClub - walletBalanceJoinClub);
+    
+        // Calculate total amount with fees (remaining amount + Stripe fees)
+        const stripeFees = 2.9;  // Example: Stripe fees are 2.9% (replace with your actual fee percentage if needed)
+        const totalAmountWithFees = remainingAmount + (remainingAmount * (stripeFees / 100));
+        fetch('/user_side:/initiate_stripe_payment_for_join_club//', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({              
+                
+                'club_id': clubId,
+                'remaining_amount': remainingAmount,
+                'total_amount_with_fees': totalAmountWithFees,
+                
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to Stripe checkout page
+                window.location.href = data.stripe_url;
+            } else {
+                alert('Stripe payment initiation failed: ' + data.error);
+            }
+        });
+    }
+</script>
+
+{% endblock %}

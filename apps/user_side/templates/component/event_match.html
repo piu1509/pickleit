@@ -1,0 +1,57 @@
+{% load custom_filters %}
+<div class="card text-center">
+    <div class="card-header text-center d-flex justify-content-between align-items-center gap-2 flex-wrap">
+        <h2 class="h5">Matches</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for match in matches %}
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div class="versus-card">
+                    <h3><span><i class="" data-feather="compass"></i></span>{{ match.leagues.name }}</h3>
+                    <div class="v-team">
+                        <div class="v-team-left">
+                            <p><img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="" class="me-2">{{ match.team1.name }}</p>
+                            <p><img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="" class="me-2">{{ match.team2.name }}</p>
+                        </div>
+                        <div class="v-team-right">
+                            <p>{{ match.created_at|date:"j" | ordinal_day}} {{ match.created_at|date:"M, Y" }}<span>{{ match.created_at.time}}</span></p>
+                        </div>
+                    </div>
+                    <div class="v-info">
+                        <p><strong>Match</strong> {{ match.match_number }}</p>
+                        <a class="btn btn-info" data-bs-toggle="collapse" href="#showdata{{ match.id }}" role="button" aria-expanded="false" aria-controls="showdata">View <i class="align-middle" data-feather="chevron-right"></i></a>
+                    </div>
+                    <div class="collapse mt-2" id="showdata{{ match.id }}">
+                        <div class="card card-body">
+                            <table class="table">
+                                <thead>
+                                  <tr>
+                                    <th>Sr. No.</th>
+                                    <th>{{match.team1.name}}</th>
+                                    <th>{{match.team2.name}}</th>
+                                    <th>Status</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    {% for score in match.score %}
+                                    <tr>
+                                        <td>{{ score.set_number }}</td>
+                                        <td>{{ score.team1_point}}</td>
+                                        <td>{{ score.team2_point}}</td>
+                                        <td><a href="javascript:void(0);" class="btn btn-success">{{score.win_team.name}}</a></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                {% include 'base/not_found.html' %}
+            {% endfor %}
+        </div>
+    </div>
+    
+</div>

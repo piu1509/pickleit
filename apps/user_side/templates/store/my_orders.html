@@ -1,0 +1,144 @@
+{% extends 'base/base_user_store.html' %}
+{% load i18n %}
+{% load static %}
+{% load custom_tags %}
+{% block content %}
+<style>
+  .order-image {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+  }
+</style>
+
+<div class="page-breadcrumb p-4">
+    <form method="GET" action="">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            
+            <!-- 🔹 Left Side: Title + Page Length -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h4 class="page-title mb-0">My Received Order List</h4>
+
+            </div>
+
+            <!-- 🔹 Right Side: Filters + Search -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                <!-- Delivery Status Filter -->
+                <select name="status" class="form-control" style="width: 150px;" onchange="this.form.submit()">
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="shipped" {% if request.GET.status == 'shipped' %}selected{% endif %}>Shipped</option>
+                    <option value="delivered" {% if request.GET.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                    <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+
+                <!-- Date Filter -->
+                <select name="filter_type" class="form-control" style="width: 180px;" onchange="this.form.submit()">
+                    <option value="">All Time</option>
+                    <option value="today" {% if request.GET.filter_type == 'today' %}selected{% endif %}>Today</option>
+                    <option value="last_3_days" {% if request.GET.filter_type == 'last_3_days' %}selected{% endif %}>Last 3 Days</option>
+                    <option value="last_7_days" {% if request.GET.filter_type == 'last_7_days' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="last_15_days" {% if request.GET.filter_type == 'last_15_days' %}selected{% endif %}>Last 15 Days</option>
+                    <option value="last_1_month" {% if request.GET.filter_type == 'last_1_month' %}selected{% endif %}>Last 1 Month</option>
+                    <option value="last_6_months" {% if request.GET.filter_type == 'last_6_months' %}selected{% endif %}>Last 6 Months</option>
+                    <option value="last_1_year" {% if request.GET.filter_type == 'last_1_year' %}selected{% endif %}>Last 1 Year</option>
+                </select>
+
+                <!-- Search -->
+                <div class="d-flex align-items-center" style="gap: 5px;">
+                    <input type="text" name="search_text" class="form-control" placeholder="Search Order..." 
+                        value="{{ search_text|default_if_none:'' }}" style="width: 200px;">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="order-list mt-3">
+    {% for item in orders_with_ratings %}
+    <div class="card position-relative border shadow">
+        <div class="position-relative top-0 end-0 justfy-content-end p-2">
+            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#statusModal{{ item.order.id }}">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+        <div class="ord-block mb-4 d-flex rounded p-3">
+            
+            {% if item.image %}
+                <img src="{{ item.image }}" alt="Product Image" class="order-image">
+            {% else %}
+                <div class="order-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                    <span>No Image</span>
+                </div>
+            {% endif %}
+            
+            <div class="order-content flex-grow-1 ml-3">
+                <h4 class="mb-3">{{ item.order.product.name }}</h4>
+                <p style="line-height:6px;">Size: {{ item.order.size }} | Color: {{item.order.color}}</p>
+                <p style="line-height:6px;">Quantity: {{ item.order.quantity }} | Total Price: ₹{{ item.order.total_price }} | Status: {{ item.order.status }}</p>
+                <p style="line-height:6px;">Ordered by: {{ item.order.created_by.first_name }} {{item.order.created_by.last_name }}</p>
+                <p style="line-height:6px;">Ordered to: {{ item.order.product.created_by.first_name }} {{item.order.product.created_by.last_name }}</p>
+                <p style="line-height:6px;">Delivery Address: {{ item.order.delivery_address_main.complete_address|default:'N/A' }}</p>
+
+                <div class="rate mt-2">
+                    {% if item.rating %}
+                    <p>
+                        {% for i in "12345" %}
+                        <i class="fa-regular fa-star {% if i|add:0 <= item.rating.rating %}fa-solid{% endif %}"></i>
+                        {% endfor %}
+                    </p>
+                    <h6>Rated {{ item.rating.rating }} stars</h6>
+                    {% else %}
+                    <p>
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                        <i class="fa-regular fa-star"></i>
+                    </p>
+                    <h6>Not rated yet</h6>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for Changing Order Status -->
+    <div class="modal fade" id="statusModal{{ item.order.id }}" tabindex="-1" aria-labelledby="statusModalLabel{{ item.order.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <form method="POST" action="{% url 'user_side:change_order_status_user_side' item.order.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                <h5 class="modal-title" id="statusModalLabel{{ item.order.id }}">Change Order Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                {% for status in status_choices %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="status" id="status_{{ status }}_{{ item.order.id }}" value="{{ status }}" {% if item.order.status == status %}checked{% endif %}>
+                    <label class="form-check-label" for="status_{{ status }}_{{ item.order.id }}">
+                    {{ status|title }}
+                    </label>
+                </div>
+                {% endfor %}
+                </div>
+                <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Confirm</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'base/not_found.html' %}
+</div>
+    {% endfor %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

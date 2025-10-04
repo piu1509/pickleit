@@ -1,0 +1,245 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        {% if message %}
+        <div id="alertMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>{{message}}</strong>  
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>                         
+          </div> 
+          <script>                            
+            setTimeout(function() {
+                document.getElementById('alertMessage').style.display = 'none';
+            }, 5000);
+        </script>                          
+          {% endif %}
+    </nav>
+    <div class="text-center">
+        <h1 class="h3 mb-3">Edit {{team.name}}</h1>
+    </div>
+    <div class="nw-form">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Team Name -->
+            <div class="form-group mb-3">
+                <label for="team_name">Team Name</label>
+                <input type="text" id="team_name" name="team_name" class="form-control" value="{{team.name}}" placeholder="Enter team name" required>
+            </div>
+
+            <!-- Location -->
+            <div class="form-group mb-3">
+                <input type="hidden" id="location" name="location" class="form-control" value="{{team.location}}"  placeholder="Enter location">
+            </div>
+            
+            <!-- Team Person -->
+            <div class="form-group mb-3">
+                <label for="team_person">Team Person Type</label>
+                <select id="team_person" name="team_person" class="form-control">
+                    <option value="">Select Type</option>
+                    <option value="Two Person Team" {% if team.team_person == "Two Person Team" %}selected{% endif %}>Two Person Team</option>
+                    <option value="One Person Team" {% if team.team_person == "One Person Team" %}selected{% endif %}>One Person Team</option>
+                </select>
+            </div>
+
+            <!-- Team Category -->
+            <div class="form-group mb-3">
+                <label for="team_type">Category</label>
+                <select id="team_type" name="team_type" class="form-control">
+                    <option value="">Select Category</option>
+                    <option value="Women" {% if team.team_type == "Women" %}selected{% endif %}>Women</option>
+                    <option value="Men" {% if team.team_type == "Men" %}selected{% endif %}>Men</option>
+                    <option value="Co-ed" {% if team.team_type == "Co-ed" %}selected{% endif %}>Co-ed</option>
+                    <option value="Open-team" {% if team.team_type == "Open-team" %}selected{% endif %}>Open-team</option>
+                </select>
+            </div>
+
+            <!-- Team Image -->
+            <div class="form-group mb-3">
+                <label for="team_image">Team Image</label>
+                <input type="file" id="team_image" name="team_image" class="form-control form-control-file">
+                <div class="team-edit-image">
+                    {% if team.team_image %}
+                        <img src="{{ team.team_image.url }}" alt="{{ team.name }}" height="80" width="150" class="mt-2">
+                    {% else %}
+                        <img src="https://w7.pngwing.com/pngs/358/811/png-transparent-high-five-surgical-team-nursing-team-members-miscellaneous-blue-hand-thumbnail.png" alt="Default Team Image">
+                    {% endif %}
+                    
+                </div>
+            </div>
+
+            <!-- Players Section -->
+            <div class="mb-3">
+                <label for="team-players" class="form-label">Team Players</label>
+                
+                <!-- Search Players -->
+                <div class="mb-3">
+                    <div class="input-group">
+                        <input type="text" id="player-search" class="form-control" placeholder="Enter player name...">
+                        <button type="button" id="player-search-btn" class="btn btn-primary">🔍 Search</button>
+                    </div>
+                    <ul id="player-search-results" class="list-group mt-2" style="max-height: 200px; overflow-y: auto;"></ul>
+                </div>
+                
+                <!-- List of Added Players -->
+                <ul id="team-players" class="list-group">
+                    {% for player in players %}
+                        <li class="list-group-item d-flex align-items-center justify-content-between" data-id="{{ player.id }}">
+                                {% if player.player.image %}
+                                    <img src="{{ player.player.image.url }}" class="team-image rounded-circle me-2" width="30" height="30">
+                                {% else %}
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmRLRMXynnc7D6-xfdpeaoEUeon2FaU0XtPg&s"  class="team-image rounded-circle me-2" width="30" height="30">
+                                {% endif %}
+                            <img src="{% if player.image %}{{ player.image.url }} {% endif %}" >
+                            <span>{{ player.player_full_name }}</span>
+                            <button type="button" class="btn btn-danger btn-sm remove-player">❌</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Hidden Select Field for Players -->
+            <select id="selected-players" name="selected_players" class="form-control d-none" multiple>
+                {% for player in players %}
+                    <option value="{{ player.id }}" selected>{{ player.player_full_name }}</option>
+                {% endfor %}
+            </select>
+            <div class="text-center mt-3">
+
+            <button type="submit" class="btn btn-primary mt-3">Edit Team</button>
+            </div>
+        </form>
+    </div>
+    
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    // Initialize Google Places Autocomplete
+    function initAutocomplete() {
+        var input = document.getElementById('location');
+        var options = {
+            types: ['geocode'], // Restrict to address-based suggestions
+            
+        };
+    
+        // Create a new Autocomplete object and bind it to the location input
+        var autocomplete = new google.maps.places.Autocomplete(input, options);
+    
+        // Add listener to update the location field when an address is selected
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            if (!place.geometry) {
+                return;
+            }
+            // Optional: You can log place details or handle them here
+            console.log(place);
+        });
+    }
+    
+    // Load Google Maps API with Places API
+    function loadGoogleMapsAPI() {
+        var script = document.createElement('script');
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAQ_OGAb4yuL8g55IMufP3Dwd4yjrWxrdI&libraries=places&callback=initAutocomplete';
+        script.async = true;
+        document.head.appendChild(script);
+    }
+    
+    // Call the function to load Google Maps API
+    loadGoogleMapsAPI();
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let playerSearchInput = document.getElementById("player-search");
+        let playerSearchBtn = document.getElementById("player-search-btn");
+        let playerSearchResults = document.getElementById("player-search-results");
+        let teamPlayersList = document.getElementById("team-players");
+        let selectedPlayersField = document.getElementById("selected-players");
+        let teamCategoryField = document.getElementById("team_type"); // 🔹 Get category type
+    
+        // 🟢 Update Hidden Select Field  
+        function updateSelectedPlayers() {
+            selectedPlayersField.innerHTML = "";
+            document.querySelectorAll("#team-players li").forEach(li => {
+                let playerId = li.getAttribute("data-id");
+                selectedPlayersField.innerHTML += `<option value="${playerId}" selected>${li.querySelector("span").textContent}</option>`;
+            });
+        }
+    
+        // 🗑 Remove Player from List (Using Event Delegation)
+        teamPlayersList.addEventListener("click", function (event) {
+            if (event.target.classList.contains("remove-player")) {
+                event.preventDefault();
+                let playerId = event.target.closest("li").getAttribute("data-id");
+                document.querySelector(`li[data-id='${playerId}']`).remove();
+                updateSelectedPlayers();
+            }
+        });
+    
+        // ✅ Add Player to List  
+        function addPlayer(player) {
+            if (!document.querySelector(`li[data-id='${player.id}']`)) {
+                let li = document.createElement("li");
+                li.className = "list-group-item d-flex align-items-center justify-content-between";
+                li.setAttribute("data-id", player.id);
+                li.innerHTML = `
+                    <img src="${player.image}" class="team-image rounded-circle me-2" width="30" height="30">
+                    <span>${player.name}</span>
+                    <button class="btn btn-danger btn-sm remove-player">❌</button>
+                `;
+                teamPlayersList.appendChild(li);
+                updateSelectedPlayers();
+            }
+        }
+    
+        // 🔍 Search Players via AJAX (Including Category Type)  
+        function searchPlayers() {
+            let query = playerSearchInput.value.trim();
+            let selectedCategory = teamCategoryField.value; // 🔹 Get category type  
+    
+            if (query.length === 0 || selectedCategory === "") {
+                alert("Please select a category before searching for players.");
+                return;
+            }
+    
+            fetch(`/user_side/search_players/?q=${query}&category=${selectedCategory}`) // 🔹 Pass category type in the request
+                .then(response => response.json())
+                .then(data => {
+                    console.log("API Response:", data); // 🔍 Debug API response
+                    playerSearchResults.innerHTML = ""; // Clear previous results
+    
+                    if (data.players.length === 0) {
+                        playerSearchResults.innerHTML = `<li class="list-group-item">No players found</li>`;
+                        return;
+                    }
+    
+                    data.players.forEach(player => {
+                        if (!document.querySelector(`li[data-id='${player.id}']`)) {
+                            let li = document.createElement("li");
+                            li.className = "list-group-item d-flex align-items-center";
+                            li.innerHTML = `
+                                <img src="${player.image}" class="team-image rounded-circle me-2" width="30" height="30">
+                                <span>${player.name}</span>
+                            `;
+                            li.onclick = function () {
+                                addPlayer(player);
+                            };
+                            playerSearchResults.appendChild(li);
+                        }
+                    });
+                })
+                .catch(error => console.error("Error fetching players:", error));
+        }
+    
+        // Attach Event Listeners  
+        playerSearchBtn.addEventListener("click", searchPlayers);
+    });
+    
+</script>
+    
+    
+{% endblock %}

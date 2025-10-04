@@ -1,0 +1,395 @@
+{% extends 'base/base_user_store.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+    .deactivated {
+        opacity: 0.6;
+        pointer-events: none;
+        filter: grayscale(80%);
+    }
+    .disabled-link {
+        pointer-events: none;
+        color: #999 !important;
+        text-decoration: none !important;
+    }
+    .m-cat-wrapper {
+        overflow-x: auto;  /* Enables horizontal scroll */
+        white-space: nowrap;
+    }
+
+    .m-cat {
+        display: flex;
+        gap: 10px;
+    }
+
+    .cat-block {
+        flex: 0 0 auto; 
+        text-align: center;
+    }
+
+    .cat-block a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        padding: 5px;
+        border-radius: 8px;
+        transition: background 0.3s;
+    }
+
+    .cat-block a.active {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    .cat-block a.active h4 {
+        color: #007bff;
+    }
+
+    .cat-img img {
+        max-width: 100px;
+        height: auto;
+        border-radius: 10px;
+        transition: transform 0.3s;
+    }
+
+    .cat-img img:hover {
+        transform: scale(1.05);
+    }
+
+
+    /* Products */
+    .cat-product {
+        padding: 20px 0;
+    }
+
+    .product-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .product-card .card-img-top {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    .product-card .card-body {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card .card-title {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #222;
+        font-weight: 600;
+    }
+
+    .product-card .card-text {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+        line-height: 1.5;
+        flex-grow: 1;
+    }
+
+    .product-rating {
+        font-size: 13px;
+        color: #f39c12;
+        margin-bottom: 10px;
+    }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .product-price .fw-bold {
+        font-size: 18px;
+        color: #222;
+    }
+
+    .product-price .old-price {
+        font-size: 14px;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    .product-price .discount {
+        font-size: 12px;
+        background: #28a745;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 12px;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 0;
+    }
+
+    .pagination a, .pagination span {
+        padding: 8px 15px;
+        border-radius: 25px;
+        text-decoration: none;
+        color: #333;
+        background: #f5f5f5;
+        transition: background 0.3s ease;
+    }
+
+    .pagination a:hover {
+        background: #007bff;
+        color: white;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .page-breadcrumb .row {
+            flex-direction: column;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .search-tab {
+            max-width: 100%;
+            justify-content: center;
+        }
+
+ form-opt {
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px !important;
+        }
+
+        .form-opt a {
+            width: 40px;
+            height: 40px;
+        }
+
+        .product-card .card-img-top {
+            height: 160px;
+        }
+
+        .product-card .card-title {
+            font-size: 16px;
+        }
+
+        .product-card .card-text {
+            font-size: 13px;
+        }
+
+        .product-price .fw-bold, .product-price .old-price {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 576px) {
+
+        .product-card .card-img-top {
+            height: 140px;
+        }
+
+        .form-opt a {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+
+        .badge {
+            font-size: 8px;
+            padding: 3px 5px;
+        }
+
+        .product-card .card-title {
+            font-size: 14px;
+        }
+
+        .product-price .fw-bold, .product-price .old-price {
+            font-size: 14px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb">
+    <form method="GET" action="">
+        <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
+            <div class="d-flex align-items-center flex-grow-1" style="min-width: 250px;">
+                <input type="text" name="search_text" class="form-control" placeholder="Search Product..."
+                        value="{% if search_text %}{{ search_text }}{% endif %}">
+                <button type="submit" class="btn btn-secondary ms-2">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+                
+                {% if error %}
+                <a href="#" class="btn btn-info" id="subscribe-btn"
+                data-bs-toggle="popover"
+                data-bs-trigger="focus"
+                title="Subscription Required"
+                data-bs-html="true"
+                data-bs-content='You need to <a href="{% url "user_side:subcription_plan" %}">subscribe</a> to a plan to create products.'>
+                    Add Product
+                </a>
+                {% else %}
+                <a href="{% url 'user_side:add_store_product_user_side' %}" class="btn btn-success">Add Product</a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div class="m-cat-wrapper">
+    <div class="m-cat text-center p-3">
+        <!-- All category -->
+        <div class="cat-block">
+            <a href="{% url 'user_side:product_list_user_side' %}" 
+               class="{% if not request.GET.category %}active{% endif %}">
+                <div class="cat-img">
+                    <img src="https://placehold.co/200x200" alt="All Categories">
+                </div>
+                <h4>All</h4>
+            </a>
+        </div>
+
+        <!-- Dynamic categories -->
+        {% for category in categories %}
+        <div class="cat-block">
+            <a href="?category={{ category.id }}" 
+               class="{% if request.GET.category|default:'' == category.id|stringformat:'s' %}active{% endif %}">
+                <div class="cat-img">
+                    {% if category.image and category.image.name %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                    {% else %}
+                        <img src="https://placehold.co/200x200" alt="{{ category.name }}">
+                    {% endif %}
+                </div>
+                <h4>{{ category.name }}</h4>
+            </a>
+        </div>
+        {% empty %}
+        <p>No categories available.</p>
+        {% endfor %}
+    </div>
+</div>
+
+
+<div class="cat-product">
+    <h4 class="mb-4">Products</h4>
+    <div class="row">
+        {% for product in products %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4 {% if error %}deactivated{% endif %}">
+            <div style="border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; background: #fff; 
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: transform 0.2s ease, box-shadow 0.2s ease; height: 100%;"
+                onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.12)';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.05)';">
+
+                <a href="{% url 'user_side:product_view' product.id %}" style="text-decoration: none; color: inherit; display: block; height: 100%;">
+                    <img src="{{product.image}}" 
+                        alt="{{ product.name }}" 
+                        style="width: 100%; height: 220px; object-fit: cover; padding:20px;">
+
+                    <div style="padding: 15px;">
+                        <h5 style="font-size: 1.05rem; font-weight: 600; margin-bottom: 8px;">{{ product.name }}</h5>
+                        <p style="font-size: 0.9rem; color: #555; margin-bottom: 10px;">{{ product.description|truncatewords:15 }}</p>
+                        
+                        <div style="display: inline-flex; align-items: center; font-size: 0.9rem; margin-bottom: 8px; line-height: 1;">
+                            <!-- Star container -->
+                            <div style="position: relative; display: inline-block; width: 80px; line-height: 1;">
+                                <!-- Gray base stars -->
+                                <div style="color: #ccc;">
+                                    ★★★★★
+                                </div>
+                                <!-- Gold overlay stars -->
+                                <div style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    width: {{ product.star_percentage }}%;
+                                    white-space: nowrap;
+                                    overflow: hidden;
+                                    color: #f5a623;
+                                ">
+                                    ★★★★★
+                                </div>
+                            </div>
+
+                            <!-- Reviews count -->
+                            <span style="margin-left: 3px; color: #555;">
+                                ({{ product.rating_count|default:0 }} reviews)
+                            </span>
+                        </div>
+
+
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: bold;">
+                            {% if product.old_price %}
+                                <span style="text-decoration: line-through; color: #888; font-size: 0.9rem;">${{ product.old_price }}</span>
+                            {% endif %}
+                            <span style="color: #222;">${{ product.price }}</span>
+                            {% if product.discount %}
+                                <span style="background: #ff4d4f; color: #fff; font-size: 0.8rem; padding: 2px 6px; border-radius: 6px;">
+                                    {{ product.discount|floatformat:0 }}% OFF
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+            {% include 'base/not_found.html' %}
+        </div>
+        {% endfor %}
+
+    </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const popoverTrigger = document.getElementById('subscribe-btn');
+        if (popoverTrigger) {
+            new bootstrap.Popover(popoverTrigger);
+        }
+    });
+</script>
+{% endblock %}

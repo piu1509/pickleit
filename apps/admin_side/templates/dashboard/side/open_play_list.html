@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% load custom_tags %}
+
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pagination-btn {
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .pagination-btn:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .pagination-btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .pagination-ellipsis {
+            font-size: 18px;
+            color: #6c757d;
+            margin: 0 10px;
+        }
+
+    </style>
+{% endblock %}
+
+{% block page_title %}
+    Open Play
+{% endblock %}
+
+{% block content %}
+<div class="page-breadcrumb p-4">
+    <form method="GET" action="">
+        <div class="row d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center m-2">
+                <h4 class="page-title">Open Play List</h4>
+                <select class="form-control ml-3" name="page_length" style="width: 120px;" onchange="this.form.submit()">
+                    <option value="20" {% if page_length == "20" %}selected{% endif %}>20</option>
+                    <option value="50" {% if page_length == "50" %}selected{% endif %}>50</option>
+                    <option value="100" {% if page_length == "100" %}selected{% endif %}>100</option>
+                    <option value="200" {% if page_length == "200" %}selected{% endif %}>200</option>
+                </select>
+            </div>
+            <div class="form-opt d-flex align-items-center flex-wrap gap-3">           
+                <select id="filter_by" name="filter_by" class="form-control" style="width: 190px;">
+                    <option value="" hidden>Select Open Play type</option>
+                    <option value="all" {% if filter_by == "all" %}selected{% endif %}>All</option>                    
+                    <option value="ongoing" {% if filter_by == "ongoing" %}selected{% endif %}>Ongoing</option>
+                    <option value="past" {% if filter_by == "past" %}selected{% endif %}>Past</option>
+                </select>
+                <input type="text" id="location_input" name="location" class="form-control" placeholder="Search By Location..." style="width: 250px;" value="{{ request.GET.location }}"> 
+                    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfBo6-cZlOpKGrD1ZYwISIGjYvhH_wPmk&libraries=places"></script>
+                    <script>
+                        function initialize() {
+                            var input = document.getElementById('location_input');
+                            var autocomplete = new google.maps.places.Autocomplete(input);
+                        }
+
+                        google.maps.event.addDomListener(window, 'load', initialize);
+                    </script>
+                <div class="search-tab d-flex align-items-center">
+                    <input type="text" name="search_text" class="form-control" placeholder="Search Open Play..." 
+                        value="{% if search_text %}{{ search_text }}{% endif %}" style="width: 200px;">
+                    <button type="submit" class="btn btn-secondary"><i class="fas fa-search"></i></button>
+                </div>
+                <a href="/admin/create_open_play" class="btn btn-primary font-weight-bold">Add Open play</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="">
+    <div class="mb-5">
+        <div class="row">
+            {% for league in open_play_data %}
+            <div class="col-md-6 col-lg-6 mb-4">
+                <a href="{% url 'dashboard:view_open_play' league.id %}" class="text-decoration-none text-dark">
+                    <div class="card nw-card border shadow-sm cursor-pointer mb-0 sgl-event-view p-3" style="cursor: pointer;">
+                        <div class="card-body p-0 d-flex align-items-center">
+                            {% if league.image_url %}
+                                <img src="{{ league.image_url }}" class="card-image rounded-circle p-3" width="100" height="100" alt="{{ league.name }}">
+                            {% else %}
+                                <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" class="card-image rounded-circle p-3" width="100" height="100" alt="{{ league.name }}">
+                            {% endif %}
+                            
+                            <div class="flex-grow-1">
+                                <h5 class="card-title mb-1 ">{{ league.name }} || {{ league.team_type__name }}</h5>
+                                <p class="card-text mb-1 ">
+                                    Start Date: {{league.leagues_start_date|date:"j" | ordinal_day }} {{ league.leagues_start_date|date:"M, Y" }} | 
+                                    Registration: {{ league.registration_start_date|date:"j" | ordinal_day }} {{ league.registration_start_date|date:"M, Y" }} to {{ league.registration_end_date|date:"j" | ordinal_day }} {{ league.registration_end_date|date:"M, Y" }}
+                                </p>
+                                <p class="card-text mb-1 ">
+                                    Max Teams: {{ league.max_number_team }} | Joined: {{ league.registered_team_count }}
+                                </p>
+                                <p class="card-text ">Location: {{ league.city }}, {{ league.state }}</p>
+                            </div>
+                            <i class="fa fa-info-circle fs-4"></i>  <!-- Right-side icon -->
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'dashboard/not_found.html' %}
+</div>
+            {% endfor %}
+        </div>
+        <!-- Pagination Controls -->
+        {% if open_play_data.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if open_play_data.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ open_play_data.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for p in page_range %}
+                        {% if p == "..." %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% else %}
+                            <li class="page-item {% if open_play_data.number == p %}active{% endif %}">
+                                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if open_play_data.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ open_play_data.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ open_play_data.paginator.num_pages }}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>  
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.getElementById('filter_by').addEventListener('change', function() {
+        document.getElementById('filterForm').submit();
+    });
+</script>
+
+{% endblock %}

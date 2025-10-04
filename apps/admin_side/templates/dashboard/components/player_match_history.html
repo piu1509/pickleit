@@ -1,0 +1,105 @@
+{% load custom_tags %}
+<div class="row mt-2">
+    <div class="col-xl-12">
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Match History</h5>
+                
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for match in all_match_history %}
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                        <div class="versus-card border p-2">
+                            <h5><span><i class="fa fa-compass"></i></span> {{ match.leagues.name }}</h5>
+                            <div class="v-team">
+                                <div class="v-team-left">
+                                    <p class=""><span class="v-team-thumb"><img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="" class="me-2" width="30" height="30"></span> {{ match.team1.name }} 
+                                    {% if match.winner_team.name == match.team1.name %}
+                                        <span class="winner"><img src="https://dev.pickleit.app/static/images/trophy.gif" alt="" class="ms-2" width="30" height="30"></span>
+                                    {% endif %}
+                                    </p>
+                                    <p class=""><span class="v-team-thumb"><img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" alt="" class="me-2" width="30" height="30"></span> {{ match.team2.name }}
+                                    {% if match.winner_team.name == match.team2.name %}
+                                        <span class="winner"><img src="https://dev.pickleit.app/static/images/trophy.gif" alt="" class="ms-2" width="30" height="30"></span>
+                                    {% endif %}
+                                    </p>
+                                </div>
+                                <div class="v-team-right">
+                                    <p>{{ match.created_at|date:"j" | ordinal_day }} {{ match.created_at|date:"M, Y" }} <span>{{ match.created_at.time}}</span></p>
+                                </div>
+                            </div>
+                           <div class="v-info d-flex justify-content-between align-items-center">
+                                <p class="mb-0"><strong>Match</strong> {{ match.match_number }}</p>
+                                {% comment %} <a class="btn btn-info btn-sm" data-bs-toggle="collapse" href="#showdata{{ match.id }}" role="button" aria-expanded="false" aria-controls="showdata{{ match.id }}">
+                                    View <i class="align-middle fa fa-chevron-down"></i>
+                                </a> {% endcomment %}
+                                <a class="btn btn-info btn-sm text-white" onclick="toggleCollapse('showdata{{ match.id }}')">
+                                    View <i class="align-middle fa fa-chevron-down"></i>
+                                </a>
+                            </div>
+                            <div class="collapse-content mt-2" id="showdata{{ match.id }}" style="display: none;">
+                                <div class="card card-body mb-0 py-1 px-2">
+                                    <!-- your table -->
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                            <th>Sr. No.</th>
+                                            <th>{{ match.team1.name|truncate_team_name }}</th>
+                                            <th>{{ match.team2.name|truncate_team_name }}</th>
+                                            
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% if match.scores %}
+                                            {% for score in match.scores %}
+                                                <tr>
+                                                    <td>{{ score.set_number }}</td>
+                                                    <td>{{ score.team1_point }}</td>
+                                                    <td>{{ score.team2_point }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">No scores available yet!</td>
+                                            </tr>
+                                        {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'dashboard/not_found.html' %}
+</div>
+                {% endfor %}
+                </div>
+                {% if all_match_history.paginator.num_pages > 1 %}
+                <div class="pagination">
+                    {% if all_match_history.has_previous %}
+                        <a href="?match_page={{ all_match_history.previous_page_number }}">&laquo; Previous </a>
+                    {% endif %}
+
+                    <span>Page {{ all_match_history.number }} of {{ all_match_history.paginator.num_pages }}</span>
+
+                    {% if all_match_history.has_next %}
+                        <a href="?match_page={{ all_match_history.next_page_number }}"> Next &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+</div>
+<script>
+    function toggleCollapse(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === "none" || el.style.display === "") {
+            el.style.display = "block";
+        } else {
+            el.style.display = "none";
+        }
+    }
+</script>

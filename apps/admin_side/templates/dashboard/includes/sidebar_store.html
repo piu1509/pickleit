@@ -1,0 +1,126 @@
+{% load static %}
+<style>
+     /* Overlay */
+   .custom-modal {
+        display: none; /* only this, at first */
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5); /* dark background */
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Modal content box */
+    .custom-modal-content {
+        background-color: #fff;
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    /* Title and text */
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .modal-text {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 25px;
+    }
+
+    /* Button group */
+    .modal-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    /* Primary and Outline Buttons */
+    .btn {
+        padding: 10px 20px;
+        font-weight: 600;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+    }
+
+    .btn-outline-primary {
+        background-color: white;
+        border: 2px solid #0d6efd;
+        color: #0d6efd;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #e6f0ff;
+    }
+</style>
+
+  <aside class="left-sidebar scrollable ps-container ps-theme-default ps-active-y" data-sidebarbg="skin5">
+            <!-- Sidebar scroll-->
+            <div class="scroll-sidebar">
+                <!-- Sidebar navigation-->
+                <nav class="sidebar-nav">
+                    <ul id="sidebarnav" class="p-t-30">
+                        <li class="sidebar-item {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'subscription_plan_users' %}selected{% endif %}"> <a class="sidebar-link waves-effect waves-dark sidebar-link {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'subscription_plan_users' %} active {% endif %}" href="{% url 'dashboard:dashboard' %}" aria-expanded="false"><i class="mdi mdi-home"></i><span class="hide-menu">Back To Dashboard</span></a></li>
+                        
+                        
+                        
+                        
+                        
+                        <li class="sidebar-item {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'add_product' or request.resolver_match.url_name == 'view_product' or request.resolver_match.url_name == 'edit_product' or request.resolver_match.url_name == 'delete_product' or request.resolver_match.url_name == 'my_received_orders' or request.resolver_match.url_name == 'my_placed_orders' or request.resolver_match.url_name == 'buy_now_payment_gateway' or request.resolver_match.url_name == 'select_address_buy_now' or request.resolver_match.url_name == 'cart_payment_gateway' or request.resolver_match.url_name == 'select_address' or request.resolver_match.url_name == 'cart' or request.resolver_match.url_name == 'wishlist' or request.resolver_match.url_name == 'checkout_summary' %}selected{% endif %}">
+                            <a class="sidebar-link waves-effect waves-dark sidebar-link  {% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'add_product' or request.resolver_match.url_name == 'view_product' or request.resolver_match.url_name == 'edit_product' or request.resolver_match.url_name == 'delete_product' or request.resolver_match.url_name == 'my_received_orders' or request.resolver_match.url_name == 'my_placed_orders' or request.resolver_match.url_name == 'buy_now_payment_gateway' or request.resolver_match.url_name == 'select_address_buy_now' or request.resolver_match.url_name == 'cart_payment_gateway' or request.resolver_match.url_name == 'select_address' or request.resolver_match.url_name == 'cart' or request.resolver_match.url_name == 'wishlist' or request.resolver_match.url_name == 'checkout_summary' %}active{% endif %}" href="{% url 'dashboard:product_list' %}" aria-expanded="false">
+                                <i class="mdi mdi-shopping"></i><span class="hide-menu">Store</span></a>\
+                        </li> 
+                        
+                    </ul>
+                </nav>
+                <!-- End Sidebar navigation -->
+            </div>
+            <!-- End Sidebar scroll-->
+        </aside>
+        <div id="logoutModal" class="custom-modal">
+            <div class="custom-modal-content">
+                <h3 class="modal-title">Logout Confirmation</h3>
+                <p class="modal-text">Are you sure you want to do logout?</p>
+                <div class="modal-buttons">
+                    <button id="confirmLogout" class="btn btn-primary">Confirm</button>
+                    <button id="cancelLogout" class="btn btn-outline-primary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('logoutbtn').addEventListener('click', function(event) {
+                event.preventDefault();
+                document.getElementById('logoutModal').style.display = 'flex'; // Use flex for centering
+            });
+
+            document.getElementById('confirmLogout').addEventListener('click', function () {
+                window.location.href = "{% url 'dashboard:logout' %}";
+            });
+
+            document.getElementById('cancelLogout').addEventListener('click', function () {
+                document.getElementById('logoutModal').style.display = 'none';
+            });
+        </script>
+                

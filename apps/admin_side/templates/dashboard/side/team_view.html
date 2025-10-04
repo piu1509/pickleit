@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Team View
+{% endblock %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<div class="page-breadcrumb p-4">
+    <div class="row">
+        <div class="col-12 d-flex no-block align-items-center">
+            <h4 class="page-title">View Team</h4>
+            <div class="ml-auto text-right">
+                <nav aria-label="breadcrumb">
+                    <!-- Add breadcrumb navigation if needed -->
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'dashboard:team_list_for_admin' %}" class="btn btn-success"><i class="fa fa-arrow-left"></i></a>
+                        <a href="{% url 'dashboard:edit_team_' team_id %}" class="btn btn-primary"><i class="fa fa-edit"></i></a>
+                        <a href="{% url 'dashboard:delete_team_' team_id %}" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-12">
+            <div class="card w-100 h-100 m-0">
+                <div class="card-body">
+                    <h5 class="text-center font-weight-bold card-title">Team Information</h5>
+                    <div class="team-info d-flex align-items-center gap-3">
+                        <div class="inf-img">
+                            {% if team_image.url %}
+                            <img class="rounded-circle" src="{{team_image.url}}" width="200" height="200" alt="{{name}}">
+                            {% else%}
+                            <img class="rounded-circle" src="https://pickleit.app/static/images/pickleit_newlogo.jpg" width="200" height="200" alt="{{ name }}">
+                            {% endif%}
+                        </div>
+                        <div class="inf-content">
+                            <div class="sgl-info d-flex align-items-center gap-3 mb-2">
+                                <h6 class="mb-0">Name:</h6>
+                                <p class="mb-0"><strong>{{name}}</strong></p>
+                            </div>
+                            <div class="sgl-info d-flex align-items-center gap-3 mb-2">
+                                <h6 class="mb-0">Created By:</h6>
+                                <p class="mb-0">{{created_by__first_name}} {{created_by__last_name}}</p>
+                            </div>
+                            <div class="sgl-info d-flex align-items-center gap-3 mb-2">
+                                <h6 class="mb-0">Type:</h6>
+                                <p class="mb-0">{{team_type}}</p>
+                            </div>
+                            <div class="sgl-info d-flex align-items-center gap-3">
+                                <h6 class="mb-0">Person:</h6>
+                                <p class="mb-0">{{team_person}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sgl-info d-flex align-items-start flex-column gap-3 mt-4">
+                        <h5 class="mb-0">Players:</h5>
+                        <div class="">
+                            {% for player in player_list %}
+                                <div class="d-flex align-items-center mb-2">
+                                    {% if player.image_url %}
+                                        <img src="{{ player.image_url }}" alt="Player" class="rounded-circle p-1" width="40" height="40">
+                                    {% else %}
+                                        <img src="{% static 'images/users/1.jpg' %}" alt="No Image" class="rounded-circle p-1" width="40" height="40">
+                                    {% endif %}
+                                    <p class="mb-0 ">
+                                        {{ player.player_full_name }} - {{ player.player__rank }} ({{ player.player__gender }})
+                                    </p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>  
+            </div>      
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12">
+            <div class="card w-100 h-100 m-0">
+                <div class="card-body">                    
+                    <div>  
+                        <h5 class="card-title mb-0 text-center font-weight-bold">Stats</h5>       
+                        {% if total_matches != 0 %}   
+                            
+                            <div class="chart chart-sm p-2">
+                                <canvas id="chartjs-doughnut"></canvas>
+                            </div>
+                            <div class="chart-btns p-2 w-100 d-flex align-items-center justify-content-center gap-3">
+                                <a href="javascript:void(0);" class="btn btn-info">Played Matches ({{ total_matches }})</a>
+                                <a href="javascript:void(0);" class="btn btn-success">Wins ({{ wins }})</a>
+                                <a href="javascript:void(0);" class="btn btn-danger">Losses ({{ losses }})</a>
+                            </div>
+                        
+                        {% else %}
+                        <div class="container text-center mt-4">
+                            <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'dashboard/not_found.html' %}
+</div>
+                        </div>
+        
+                        {% endif %}        
+                    </div>                                                    
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'dashboard/components/player_match_history.html' %}
+    <div class="mb-5"></div>
+</div>    
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById("chartjs-doughnut").getContext("2d");
+
+        new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ["Wins", "Losses"],
+                datasets: [{
+                    data: [{{ wins }}, {{ losses }}],
+                    backgroundColor: ["#28a745", "#dc3545"],
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            },
+        });
+    });
+</script>
+
+{% endblock content %}

@@ -1,0 +1,99 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h1 class="h2 text-center">{{ court.name }}</h1>
+
+    <!-- court Image Carousel -->
+    <div id="courtCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% with court.courtimage_set.all as images %}
+                {% for image in images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}" class="d-block w-100 rounded" alt="{{ court.name }}">
+                    </div>
+                {% empty %}
+                    <div class="carousel-item active">
+                        <img src="{% static 'images/default-court.jpg' %}" class="d-block w-100 rounded" alt="No Image Available">
+                    </div>
+                {% endfor %}
+            {% endwith %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#courtCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#courtCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
+    </div>
+
+    <!-- court Information -->
+    <div class="card p-4 shadow-sm">
+        <h4 class="mb-3">🏟️ Court Information</h4>
+        <p><strong>📍 Location:</strong> {{ court.location }}</p>
+        <p><strong>🕒 Open Hours:</strong> {{ court.open_time|default:"N/A" }} - {{ court.close_time|default:"N/A" }}</p>
+        <p><strong>👤 Owner:</strong> {{ court.owner_name }}</p>
+        <p><strong>⭐ Average Rating:</strong> {{ court.avg_rating|floatformat:1 }}</p>
+        <p><strong>💵 Membership Fee:</strong> {{ court.price }} {{ court.price_unit }}</p>
+        <p><strong>📄 Description:</strong> {{ court.about }}</p>
+    </div>
+
+    <!-- court Packages -->
+    {% if court.courtpackage_set.all %}
+        <div class="card p-4 mt-4 shadow-sm">
+            <h4 class="mb-3">🎟️ court Packages</h4>
+            <ul class="list-group">
+                {% for package in court.courtpackage_set.all %}
+                    <li class="list-group-item">
+                        <strong>{{ package.name }}</strong> - {{ package.price }} {{ package.unit }} 
+                        <p class="mb-0 text-muted">{{ package.description }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Ratings & Reviews -->
+    {% if court.reviews.exists %}
+        <div class="card p-4 mt-4 shadow-sm">
+            <h4 class="mb-3">📝 Reviews</h4>
+            {% for review in court.reviews.all %}
+                <div class="border-bottom pb-3 mb-3">
+                    <p><strong>{{ review.user.username }}</strong> - ⭐ {{ review.rating }}/5</p>
+                    <p class="text-muted">{{ review.comment }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted mt-4">No reviews yet.</p>
+    {% endif %}
+
+    <!-- Map -->
+    <div class="mt-4">
+        <h4 class="mb-3">📍 court Location</h4>
+        <div id="map" style="height: 300px;"></div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function initMap() {
+        var courtLocation = { lat: {{ court.latitude }}, lng: {{ court.longitude }} };
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 15,
+            center: courtLocation
+        });
+        new google.maps.Marker({
+            position: courtLocation,
+            map: map,
+            title: "{{ court.name }}"
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAfBo6-cZlOpKGrD1ZYwISIGjYvhH_wPmk&callback=initMap" async defer></script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'share/base_share.html' %}
+{% load static %}
+{% block content %}
+<div class="">
+    <div class="row">
+        <!-- Post Column -->
+        <div class="col-md-6">
+            <div class="post-card post-details-card">
+                <div class="post-header">
+                    <img src="{% if post.user.profile.image %}{{ post.user.profile.image.url }}{% else %}https://randomuser.me/api/portraits/men/1.jpg{% endif %}" alt="User Avatar">
+                    <div>
+                        <h5 class="mb-0">{{ post.user.username }}</h5>
+                        <small class="text-muted">{{ post.created_at|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+                <div class="post-content mt-3">
+                    <p>{{ post.text }}</p>
+                    {% for file in post.post_file.all %}
+                        {% if file.file %}
+                            <img src="{{ file.file.url }}" alt="Post Image">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <div class="post-actions">
+                    {% if user.is_authenticated %}
+                        <!-- Like -->
+                        <form action="{% url 'user_side:like_post' post.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link">
+                                <i class="fa fa-heart{% if user in post.post_like.all %} text-danger{% endif %}"></i> ({{ post.number_like }})
+                            </button>
+                        </form>
+
+                        <!-- Comment -->
+                        <a href="#comment-form" class="btn btn-link">
+                            <i class="fa fa-comment"></i> ({{ post.number_comment }})
+                        </a>
+
+                        <!-- Share -->
+                        <button class="btn btn-link" onclick="copyLink(window.location.href)">
+                            <i class="fa fa-share-alt"></i>
+                        </button>
+                    {% else %}
+                        <!-- Guest actions: redirect to login -->
+                        <button class="btn btn-link" onclick="window.location.href='{% url 'user_side:user_login' %}?next={{ request.path }}'">
+                            <i class="fa fa-heart"></i> ({{ post.number_like }})
+                        </button>
+                        <button class="btn btn-link" onclick="window.location.href='{% url 'user_side:user_login' %}?next={{ request.path }}'">
+                            <i class="fa fa-comment"></i> ({{ post.number_comment }})
+                        </button>
+                        <button class="btn btn-link" onclick="window.location.href='{% url 'user_side:user_login' %}?next={{ request.path }}'">
+                            <i class="fa fa-share-alt"></i>
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Comment Column -->
+        <div class="col-md-6">
+            <div class="comment-section post-details-comment">
+                <h5>Comments</h5>
+                {% for comment in comments %}
+                <div class="comment">
+                    <img src="{% if comment.user.profile.image %}{{ comment.user.profile.image.url }}{% else %}https://randomuser.me/api/portraits/men/{{ forloop.counter }}.jpg{% endif %}" alt="Commenter Avatar">
+                    <div class="comment-content">
+                        <div class="comment-author">{{ comment.user.first_name }} {{ comment.user.last_name }}</div>
+                        <div class="comment-text">{{ comment.comment_text }}</div>
+                        <div class="comment-time">{{ comment.created_at|date:"F d, Y H:i" }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="no-comments">No comments yet.</p>
+                {% endfor %}
+
+                {% if user.is_authenticated %}
+                <!-- Comment form -->
+                <form id="comment-form" class="comment-form" action="{% url 'user_side:add_comment' post.id %}" method="POST">
+                    {% csrf_token %}
+                    <textarea class="form-control mb-2" rows="3" name="comment_text" placeholder="Add a comment..." required></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+                </form>
+                {% else %}
+                <!-- Login prompt -->
+                <p class="mt-3">
+                    <a href="{% url 'user_side:user_login' %}?next={{ request.path }}" class="btn btn-sm btn-outline-primary">Login to comment</a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional JS -->
+<script>
+function copyLink(link) {
+    navigator.clipboard.writeText(link).then(() => {
+        alert("Link copied to clipboard!");
+    });
+}
+</script>
+{% endblock %}

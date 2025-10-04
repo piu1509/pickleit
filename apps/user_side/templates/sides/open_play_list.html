@@ -1,0 +1,76 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="h3 mb-3">OpenPlay</h1>
+
+<div class="d-flex align-items-center flex-wrap gap-2 justify-content-between mb-3 event-view-top">
+    <input type="text" id="searchBar" class="form-control" placeholder="🔍 Search OpenPlay..." value="{{ text }}" style="max-width: 350px; border-radius: 20px;" onkeyup="filterTeams()">
+        <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
+            <div class="conatiner">
+                <select class="form-select" name="my_event_type" aria-label="Default select example" onchange="filterByEventType(this)">
+                    <option value="all" {% if my_event_type_filter == 'all' %}selected{% endif %}>All OpenPlay</option>
+                    <option value="org_event" {% if my_event_type_filter == 'org_event' %}selected{% endif %}>Organized OpenPlay</option>
+                    <option value="join_event" {% if my_event_type_filter == 'join_event' %}selected{% endif %}>Join OpenPlay</option>
+                </select>
+    
+        </div>
+        <div class="">
+            <a href="{% url 'user_side:create_openplay' %}" class="btn btn-sm btn-outline-primary filter-btn">+ Create OpenPlay</a>
+        </div>
+    </div>
+</div>
+
+{% include 'component/event_list.html' %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterTeams() {
+        let searchQuery = document.getElementById('searchBar').value.trim();
+        if (event.key === "Enter") {
+            window.location.href = `?q=${searchQuery}`;
+        }
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            let filterValue = this.getAttribute('data-filter');
+            window.location.href = `?team_type=${filterValue}`;
+        });
+    });
+</script>
+
+<script>
+    function filterTeams() {
+        let searchQuery = document.getElementById('searchBar').value.trim();
+        if (event.key === "Enter") {
+            const myEventType = document.querySelector('select[name="my_event_type"]').value;
+            const teamType = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
+            window.location.href = `?q=${searchQuery}&my_event_type=${myEventType}&team_type=${teamType}`;
+        }
+    }
+
+    function filterByEventType(select) {
+        const myEventType = select.value;
+        const searchQuery = document.getElementById('searchBar').value.trim();
+        const teamType = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
+        window.location.href = `?q=${searchQuery}&my_event_type=${myEventType}&team_type=${teamType}`;
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            let filterValue = this.getAttribute('data-filter');
+            const searchQuery = document.getElementById('searchBar').value.trim();
+            const myEventType = document.querySelector('select[name="my_event_type"]').value;
+            window.location.href = `?q=${searchQuery}&my_event_type=${myEventType}&team_type=${filterValue}`;
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends 'base/base_user.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-3">Create an Advertisement</h2>
+    <div class="nw-form">
+        <form id="adForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Advertisement Name -->
+            <div class="mb-3">
+                <label class="form-label">Ad Name</label>
+                <input type="text" class="form-control" name="name" required>
+            </div>
+
+            <!-- Select Duration -->
+            <div class="mb-3">
+                <label class="form-label">Duration</label>
+                <select class="form-control" name="duration" id="durationSelect" required>
+                    <option value="">Select Duration</option>
+                    {% for duration in durations %}
+                        <option value="{{ duration.id }}" data-rate="{{ duration.rate }}">
+                            {{ duration.duration }} {{ duration.duration_type }} - ${{ duration.rate }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="mb-3" id="imageUploadDiv">
+                <label class="form-label">Upload Image</label>
+                <input type="file" class="form-control" name="image">
+            </div>
+
+            <!-- Script Text -->
+            <div class="mb-3 d-none" id="scriptTextDiv">
+                <label class="form-label">Script Text</label>
+                <textarea class="form-control" name="script_text"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">URL</label>
+                <input type="text" class="form-control" name="url">
+            </div>
+
+            <!-- Company Name -->
+            <div class="mb-3">
+                <label class="form-label">Company Name</label>
+                <input type="text" class="form-control" name="company_name">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Company Website</label>
+                <input type="text" class="form-control" name="company_website">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" name="description" id="description"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" name="start_date">
+            </div>
+
+            <div class="text-center">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#paymentModal" id="submitBtn">
+                    Submit & Proceed to Payment
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payment Details 💰</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Your Wallet Balance:</strong> $<span id="walletBalance">{{ wallet_balance }}</span></p>
+                <p><strong>Amount to Pay:</strong> $<span id="amountToPay">0</span></p>
+
+                <div id="paymentButtons">
+                    <button id="confirmPaymentBtn" class="btn btn-success w-100 d-none">Confirm Payment ✅</button>
+                    <a href="" class="btn btn-warning w-100 d-none">Add Money ➕</a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const durationSelect = document.getElementById("durationSelect");
+        const amountToPaySpan = document.getElementById("amountToPay");
+        const walletBalanceSpan = document.getElementById("walletBalance");
+        const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
+        const addMoneyBtn = document.querySelector("#paymentButtons a");
+    
+        let adRate = 0;
+    
+        // Fetch rate when duration is selected
+        durationSelect.addEventListener("change", function () {
+            const durationId = this.value;
+            if (!durationId) return;
+    
+            fetch(`/user_side/get_ad_rate/?duration_id=${durationId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.rate !== undefined) {
+                        adRate = Number(data.rate);
+                        amountToPaySpan.innerText = adRate.toFixed(2);
+    
+                        const walletBalance = parseFloat(walletBalanceSpan.innerText);
+                        const remainingAmount = adRate - walletBalance;
+    
+                        if (walletBalance >= adRate) {
+                            confirmPaymentBtn.classList.remove("d-none");
+                            addMoneyBtn.classList.add("d-none");
+                        } else {
+                            confirmPaymentBtn.classList.add("d-none");
+                            addMoneyBtn.classList.remove("d-none");
+                            addMoneyBtn.setAttribute("data-amount", remainingAmount.toFixed(2)); // Store the amount
+                        }
+                    } else {
+                        amountToPaySpan.innerText = "Error";
+                    }
+                })
+                .catch(error => console.error("Fetch error:", error));
+        });
+    
+        // Handle "Add Money" Button Click
+        addMoneyBtn.addEventListener("click", function (event) {
+            event.preventDefault();  // Prevent default link behavior
+    
+            const formData = new FormData(document.getElementById("adForm"));
+            formData.append("duration_id", durationSelect.value);
+            const remainingAmount = parseFloat(addMoneyBtn.getAttribute("data-amount"));
+
+            const stripeFeePercentage = 2.9; // Example: Stripe takes 2.9% as a fee
+            const stripeFeeFixed = 0.3; // Example: Stripe has a fixed fee of $0.30 per transaction
+            const totalAmount = remainingAmount + (remainingAmount * stripeFeePercentage / 100) + stripeFeeFixed;
+    
+            formData.append("duration_id", durationSelect.value);
+            formData.append("remaining_amount", remainingAmount.toFixed(2));
+            formData.append("total_amount_with_fees", totalAmount.toFixed(2));
+    
+            fetch("{% url 'user_side:initiate_stripe_payment_for_advertisement' %}", {
+                method: "POST",
+                body: formData,
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.stripe_url;  // Redirect to Stripe
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error("Fetch error:", error));
+        });
+    });
+        
+        
+        // Handle Confirm Payment Click
+        confirmPaymentBtn.addEventListener("click", function () {
+            const formData = new FormData(document.getElementById("adForm"));
+            formData.append("duration_id", durationSelect.value);
+    
+            fetch("{% url 'user_side:confirm_payment_for_advertisement' %}", {
+                method: "POST",
+                body: formData,
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Advertisement Created Successfully!");
+                    window.location.href = "{% url 'user_side:my_ad_list' %}";
+                } else {
+                    alert(data.error);
+                }
+            });
+        });
+    
+</script>
+    
+{% endblock %}

@@ -1,0 +1,68 @@
+{% load custom_filters %}
+<div class="row">
+    {% for league in leagues %}
+    <div class="col-md-6 col-lg-6 mb-4">
+        <a href="{% url 'user_side:event_view' league.id %}" class="text-decoration-none text-dark">
+            <div class="card nw-card shadow-sm cursor-pointer mb-0 sgl-event-view" style="cursor: pointer;">
+                <div class="card-body p-0 d-flex align-items-center">
+                    {% if league.image %}
+                        <img src="{{ league.image.url }}" class="rounded-circle me-3" width="60" height="60" alt="{{ league.name }}">
+                    {% else %}
+                        <img src="https://pickleit.app/static/images/pickleit_newlogo.jpg" class="rounded-circle me-3" width="60" height="60" alt="{{ league.name }}">
+                    {% endif %}
+                    
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1 text-white">{{ league.name }} || {{ league.team_type }}</h5>
+                        <p class="card-text mb-1 text-white">
+                            Start Date: {{league.leagues_start_date|date:"j" | ordinal_day }} {{ league.leagues_start_date|date:"M, Y" }} | 
+                            Registration: {{ league.registration_start_date|date:"j" | ordinal_day }} {{ league.registration_start_date|date:"M, Y" }} to {{ league.registration_end_date|date:"j" | ordinal_day }} {{ league.registration_end_date|date:"M, Y" }}
+                        </p>
+                        <p class="card-text mb-1 text-white">
+                            Max Teams: {{ league.max_number_team }} | Joined: {{ league.registered_team.count }}
+                        </p>
+                        <p class="card-text text-white">Location: {{ league.city }}, {{ league.state }}</p>
+                    </div>
+                    <i class="bi bi-info-circle text-white fs-4"></i>  <!-- Right-side icon -->
+                </div>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+        {% include 'base/not_found.html' %}
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if leagues.has_other_pages %}
+<nav aria-label="League pagination">
+    <ul class="pagination justify-content-center mt-4">
+        {% if leagues.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}{% if request.GET.my_event_type %}&my_event_type={{ request.GET.my_event_type }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">« First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ leagues.previous_page_number }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}{% if request.GET.my_event_type %}&my_event_type={{ request.GET.my_event_type }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in leagues.paginator.page_range %}
+        {% if leagues.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > leagues.number|add:'-2' and num < leagues.number|add:'2' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}{% if request.GET.my_event_type %}&my_event_type={{ request.GET.my_event_type }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% if leagues.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ leagues.next_page_number }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}{% if request.GET.my_event_type %}&my_event_type={{ request.GET.my_event_type }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ leagues.paginator.num_pages }}{% if request.GET.team_type %}&team_type={{ request.GET.team_type }}{% endif %}{% if request.GET.my_event_type %}&my_event_type={{ request.GET.my_event_type }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Last »</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

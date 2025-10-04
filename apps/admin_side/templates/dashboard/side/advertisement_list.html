@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+{% block extra_css %}
+    <style xmlns="http://www.w3.org/1999/html">
+    </style>
+{% endblock %}
+{% block page_title %}
+    Advertisements
+{% endblock %}
+{% block content %}
+
+    <div class="page-breadcrumb">
+        <form method="GET" action="">
+            <div class="row d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center m-2">
+                    <h4 class="page-title">Advertisement List</h4>
+                    <select class="form-control ml-3" name="page_length" style="width: 120px;" onchange="this.form.submit()">
+                        <option value="20" {% if page_length == "20" %}selected{% endif %}>20</option>
+                        <option value="50" {% if page_length == "50" %}selected{% endif %}>50</option>
+                        <option value="100" {% if page_length == "100" %}selected{% endif %}>100</option>
+                        <option value="200" {% if page_length == "200" %}selected{% endif %}>200</option>
+                    </select>
+                </div>
+                <div class="d-flex align-items-center">
+                    <select name="filter_type" class="form-control">
+                        
+                        <option value="all" {% if filter_type == "all" %}selected{% endif %}>All</option>
+                        <option value="pending_requests" {% if filter_type == "pending_requests" or not filter_type  %}selected{% endif %}>Pending</option>
+                        <option value="rejected_requests" {% if filter_type == "rejected_requests" %}selected{% endif %}>Rejected</option>
+                        <option value="approved_requests" {% if filter_type == "approved_requests" %}selected{% endif %}>Approved</option>
+                    </select>
+                    <input type="text" name="search_text" class="form-control mr-2" placeholder="Search Ad..." 
+                    value="{% if search_text %}{{ search_text }}{% endif %}" style="width: 200px;">
+                
+                    <button type="submit" class="btn btn-secondary"><i class="fas fa-search"></i></button>
+                        
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="container-fluid">
+        
+        <div class="row mt-5 mb-5">
+            {% if advertisements %}
+                {% for ad in advertisements %}
+                    <div class="col-md-6 col-sm-6 col-lg-6 col-xl-6 mb-4">
+                        <a href="/admin/advertisement_view_/{{ ad.id }}/">
+                        <div class="card border" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div class="mt-3 d-flex align-items-center gap-2">
+                                <img src="{% if ad.created_by.image %}{{ ad.created_by.image.url }}{% else %}https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-0.png{% endif %}" alt="User Avatar" width="30" height="30" class="rounded-circle ml-4 mr-3">
+                                <div>
+                                    <small class="text-muted fw-bold">{{ ad.created_by.first_name }} {{ ad.created_by.last_name }}</small><br>
+                                    <small class="text-muted">{{ ad.created_at|date:"F d, Y" }}</small>
+                                </div>
+                            </div>
+                            <img src="/media/{{ ad.image }}" alt="{{ ad.name }}" style="height: 100px; width: 100%; object-fit: cover; padding: 10px;">
+                            
+                            <div class="card-body" style="flex: 1;">
+                                <h5 class="card-title" style="font-size: 1rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    {{ ad.name }}
+                                </h5>
+
+                            </div>                            
+                        </div>
+                    </a>
+                    </div>
+                {% endfor %}
+                
+               
+            {% else %}
+                <div class="d-flex justify-content-center align-items-center text-center w-100" style="height: 300px;">
+    {% include 'dashboard/not_found.html' %}
+</div>
+            {% endif %}
+        </div>
+        <!-- Confirm Modal -->
+        {% if advertisements.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if advertisements.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ advertisements.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for p in page_range %}
+                        {% if p == "..." %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% else %}
+                            <li class="page-item {% if advertisements.number == p %}active{% endif %}">
+                                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if advertisements.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ advertisements.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ advertisements.paginator.num_pages }}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>               
+        {% endif %}    
+    </div>
+       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

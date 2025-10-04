@@ -1,0 +1,50 @@
+<div id="singleVariationFields" class="variation-section" style="display: block;">
+    <h5><i class="bi bi-box"></i> Single Variation</h5>
+    <div class="variation-card card">
+        <div class="card-header">
+            <span>Single Variation</span>
+        </div>
+        <div class="card-body">
+            <div class="inline-fields">
+                <div class="field-group">
+                    <label for="singleRegularPrice" class="form-label"><i class="bi bi-currency-dollar"></i> Old Price</label>
+                    <input type="number" class="form-control" id="singleRegularPrice" name="singleRegularPrice" min="0" step="0.01"
+                           value="{{ product.specificProduct.all.0.old_price }}">
+                </div>
+                <div class="field-group">
+                    <label for="singleSalePrice" class="form-label"><i class="bi bi-tag-fill"></i> Sale Price</label>
+                    <input type="number" class="form-control" id="singleSalePrice" name="singleSalePrice" min="0" step="0.01"
+                           value="{{ product.specificProduct.all.0.current_price }}">
+                </div>
+                <div class="field-group">
+                    <label for="singleAvailable" class="form-label"><i class="bi bi-boxes"></i> Available Products</label>
+                    <input type="number" class="form-control" id="singleAvailable" name="singleAvailable" min="0"
+                           value="{{ product.specificProduct.all.0.available_product }}">
+                </div>
+            </div>
+            <div id="singleHighlights" class="mt-3">
+                <label class="form-label"><i class="bi bi-star"></i> Highlights</label>
+                <div id="singleHighlightEntries">
+                    {% for highlight in product.specificProduct.specificaHighlight.all %}
+                        <div class="highlight-entry mb-2" id="highlight-{{ forloop.counter }}">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="bi bi-bookmark"></i> Topic</label>
+                                    <input type="text" class="form-control" name="highlightTopic-single" value="{{ highlight.highlight_key }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label"><i class="bi bi-text-paragraph"></i> Description</label>
+                                    <textarea class="form-control" name="highlightDesc-single" rows="2">{{ highlight.highlight_des }}</textarea>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="this.closest('.highlight-entry').remove();">
+                                <i class="bi bi-trash"></i> Remove Highlight
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="addHighlight('single')"><i class="bi bi-plus-circle"></i> Add Highlight</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,204 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        {% if message %}
+        <div id="alertMessage" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>{{message}}</strong>  
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>                         
+          </div> 
+          <script>                            
+            setTimeout(function() {
+                document.getElementById('alertMessage').style.display = 'none';
+            }, 5000);
+        </script>                          
+          {% endif %}
+    </nav>
+    <div class="text-center">
+        <h1 class="h3 mb-3">Create Team</h1>
+    </div>
+   <div class="nw-form">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Team Name -->
+        <div class="form-group mb-3">
+            <label for="team_name">Team Name</label>
+            <input type="text" id="team_name" name="team_name" class="form-control" placeholder="Enter team name" required>
+        </div>
+
+        <!-- Location -->
+        <div class="form-group mb-3">
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" class="form-control" placeholder="Enter location">
+        </div>
+
+        <!-- Team Person -->
+        <div class="form-group mb-3">
+            <label for="team_person">Team Type</label>
+            <select id="team_person" name="team_person" class="form-control">
+                <option value="">Select Type</option>
+                <option value="Two Person Team">Two Person Team</option>
+                <option value="One Person Team">One Person Team</option>
+            </select>
+        </div>
+
+        <!-- Team Category -->
+        <div class="form-group mb-3">
+            <label for="team_type">Category</label>
+            <select id="team_type" name="team_type" class="form-control">
+                <option value="">Select Category</option>
+                <option value="Women">Women</option>
+                <option value="Men">Men</option>
+                <option value="Co-ed">Co-ed</option>
+                <option value="Open-team">Open-team</option>
+            </select>
+        </div>
+
+        <!-- Team Image -->
+        <div class="form-group mb-3">
+            <label for="team_image">Team Image</label>
+            <input type="file" id="team_image" name="team_image" class="form-control form-control-file">
+        </div>
+
+        <!-- Search & Select Players -->
+        <div class="form-group mb-3">
+            <label>Search & Select Players</label>
+            <input type="text" id="player-search" class="form-control" placeholder="Search players...">
+            <div id="player-list" class="mt-2"></div>
+            <ul id="selected-players" class="list-group mt-2"></ul>
+        </div>
+
+        <input type="hidden" name="players" id="player-input">
+        <div class="text-center mt-3">
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary mt-3">Create Team</button>
+        </div>
+    </form>
+   </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('player-search').addEventListener('keyup', function() {
+    let query = this.value;
+    if (query.length > 1) {
+        fetch(`/user_side/search_players_user_side/?query=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                let playerList = document.getElementById('player-list');
+                playerList.innerHTML = '';
+
+                data.players.forEach(player => {
+                    let div = document.createElement('div');
+                    div.classList.add('player-item', 'd-flex', 'align-items-center', 'p-2', 'border', 'mt-1');
+                    div.style.cursor = 'pointer';
+
+                    let img = document.createElement('img');
+                    img.src = (player.player && player.player.image && player.player.image !== "null") ? `/media/${player.player.image}`: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQADjfoADAlJPrsl_hiiOMeE-FBor-i6hEAVg&s";
+                    img.alt = player.name;
+                    img.classList.add('rounded-circle', 'mr-2');
+                    img.style.width = '40px';
+                    img.style.height = '40px';
+                    img.style.objectFit = 'cover';
+
+                    let nameSpan = document.createElement('span');
+                    nameSpan.textContent = player.name;
+                    nameSpan.classList.add('ml-2');
+
+                    div.appendChild(img);
+                    div.appendChild(nameSpan);
+
+                    div.onclick = function() {
+                        addPlayer(player.id, player.name, player.image);
+                    };
+
+                    playerList.appendChild(div);
+                });
+            });
+    }
+});
+
+let selectedPlayers = [];
+
+function addPlayer(id, name, image) {
+    if (!selectedPlayers.includes(id)) {
+        selectedPlayers.push(id);
+
+        let ul = document.getElementById('selected-players');
+        let li = document.createElement('li');
+        li.classList.add('list-group-item', 'd-flex', 'align-items-center', 'justify-content-between', 'mt-1');
+
+        let img = document.createElement('img');
+        img.src = image ? image : "{% static 'images/default-user.png' %}";
+        img.alt = name;
+        img.classList.add('rounded-circle');
+        img.style.width = '40px';
+        img.style.height = '40px';
+        img.style.objectFit = 'cover';
+
+        let nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        nameSpan.classList.add('ml-2');
+
+        let removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '&times;';
+        removeBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'ml-2');
+        removeBtn.onclick = function() {
+            selectedPlayers = selectedPlayers.filter(playerId => playerId !== id);
+            ul.removeChild(li);
+            document.getElementById('player-input').value = selectedPlayers.join(',');
+        };
+
+        li.appendChild(img);
+        li.appendChild(nameSpan);
+        li.appendChild(removeBtn);
+        ul.appendChild(li);
+
+        document.getElementById('player-input').value = selectedPlayers.join(',');
+    }
+}
+</script>
+
+<script>
+// Initialize Google Places Autocomplete
+function initAutocomplete() {
+    var input = document.getElementById('location');
+    var options = {
+        types: ['geocode'], // Restrict to address-based suggestions
+        
+    };
+
+    // Create a new Autocomplete object and bind it to the location input
+    var autocomplete = new google.maps.places.Autocomplete(input, options);
+
+    // Add listener to update the location field when an address is selected
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        if (!place.geometry) {
+            return;
+        }
+        // Optional: You can log place details or handle them here
+        console.log(place);
+    });
+}
+
+// Load Google Maps API with Places API
+function loadGoogleMapsAPI() {
+    var script = document.createElement('script');
+    script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAfBo6-cZlOpKGrD1ZYwISIGjYvhH_wPmk&libraries=places&callback=initAutocomplete';
+    script.async = true;
+    document.head.appendChild(script);
+}
+
+// Call the function to load Google Maps API
+loadGoogleMapsAPI();
+</script>
+
+{% endblock %}

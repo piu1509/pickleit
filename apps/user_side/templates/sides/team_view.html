@@ -1,0 +1,159 @@
+{% extends 'base/base_user.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4"> 
+    <h1 class="h3 mb-0">{{ team_details.name }} Details</h1>
+
+    <div class="d-flex justify-content-end">
+        {% if team_details.created_by == request.user %}
+        <a href="{% url 'user_side:edit_team' team_details.id %}" class="btn btn-primary">Edit Team</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Side: Team Details and Players -->
+    <div class="col-md-6">
+        <div class="card w-100 h-100 m-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Details</h5>
+            </div>
+            <div class="card-body text-center">                
+                <div class="td-top">
+                    <div class="team-logo">
+                        {% if team_details.team_image %}
+                            <img src="{{ team_details.team_image.url }}" alt="{{ team_details.name }}">
+                        {% else %}
+                            <img src="https://w7.pngwing.com/pngs/358/811/png-transparent-high-five-surgical-team-nursing-team-members-miscellaneous-blue-hand-thumbnail.png" alt="Default Team Image">
+                        {% endif %}                        
+                    </div>
+                    <h5 class="card-title">{{ team_details.name }}</h5>
+                    <p class="card-text">{{ team_details.team_person }} || {{ team_details.team_type }}</p>                    
+                </div>
+                <div class="td-btm">
+                    <h4 class="h6 mt-3">Players</h4>
+                    <ul class="list-group">
+                        {% for player in players %}
+                        <li class="list-group-item d-flex align-items-center">
+                            <div class="player-img">
+                                {% if player.player.image %}
+                                    <img src="{{ player.player.image.url }}" alt="{{ player.player.first_name }} ">
+                                {% else %}
+                                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmRLRMXynnc7D6-xfdpeaoEUeon2FaU0XtPg&s"  alt="{{ player.player.first_name }} ">
+                                {% endif %}
+                            </div>
+                            {{ player.player.first_name }} {{player.player.last_name}}
+                            
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No players available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>     
+    </div>
+
+    <!-- Right Side: Stats -->
+    <div class="col-md-6 d-flex align-items-center justify-content-between">        
+        {% if total_matches != 0 %}
+        <div class="card w-100 h-100 m-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Stats</h5>
+                <!-- <button class="btn btn-primary btn-sm" onclick="window.location.href='{% url 'user_side:match_history_user' %}'">Go to match history</button> -->
+
+            </div>
+            <div class="chart chart-sm p-2">
+                <canvas id="chartjs-doughnut"></canvas>
+            </div>
+            <div class="chart-btns p-2 w-100 d-flex align-items-center justify-content-center gap-3">
+                <a href="javascript:void(0);" class="btn btn-info">Played Matches ({{ total_matches }})</a>
+                <a href="javascript:void(0);" class="btn btn-success">Wins ({{ wins }})</a>
+                <a href="javascript:void(0);" class="btn btn-danger">Losses ({{ losses }})</a>
+            </div>
+        </div> 
+        {% else %}
+        <div class="container text-center mt-4">
+            {% include 'base/not_found.html' %}
+        </div>
+        
+        {% endif %}
+        
+    </div>
+</div>
+
+
+{% include 'component/match_htstory.html' %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Remove player from the list
+    document.querySelectorAll('.remove-player').forEach(button => {
+        button.addEventListener('click', function() {
+            let playerId = this.dataset.playerId;
+            let listItem = this.closest('li');
+            
+            fetch(`/remove-player/${playerId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    listItem.remove();
+                } else {
+                    alert("Failed to remove player.");
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    function initMap() {
+        var userLocation = { lat: 22.5354, lng: 88.3473 }; // Set default location
+
+        var map = new google.maps.Map(document.getElementById("map"), {
+            center: userLocation,
+            zoom: 12,
+        });
+
+        var marker = new google.maps.Marker({
+            position: userLocation,
+            map: map,
+            title: "User Location",
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Doughnut chart
+        new Chart(document.getElementById("chartjs-doughnut"), {
+            type: "doughnut",
+            data: {
+                labels: ["Win", "Lose"],
+                datasets: [{
+                    data: [{{ wins }}, {{ losses }}],
+                    backgroundColor: [
+                        window.theme.success,
+                        window.theme.danger
+                    ],
+                    borderColor: "transparent"
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                cutoutPercentage: 65,
+                legend: {
+                    display: false
+                }
+            }
+        });
+    });
+</script>
+
+<!-- Google Maps API (Make sure the key is valid) -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQ_OGAb4yuL8g55IMufP3Dwd4yjrWxrdI&callback=initMap"></script>
+
+{% endblock %}
