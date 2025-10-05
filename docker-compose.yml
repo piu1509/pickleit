@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    command: gunicorn myproject.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=myproject.settings
+      - DATABASE_URL=sqlite:///db.sqlite3  # temporary local DB (until RDS)
