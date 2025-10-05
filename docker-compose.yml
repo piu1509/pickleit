@@ -9,3 +9,11 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=myproject.settings
       - DATABASE_URL=sqlite:///db.sqlite3  # temporary local DB (until RDS)
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+

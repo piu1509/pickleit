@@ -3,7 +3,7 @@ name: Deploy Django to AWS ECS
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
