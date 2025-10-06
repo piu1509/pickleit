@@ -21,6 +21,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy project files
 COPY . .
 
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
 # Copy and set permissions for entrypoint script
 COPY scripts/entrypoint.sh /app/scripts/entrypoint.sh
 RUN chmod +x /app/scripts/entrypoint.sh
@@ -33,4 +36,5 @@ ENTRYPOINT ["/app/scripts/entrypoint.sh"]
 
 # Start Gunicorn with Uvicorn worker (for ASGI)
 CMD ["gunicorn", "myproject.asgi:application", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+
 
