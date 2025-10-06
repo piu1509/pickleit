@@ -2,7 +2,7 @@ import json
 from urllib.parse import parse_qs
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from apps.user.models import User
+# from apps.user.models import User
 from .models import *
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
@@ -25,6 +25,7 @@ bad_words_list = get_bad_words_list()
 
 
 class ChatConsumer(WebsocketConsumer):
+    from apps.user.models import User
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = "chat_%s" % self.room_name
@@ -323,6 +324,7 @@ class ChatConsumer(WebsocketConsumer):
         )
  
 class NotificationConsumer(WebsocketConsumer):
+    from apps.user.models import User
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"notifications_{self.room_name}"
@@ -478,6 +480,7 @@ def get_chat_users_with_last_message(user):
     return chat_data
 
 class ChatHistory(WebsocketConsumer):
+    from apps.user.models import User
     def connect(self):
         query_string = self.scope["query_string"].decode("utf-8")
         query_params = parse_qs(query_string)
@@ -546,7 +549,7 @@ class ChatHistory(WebsocketConsumer):
         return cache.get("online_users", set())
 
 class ChatUser(WebsocketConsumer):
-    
+    from apps.user.models import User
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = f"chat_{self.room_name}"
