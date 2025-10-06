@@ -14,5 +14,7 @@ python manage.py migrate --noinput
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
-# Start Gunicorn (exec CMD from Dockerfile)
-exec "$@"
+
+# Start Gunicorn directly
+echo "Starting Gunicorn..."
+gunicorn myproject.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
