@@ -33,3 +33,4 @@ ENTRYPOINT ["/app/scripts/entrypoint.sh"]
 
 # Start Gunicorn with Uvicorn worker (for ASGI)
 CMD ["gunicorn", "myproject.asgi:application", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+
