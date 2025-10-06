@@ -22,7 +22,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . .
 
 # Collect static files
-RUN python manage.py collectstatic --noinput
+# RUN python manage.py collectstatic --noinput
 
 # Copy and set permissions for entrypoint script
 COPY scripts/entrypoint.sh /app/scripts/entrypoint.sh
